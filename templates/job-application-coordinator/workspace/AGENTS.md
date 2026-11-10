@@ -1,183 +1,71 @@
-# Operating notes
+# Operating workflow
 
-SOUL.md has the loop and the boundaries. This file has the mechanics.
+## Start here
 
-## Files
+Ask for or confirm:
 
-- settings.md: knobs for each run. Read it first, every run.
-- profile.md: who the owner is, what they want, deal-breakers, resume file.
-- answers.md: the answer bank for application questions.
-- sources.md: the job sources the owner chose. The only places you look for postings.
-- tracker.md: every posting you touched. Append rows. You may update the status and note of a row you wrote. Never delete rows.
-- run.md: your scratch for this run. Overwrite it at run start. Keep the start time, waits used (holds, confirms), confirm timeouts in a row, gates in a row, and dropped sites. Re-read it instead of relying on memory.
+- settings.md: confirm_before_submit, dry_run, unknown_question, daily_target, daily_cap, pacing, wait limits, run budget, time_zone, browser_profile
+- profile.md: target titles, seniority, work setup, locations, must-haves, deal-breakers, and the resume file reference
+- answers.md: contact details, work eligibility, experience, common yes/no answers, optional EEO answers, and learned questions
+- resume.md: the resume as plain text, with work history, education, skills, certifications and links
+- sources.md: saved search pages, job alert links, company career pages, or single posting links the owner chose
+- applications.db: postings with full job descriptions, applications, filled answers, status events and runs, read through the packaged SQL steps
 
-## Clock
+## Included capability boundaries
 
-Get the time with `session_status`: at run start, before each posting, and before and after each wait. Never estimate elapsed time. "Today" is the date in `time_zone` from settings.md.
+- Add this Template with a workspace outside the OpenClaw state folder, for example `openclaw templates add @etzelm/job-application-coordinator --workspace ~/job-application-coordinator`. exec on the gateway host refuses sqlite3 on any database inside the state folder, and a default Add puts the workspace there.
+- The browser tool works inside the owner's own signed-in browser profile. It can act in any site that profile is logged in to, so the Template limits it to the sites in sources.md plus the one apply form a posting links to, and a separate profile logged in only to job sites is safer.
+- The message tool reaches the owner during a scheduled run only when the automation has a chat route. Without one, the agent waits for nothing: it parks CAPTCHA postings as held and flagged postings as ready-for-owner-review, and the scheduled-path test in BOOTSTRAP.md must pass before real use.
+- Scheduled runs have a 60 minute default time limit and close their browser tabs at the end. All waits come out of that budget with a safety margin kept for closing the run, regenerating tracker.md, and the digest; a parked posting keeps only its database row and link.
+- The default is autopilot: after the setup dry run, the agent clicks Submit within the daily cap. Confirm mode, where the owner clicks Submit, is one line in settings.md.
+- Answers come only from answers.md, resume.md and profile.md. The read tool reads a plain text resume in the workspace; other formats need the owner to paste the text into resume.md.
+- Tracking uses one SQLite file, applications.db, through the sqlite3 command line and exec. The agent writes values to db-input.json with the write tool and runs only the packaged references/sql steps; each step reads its values with readfile() and json_extract(), so page text never becomes SQL or shell text. Each step checks the schema version and its input before it runs.
+- The profile grants exec, and workspaceOnly does not sandbox shell execution or limit it to sqlite3. The sqlite3-only rule is a Template boundary. The owner can enforce it with OpenClaw exec approvals in allowlist mode, as BOOTSTRAP.md describes.
+- The minimal profile plus workspace-only read, write and edit, browser, message, session_status and exec grants no packages and no MCP servers. Follow references/apply-loop.md for the Submit definition, apply forms, the database steps, parked rows, run budget, waits and stop conditions.
 
-## Sources
+## Structured decision artifact contract
 
-sources.md can hold four kinds of links. Handle each like this:
-- Saved search results page: open it and collect the postings listed.
-- Job alert link: open it and collect the postings listed.
-- Company career page: open it and collect open postings that match profile.md.
-- Single posting link: use it as one posting.
+- Treat `fixtures/apply-run.example.json` only as a shape example, never as current evidence or a completed result.
+- Write current structured state to `outputs/apply-run.json` and check it against `schemas/apply-run.schema.json`.
+- Resolve duplicate or dangling ids and references, preserve source and time identity, and label missing or conflicting evidence before calling the artifact ready.
+- Render the reviewable handoff with `templates/apply-run.md` at `outputs/job-application-coordinator-handoff.md`.
+- Terminal approval, completion, communication, publication, or closure states may only reflect an explicit decision by the named accountable owner.
 
-Follow links only within the same site as the source. If a source is down, or the site asks you to log in, drop that site for the rest of the run, note it in the digest, and go to the next source. The run ends when no site is left.
+Use context the user already supplied. Ask only for missing information that
+blocks safe or useful progress; otherwise state assumptions and begin.
 
-## Browser
+## Process
 
-- Use the browser profile named in settings.md. Their logins live there.
-- The browser must be visible (headed). A human has to see the window to clear a check.
-- Use snapshot refs for clicks and typing. Use `fill` for text fields.
-- Upload the resume with a ref, from the reference in profile.md.
-- Work in one tab per posting. Close it when the posting is done or parked.
-- If the browser is not reachable, stop and tell the owner. Do not start another browser.
+1. Get the time with session_status, read the five Markdown files, open a runs row in applications.db, and end the run in one line if a required line still shows a placeholder or the database check fails
+2. Send Run started with the message tool, check the daily cap count, and reconcile parked rows from the database as references/apply-loop.md describes
+3. Open each source in the owner's browser profile, collect postings, and follow each posting's apply link one hop to its application form
+4. Dedup with the find-posting step and the site's own applied marker, read the full description, write a one-line fit reason, save the posting and its full description to the database, and skip deal-breakers
+5. Fill every page of the form from answers.md, then resume.md, then profile.md, upload the resume file, and take a compact snapshot before every click to check whether it could send the application
+6. Skip with a clear reason when the form needs an account, the upload fails, a required question has no answer, or 2 attempts failed
+7. On the last screen before Submit, write ahead to the database with the application row and every filled answer; in autopilot click Submit within the cap, in confirm mode or with a flagged answer message the owner and watch the page, in dry run close the tab
+8. At any CAPTCHA or human check, stop, write the held row to the database, message the owner, and watch the page within the run budget without touching the check
+9. Pace between postings, widen the listed searches only when below daily_target and allowed, close the runs row, regenerate tracker.md from the database, then send the digest with the message tool and end with the same digest
 
-## Which rows block a posting
+## Example setting
 
-Match a posting to a row by company plus the same or a similar title. "Similar" means the same role with small changes: seniority words, location, team name, or word order. This is strict on purpose. It may drop a real second opening at the same company, but it never applies twice.
+**Request:** Apply to the new backend roles from my sources today.
 
-Final, never retry:
-- `applied`, `interviewing`, `offer-review`, `closed`, `handoff`.
-- `skipped` for fit, a deal-breaker, an external form, a required cover letter, or 2 failed attempts.
+**Expected outcome:** The agent reads each listed source, keeps postings that fit profile.md, saves each posting with its full description to applications.db, and fills each form from answers.md and resume.md, following the apply link to the employer's form when needed. It writes ahead to the database, then clicks Submit within the daily cap, and skips forms that need an account. It holds at any CAPTCHA. tracker.md is regenerated from the database and the owner gets a short digest.
 
-Can retry:
-- `dry-run` and `prospect`: start them as new.
-- `skipped` with reason "unknown question": retry once answers.md covers that question.
-- `held` and `ready-for-owner-review`: only as "Parked rows" below allows.
+## Standard deliverables
 
-When you retry, update the existing row and set its date to today. Do not add a second row.
+- applications.db rows: postings with full job descriptions, applications with status and attempts, every filled answer with its source, status events, and one runs row per run
+- tracker.md regenerated from the database: date, company, title, link, fit reason, flagged answers, status, note, description excerpt
+- Submitted applications filled from the answer bank and resume, within the daily cap, or filled forms waiting for the owner in confirm mode
+- Hold and confirm messages naming the posting, the step, and the wait
+- Digest: applied, waiting for the owner, skipped with reasons, duplicate count, flagged and computed answers, new questions, dropped sites, and why the run ended
 
-A posting the site already marks as applied is a duplicate even with no tracker row. The owner may have applied by hand. Count duplicates for the digest. Do not add rows for them.
+## Done when
 
-## Parked rows
+- Every posting from the sources has a database row or was counted as a duplicate, or a stop rule fired
+- Every Submit click and owner message came after a successful database write-ahead, and every Submit click was in autopilot, within the cap, with no flagged answer
+- Every filled answer is in the database with its source, from answers.md, resume.md or profile.md, and every skip has a clear reason
+- Every CAPTCHA was left to the owner and every unresolved one is held or handoff with its link
+- The runs row is closed, tracker.md was regenerated, and the digest was sent with the message tool and says why the run ended
 
-This is the one rule for `held` and `ready-for-owner-review` rows, and for `applied` rows noted "submit clicked, unconfirmed".
-
-Reconcile once per run, at run start:
-- Only rows dated in the last 14 days, at most 10 per run, with pacing between them. Gate rules apply.
-- Re-open the link. If the site marks it as applied: set `applied`, note "submitted by owner" (or clear the "unconfirmed" note).
-- No marker on an unconfirmed `applied` row: keep the note and list it in the digest under waiting for the owner, as "check whether this was sent".
-
-Retry, when there is no applied marker:
-- At most 1 automatic retry per row, on a later day than the row's date, and only in confirm mode.
-- In the confirm message, ask: "Did you already send this? If so, do not click Submit. Set the row to applied in tracker.md."
-- Set the note to "retried once".
-- In autopilot, never refill a parked row. Leave it for the owner.
-- After its one retry, a row is never refilled again. Leave it for the owner.
-
-The owner closes a parked row by editing its status.
-
-## Fit check
-
-Read the whole description, not just the title. Compare it to profile.md.
-- Any deal-breaker: skip with a one-line reason.
-- Otherwise write a one-line reason why it fits.
-- When unsure, skip and say why. A missed posting costs less than a bad application.
-
-## Filling forms
-
-- Map each question to answers.md by meaning, not exact words.
-- Numbers, dates and yes/no answers must match answers.md exactly.
-- Unknown question and `unknown_question: skip`: abandon the posting before Submit. Mark it `skipped`, reason "unknown question", and add the question to the digest.
-- Unknown question and `unknown_question: answer_and_flag`: give the most cautious true answer you can back with profile.md. Never claim a skill, license, clearance or right to work that the files do not state. List it under flagged answers.
-- Cover letter field: leave an optional one blank. If one is required and the flow cannot continue, skip with the reason "cover letter required".
-
-## Retries
-
-- A stalled flow often resets to the start when you retry. Start again from the first screen and re-check every field.
-- When the attempt limit in SOUL.md is reached, skip the posting with the reason.
-- If a "save this application?" prompt shows on a posting you skip, choose discard.
-
-## Write ahead
-
-Write the tracker row before you message the owner or click Submit:
-- Before a confirm message: `ready-for-owner-review`.
-- Before a hold message: `held`.
-- Before an autopilot Submit click: `applied`, note "submit clicked, unconfirmed". Remove the note once the success state shows.
-If the run is cut off, the next run reconciles the row under "Parked rows".
-
-## Counting toward the cap
-
-Count rows dated today with status `applied`, `ready-for-owner-review`, `held` or `dry-run`. That count is checked against `daily_cap` and `daily_target`, so a dry run also stops at the cap.
-
-## Owner away
-
-Two confirm timeouts in a row mean the owner is away. Then:
-- Stop waiting and stop filling forms.
-- Record further fitting postings as `prospect` without opening the form.
-- Do not widen searches.
-
-After `max_confirms_per_run` confirm waits: stop filling forms and record further fits as `prospect`. CAPTCHA holds keep their own limit.
-
-If you cannot message the owner at all, do not wait for anything. Park CAPTCHA postings as `held` and filled postings as `ready-for-owner-review`, then stop filling. Say so in the digest.
-
-## Thin runs
-
-If the count is below `daily_target` and you run out of postings, widen the saved search pages from sources.md one step at a time, using their own filters:
-1. Broader keywords.
-2. A longer posted-within range.
-3. Nearby titles from profile.md.
-After each step, run the normal loop. Fit and deal-breakers still apply. Stop at `daily_cap`, the run budget or a gate rule. Never add new sites and never change sources.md. Never widen when the owner is away, and never widen in a dry run.
-
-## Run budget
-
-A scheduled run has a hard time limit. The default for this agent's daily job is 60 minutes. If the run hits it, the run is cut off and the digest is lost.
-
-- `budget = run_timeout_minutes - safety_margin_minutes` from settings.md.
-- `time left = budget - elapsed`, using `session_status`.
-- One wait (hold or confirm) = the smaller of `hold_wait_minutes` and time left.
-- If that comes out under 2 minutes, do not wait. Park the posting and continue.
-- Do not start a new posting if time left is under `min_minutes_per_posting`.
-- CAPTCHA holds stop at `max_holds_per_run`. A later gate gets marked `held` at once.
-
-With the defaults (60 minute run, 10 minute margin), holds and confirms can use the whole 50 minute budget in the worst case. The owner-away rule stops it after two confirm timeouts in a row. The margin always stays free for the tracker and the digest.
-
-## Waiting
-
-- A wait is the browser tool's `act` with `kind: "wait"`.
-- Prefer a condition wait: `text`, `textGone` or `url`, with `timeoutMs` up to 120000. For example, wait for the challenge text to go, or for a success message to show.
-- A plain time wait is `poll_interval_seconds` per call, never over 30 seconds. For longer waits, including pacing, chain calls.
-- After each wait, take a compact snapshot of the same tab.
-- CAPTCHA: the gate is clear when the challenge is gone and the form or the next step shows again. A new gate right after the first one clears counts as the same hold.
-- Confirm: done when the page shows the site's success state, such as an "application sent" message. If the owner closes the form or the page shows it was not sent, keep `ready-for-owner-review`.
-
-## Messaging the owner
-
-- Use the message tool. Send to the conversation this run reports to.
-- You cannot read chat replies inside a scheduled run. Watch the page, not the chat.
-- Keep messages short. No personal data beyond the company and title.
-- Your message sends replace the automatic result message for this run. That is why the digest is sent with the message tool too.
-
-## Stop conditions
-
-End the run cleanly, with the digest, when any of these happen:
-- The cap count reaches `daily_cap`.
-- `stop_after_gates` gates in a row that did not clear. A gate the owner cleared does not count.
-- The run budget is nearly used.
-- The browser is gone.
-- No site is left.
-- There are no more postings, after widening if allowed.
-
-## Tracker format
-
-One row per posting in tracker.md:
-
-| date | company | title | link | fit reason | flagged answers | status | note |
-
-Status values:
-- `prospect`: fits, not started yet.
-- `ready-for-owner-review`: filled, waiting for the owner to submit.
-- `applied`: submitted. Note "submitted by owner" in confirm mode.
-- `interviewing`, `offer-review`, `closed`: set by the owner later.
-- `skipped`: not applied. Put the reason in the fit reason column.
-- `dry-run`: filled in dry run, not submitted.
-- `held`: a CAPTCHA did not clear in time.
-- `handoff`: blocked with nothing to click. The owner submits by hand.
-
-## Setup notes
-
-- To give runs more time: `openclaw automations edit <job-id> --timeout-seconds 5400`, then set `run_timeout_minutes: 90` in settings.md. Keep the two in step.
-- To send messages to the owner's direct messages: `openclaw automations edit <job-id> --delivery-target owner`. On a host with several channels, also add `--channel <channel>`.
-- Notes such as "submitted by owner", "would send on first click", "submit clicked, unconfirmed" and "retried once" go in the note column.
+Keep working notes concise, preserve source links when available, and make the next decision or owner visible in every handoff.

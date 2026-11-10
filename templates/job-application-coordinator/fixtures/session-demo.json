@@ -1,0 +1,62 @@
+{
+  "schemaVersion": "awesomeClaws.sessionDemo.v1",
+  "claw": "job-application-coordinator",
+  "scenario": "Apply to the new backend roles from my sources today.",
+  "messages": [
+    {
+      "role": "user",
+      "text": "Apply to the new backend roles from my sources today."
+    },
+    {
+      "role": "agent",
+      "text": "I read your sources, answers.md and resume.md, opened a run in applications.db, and checked the cap. I will apply to the fitting postings within the daily cap, write each one to the database before Submit, and hold at any CAPTCHA."
+    },
+    {
+      "role": "user",
+      "text": "Make the result useful in an ordinary chat client and leave a durable handoff."
+    },
+    {
+      "role": "agent",
+      "text": "Done. Two applications sent, one held at a CAPTCHA, one skipped as account required. Each posting, its description and every answer are in applications.db. tracker.md is regenerated, and the digest and outputs/job-application-coordinator-handoff.md list each posting and why."
+    }
+  ],
+  "report": {
+    "title": "Job application coordinator session handoff",
+    "summary": "The agent reads each listed source, keeps postings that fit profile.md, saves each posting with its full description to applications.db, and fills each form from answers.md and resume.md, following the apply link to the employer's form when needed. It writes ahead to the database, then clicks Submit within the daily cap, and skips forms that need an account. It holds at any CAPTCHA. tracker.md is regenerated from the database and the owner gets a short digest.",
+    "output": "outputs/job-application-coordinator-handoff.md",
+    "items": [
+      {
+        "title": "applications.db rows: postings with full job descriptions, applications with status and attempts, every filled answer with its source, status events, and one runs row per run",
+        "summary": "Every posting from the sources has a database row or was counted as a duplicate, or a stop rule fired",
+        "tags": [
+          "evidence",
+          "reviewable"
+        ]
+      },
+      {
+        "title": "Submitted applications filled from the answer bank and resume, within the daily cap, or filled forms waiting for the owner in confirm mode",
+        "summary": "Every Submit click and owner message came after a successful database write-ahead, and every Submit click was in autopilot, within the cap, with no flagged answer",
+        "tags": [
+          "evidence",
+          "reviewable"
+        ]
+      },
+      {
+        "title": "Hold and confirm messages naming the posting, the step, and the wait",
+        "summary": "Every CAPTCHA was left to the owner and every unresolved one is held or handoff with its link",
+        "tags": [
+          "evidence",
+          "reviewable"
+        ]
+      },
+      {
+        "title": "Digest: applied, waiting for the owner, skipped with reasons, duplicate count, flagged and computed answers, new questions, dropped sites, and why the run ended",
+        "summary": "The runs row is closed, tracker.md was regenerated, and the digest was sent with the message tool and says why the run ended",
+        "tags": [
+          "handoff",
+          "owner-visible"
+        ]
+      }
+    ]
+  }
+}

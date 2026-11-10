@@ -4,15 +4,15 @@ Edit the values after the colons. The agent reads this file at the start of ever
 
 ## Safety
 
-- dry_run: true
-  - true: fill forms but never click Submit. Rows get status `dry-run`.
-  - Leave it on for the first run. Check the tracker, then set it to false.
-- confirm_before_submit: true
+- confirm_before_submit: false
+  - false (autopilot, the default): the agent fills the form and clicks Submit itself, within the daily cap. A posting with a flagged answer still waits for you.
   - true (confirm mode): the agent fills the form and stops before the send click. You check it in the browser and click Submit yourself. Not done in time: the posting waits as `ready-for-owner-review`.
-  - false (autopilot): the agent clicks Submit itself, within the daily cap. Only set this if you want that. A posting with a flagged answer still waits for you.
+- dry_run: false
+  - true: fill forms but never click Submit. Rows get status `dry-run`. Setup turns it on for one test run, then back off.
 - unknown_question: skip
-  - skip: abandon a posting that asks something answers.md does not cover.
-  - answer_and_flag: answer cautiously, flag the answer, and leave Submit to you.
+  - Applies only to a required question that answers.md, resume.md and profile.md do not cover. An optional one is left blank.
+  - skip: abandon the posting and list the question in the digest.
+  - answer_and_flag: answer cautiously, flag the answer, and leave Submit to you for that posting.
 
 ## Volume
 

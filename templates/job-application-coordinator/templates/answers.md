@@ -1,7 +1,7 @@
 # Answer bank
 
-The agent fills forms from this file. Match is by meaning, so one answer covers many wordings.
-Add new questions from each digest. Leave a line as "<blank>" to keep it unanswered.
+The agent fills forms from this file first, then resume.md, then profile.md. An answer here wins over the other two.
+Match is by meaning, so one answer covers many wordings. Add new questions from each digest. Leave a line as "<blank>" to keep it unanswered.
 
 ## Contact
 
@@ -19,6 +19,8 @@ Add new questions from each digest. Leave a line as "<blank>" to keep it unanswe
 - Earliest start date or notice period: <e.g. 2 weeks>
 
 ## Experience
+
+Optional. If you leave these as placeholders, the agent counts years from the dates in resume.md and marks them as computed.
 
 - Total years of professional experience: <number>
 - Years with <skill>: <number>

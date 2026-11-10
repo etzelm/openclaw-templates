@@ -1,9 +1,10 @@
 {
-  "name": "job-application-coordinator",
-  "version": "0.1.0",
-  "type": "module",
-  "description": "Applies to jobs from the sources you bring, in your own browser. Leaves Submit to you by default and stops at every CAPTCHA for you to clear.",
+  "name": "@etzelm/job-application-coordinator",
+  "version": "0.1.2",
+  "description": "Applies to jobs from your own sources in your signed-in browser, fills forms from your answers and resume, holds at every CAPTCHA, and tracks everything in a local SQLite database.",
+  "author": "Mitchell Etzel",
   "license": "MIT",
+  "type": "module",
   "openclaw": {
     "template": "CLAW.md"
   }

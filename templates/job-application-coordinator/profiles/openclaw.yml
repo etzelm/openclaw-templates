@@ -1,13 +1,14 @@
 schemaVersion: 1
 agent:
   tools:
-    profile: full
-    allow:
-      - browser
-      - message
+    profile: minimal
+    alsoAllow:
       - read
       - write
       - edit
+      - browser
+      - message
       - session_status
+      - exec
     fs:
       workspaceOnly: true
