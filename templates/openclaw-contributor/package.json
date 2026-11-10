@@ -1,0 +1,10 @@
+{
+  "name": "@etzelm/openclaw-contributor",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "openclaw": {
+    "template": "CLAW.md"
+  }
+}
