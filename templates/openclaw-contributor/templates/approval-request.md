@@ -20,7 +20,11 @@
 
 - Red: <result and SHA>
 - Green: <result and SHA>
+- Mutation check: <test red again with the fix reverted, or the gap>
 - Gates: <pass or fail, with any named gap>
-- Local review: <tool and outcome, or "none chosen">
+- Local review: <tool, rounds, last head reviewed, rating, remaining findings; or "none chosen">
+- Commit signature: <signed, or unsigned because the owner's config does not sign>
+
+<For open-pr as ready, or ready-for-review: "Hosted ClawSweeper reviews this PR automatically once, now. Later pushes do not start another review.">
 
 Reply yes to approve this one step for this head. Any other reply, or a new head, means I ask again.

@@ -8,9 +8,10 @@ Edit the values after the colons. The agent reads this file at the start of ever
   - Fixed. The loop is written for OpenClaw's own rule files, PR template, bots and CI. The agent refuses to start a task if this is changed.
 - checkout_dir: openclaw
   - Folder in this workspace that holds the git checkout. It must stay inside the workspace.
-- upstream_remote: upstream
-  - The remote that points at upstream_repo.
-- fork_remote: <the remote for your fork, e.g. origin>
+- upstream_remote: origin
+  - The remote that points at upstream_repo. Keep `origin`: the repo's own scripts default to `origin/main`.
+- fork_remote: fork
+  - The remote for your fork.
   - Branches are pushed here, and only after your OK for each push.
 - fork_repo: <your fork, e.g. your-name/openclaw>
 - base_branch: main
@@ -31,14 +32,29 @@ Edit the values after the colons. The agent reads this file at the start of ever
 - gate_commands: <blank>
   - Blank: take the commands from the repo's CONTRIBUTING.md and AGENTS.md for the touched paths. This is the default.
   - Or list commands, one per line, to run instead. The repo rules still decide what a PR needs.
-- local_review: none
-  - none, autoreview, or clawsweeper. See the repo's docs/reference/pull-request-review-flow.md.
-  - Both tools send the diff to a model service. Choose one only if that is fine for you.
+- local_review: clawsweeper
+  - clawsweeper (recommended), autoreview, or none. See the repo's docs/reference/pull-request-review-flow.md.
+  - clawsweeper runs the public ClawSweeper source checkout in `clawsweeper/` in this workspace with your own Codex login, on the committed change, before anything goes public. Setup walks you through it.
+  - Both tools send the change to a model service and use your model quota. Choose none only on purpose; setup records why here.
+- clawsweeper_runner: codex
+  - codex (default) or openclaw. Only used when local_review is clawsweeper.
+  - codex uses the Codex CLI with your own login. openclaw uses ClawSweeper's OpenClaw runner (`CLAWSWEEPER_RUNNER=openclaw`): your installed OpenClaw with a model provider key that you put in the environment yourself. It needs an API-provider model; a claude-cli model fails ClawSweeper's checkout inspection.
+- clawsweeper_model: <blank>
+  - Only for the openclaw runner: the model as `provider/model`, for example `openrouter/<model-name>`. Leave blank for codex.
+  - Not a key. The agent never asks for, reads or stores provider keys.
+- local_review_note: <blank>
+  - Setup writes here when and why you opted out of clawsweeper, if you did.
+- review_target: no-must-fix
+  - When the local review loop is done. `no-must-fix`: a complete, verified ClawSweeper run at the current head with no P0 or P1 finding, no "patch is incorrect" and no security concern.
+  - Optional rating floor: `no-must-fix, rating B` also needs an overall rating of B or better (S, A, B, C, D, F). Ratings are review signals, not merge targets.
+- review_max_rounds: 3
+  - Most local review rounds per contribution before the agent stops and asks you.
 
 ## Pull requests
 
 - open_pr_as: ready
   - ready or draft. The repo asks for a ready PR once the required builds and focused proof pass.
+  - Hosted ClawSweeper reviews a PR automatically once, when it opens ready or a draft is marked ready. The agent opens ready only after the local review loop met review_target at that head.
   - Either way, opening the PR is a separate OK from you.
 
 ## Database

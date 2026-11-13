@@ -1,6 +1,6 @@
 # First-run setup
 
-Use these instructions only while this Template's local preferences are not yet initialized. Setup is done when settings.md exists with no `<...>` left in a required line, the database self-test passed, the exec approvals step is confirmed, and the owner has removed this file ("Finish setup" below). Until the owner removes it, OpenClaw keeps showing this file.
+Use these instructions only while this Template's local preferences are not yet initialized. Setup is done when settings.md exists with no `<...>` left in a required line, the database self-test passed, the exec approvals step is confirmed, local review is set up or the opt-out is recorded, and the owner has removed this file ("Finish setup" below). Until the owner removes it, OpenClaw keeps showing this file.
 
 1. Read the existing workspace and user context. Reuse facts already supplied.
 2. Ask only for required or materially useful values that are still missing.
@@ -18,6 +18,7 @@ Tell the owner, in a few lines, before any question:
 - Every push, PR, issue, comment, edit, review request, CI rerun and fork needs their yes, each time, for the exact command and head SHA shown.
 - The OpenClaw checkout and its dependencies take several GB in this agent's workspace. `openclaw backup create` includes workspaces unless they pass `--no-include-workspace`.
 - The loop is long and strict and needs a strong model.
+- Before anything goes public, the agent reviews its own committed change with a local ClawSweeper, the same reviewer OpenClaw runs on PRs. Setup offers to install it in this workspace (about 1 GB with dependencies). It runs on their own Codex login by default, or through their installed OpenClaw with an API-provider model they choose, so every review round uses their model quota.
 
 ## Database location
 
@@ -25,18 +26,22 @@ The database is one file at `db_path` (default `~/openclaw-contributor.db`), out
 
 ## Questions
 
-- **Upgrade** (first): did the owner use 0.1.x of this Template? If yes, do "Upgrade from 0.1.x" below before "Database".
+- **Upgrade** (first): did the owner use an earlier version of this Template? If yes, do "Upgrade from 0.1.x or 0.2.x" below before "Database".
 - **Your fork** (`fork_repo`): required, text, `owner/repo`. If the owner has no fork yet, creating one is an owner-gated step: ask before running `gh repo fork`.
-- **Fork remote name** (`fork_remote`): required, text, default `origin` when the checkout is cloned from the fork.
+- **Fork remote name** (`fork_remote`): required, text, default `fork`. Not `origin`: that name stays with openclaw/openclaw (see "Checkout").
 - **Areas of interest** (`areas`): required, text, up to 300 characters. Parts of OpenClaw the owner wants to work on.
 - **Gate command override** (`gate_commands`): optional, multiline text. Default blank: use the repo's own rules.
-- **Local review** (`local_review`): optional, choose none, autoreview or clawsweeper, default none.
+- **Local review** (`local_review`): optional, choose clawsweeper, autoreview or none, default clawsweeper. Recommend clawsweeper. If the owner picks anything else, ask why in one line and record the answer and date in `local_review_note`; that is the explicit opt-out.
+- **ClawSweeper runner** (`clawsweeper_runner`): only when `local_review` is clawsweeper. Choose codex or openclaw, default codex. Ask which they have: a Codex CLI login, or an API key for a model provider that OpenClaw supports. Do not recommend claude-cli for openclaw (see "Local ClawSweeper").
+- **ClawSweeper model** (`clawsweeper_model`): only for openclaw. Required, text, `provider/model`. Refuse a `claude-cli/...` value. Never ask for a key.
+- **Review target** (`review_target`): optional, default `no-must-fix`. Offer a rating floor (for example `no-must-fix, rating B`) and say ratings are review signals, not merge targets.
+- **Review rounds** (`review_max_rounds`): optional, number 1 to 5, default 3.
 - **PR mode** (`open_pr_as`): optional, choose ready or draft, default ready.
 - **Time zone** (`time_zone`): optional, IANA time zone.
 
 ## Local preference files
 
-- `settings.md` from `templates/settings.md`. Fill in the answers. Keep `upstream_repo: openclaw/openclaw` (fixed), and `upstream_remote: upstream`, `base_branch: main`, `checkout_dir: openclaw` and `db_path` unless the owner asks otherwise.
+- `settings.md` from `templates/settings.md`. Fill in the answers. Keep `upstream_repo: openclaw/openclaw` (fixed), and `upstream_remote: origin`, `base_branch: main`, `checkout_dir: openclaw` and `db_path` unless the owner asks otherwise.
 - `tracker.md` from `templates/tracker.md`. It is a generated view. Never edit it.
 - Create an empty `evidence/` folder.
 
@@ -76,6 +81,7 @@ openclaw exec-policy show --agent <agent-id>
 The `chmod` makes the packaged SQL steps read-only, so they cannot be rewritten before they run. Tell the owner:
 - Each packaged database command, for example `sqlite3 -bail -json "<db_path>" ".read references/sql/ask-approval.sql"`, asks once. Choose "Always allow here" for it: that approval covers only that exact command in this folder, so any other sqlite3 command still asks.
 - They may also choose "Always allow here" for repeated local commands they are comfortable with, such as `git status` or a focused `pnpm test` in the checkout.
+- Local ClawSweeper: each review round runs `pnpm run review -- --local-range ...` (with the `CLAWSWEEPER_RUNNER=openclaw CLAWSWEEPER_OPENCLAW_MODEL=...` prefix for the OpenClaw runner) in `<workspace>/clawsweeper` (or `--local-only --item-number <n>` for an issue or their own PR) and spends model quota. Approving each round once is the default and keeps the cost visible. "Always allow here" is fine only for that exact local review command. Never choose it, and never approve at all, for ClawSweeper `apply-artifacts`, `apply-decisions`, or any command that posts, labels, merges or changes GitHub; the agent never runs those.
 - Never choose "Always allow" for `git push`, any `gh pr`, `gh issue`, `gh repo fork`, `gh run rerun`, a `gh api` call that writes, or any sqlite3 command that is not a packaged step. Approve those once, after the agent's own approval request in chat.
 
 Approval prompts show only where an approver can see them: the Control UI chat for this agent, or a chat channel with exec approvals. A turn started from `openclaw agent` in a terminal is headless, and OpenClaw denies a command that needs approval there ("Headless runs cannot wait for interactive exec approval"). Tell the owner to work with this agent in the Control UI or an approval-capable chat.
@@ -84,29 +90,87 @@ Approval prompts show only where an approver can see them: the Control UI chat f
 
 If `checkout_dir` does not exist in the workspace, propose one of these and wait for the owner's OK. The clone downloads a lot.
 
-- From the fork: `gh repo clone <fork_repo> <checkout_dir>`, then `git -C <checkout_dir> remote add upstream https://github.com/openclaw/openclaw.git` if gh did not add it.
-- From upstream: `git clone https://github.com/openclaw/openclaw.git <checkout_dir>`, rename its remote to `upstream`, then add the fork as `fork_remote`.
+Clone from upstream, so openclaw/openclaw is the `origin` remote, then add the fork:
+
+```sh
+git clone https://github.com/openclaw/openclaw.git <checkout_dir>
+git -C <checkout_dir> remote add <fork_remote> https://github.com/<fork_repo>.git
+```
+
+Keep openclaw/openclaw as `origin`. The repo's own scripts default to `origin/main` (for example `pnpm changed:lanes`, `pnpm check:changed` and `scripts/pr`), and they fail with "git rev-parse ... origin/main" when openclaw/openclaw has another name (checked on a live run). Do not clone the fork with `gh repo clone`: it names the fork `origin`. Do not rename remotes of an existing partial (`--filter`) clone either: git leaves the old remote's promisor settings behind and the rename then fails.
 
 Then:
 
-1. `git -C <checkout_dir> remote -v`. upstream must point at openclaw/openclaw and `fork_remote` at the fork. Fix names only with the owner's OK.
-2. `git -C <checkout_dir> fetch upstream`.
+1. `git -C <checkout_dir> remote -v`. `origin` must point at openclaw/openclaw and `fork_remote` at the fork. Fix names only with the owner's OK.
+2. `git -C <checkout_dir> fetch origin`.
 3. Read CONTRIBUTING.md at upstream main for the install command and Node version. Ask before the first install, then run it in the background with process and a log under `evidence/setup/`.
 
 If the owner already has a checkout somewhere else, explain that this agent's file tools only reach its own workspace, and that a separate checkout here keeps its dependencies separate, as CONTRIBUTING.md asks.
 
+Commit signing: run `git -C <checkout_dir> config --get commit.gpgsign` and tell the owner the result. If it prints `true`, commits will be signed with their setup, and the agent stops when signing fails instead of committing unsigned. The agent never changes git config.
+
+## Local ClawSweeper
+
+Do this when `local_review` is `clawsweeper`. It follows the public source-checkout setup in OpenClaw's review flow doc and ClawSweeper's local skill (`.agents/skills/local-clawsweeper-review/SKILL.md` in openclaw/clawsweeper). It is a source workflow, not an npm or Homebrew package. The checkout lives in this workspace, at `clawsweeper/`, so the agent's file tools can read its guide and reports.
+
+First ask which runner (`clawsweeper_runner`): **codex** (default) or **openclaw**. Record the answer in settings.md. The Codex path is below, unchanged. For openclaw, do "OpenClaw runner" after step 4 and skip steps 1, 5 and 6.
+
+Tell the owner first, in a few lines:
+- Codex runner: it needs the Codex CLI on the Gateway host, logged in with their own account. Each review round sends the change and the issue or PR text to that model service and uses their quota; a full review takes several minutes.
+- The checkout and its dependencies take about 1 GB in this workspace.
+- It only reviews. The agent runs only the local review commands and never ClawSweeper's apply, posting or merge commands.
+- They can skip it. Then set `local_review` to autoreview or none and record why in `local_review_note`; PR Evidence will name the gap.
+
+Then, each step with the owner's OK, from the workspace root:
+
+1. `codex --version`. If it is missing, ask the owner to install the Codex CLI themselves, the way OpenAI's Codex docs describe, then wait.
+2. Propose the clone and wait for the OK: `git clone https://github.com/openclaw/clawsweeper.git clawsweeper`.
+3. `corepack enable`. This changes the pnpm shims of the Node install, so offer that the owner runs it in a terminal instead.
+4. With the exec workdir set to `<workspace>/clawsweeper`: `pnpm install`, then `pnpm run build:all`. Run them in the background with process, with logs under `<workspace>/evidence/setup/`. Always run ClawSweeper's pnpm commands from inside `clawsweeper/`: it pins its pnpm version, and `pnpm --dir clawsweeper ...` from the workspace root fails under corepack with `ERR_PNPM_BAD_PM_VERSION`.
+5. In the same workdir: `pnpm run codex:local:check -- --diagnostics`. It checks the Codex binary and login without a model request. It does not prove model access.
+6. If it says Codex is not logged in, ask the owner to log in themselves in a terminal on the Gateway host, then run step 5 again:
+
+   ```sh
+   codex login --device-auth
+   ```
+
+   Never run the login for them, and never ask for, read or print an API key or the Codex auth file.
+7. Record the ClawSweeper commit: `git -C clawsweeper rev-parse --short HEAD`. Tell the owner the result of step 5.
+
+### OpenClaw runner
+
+ClawSweeper's upstream-supported second runner. It uses the OpenClaw install on the Gateway host and a model provider the owner already has. Facts below come from ClawSweeper's source (`src/agent-runner.ts`, `src/openclaw-process.ts`, `docs/operator-configuration.md`), read 2026-11-13 at clawsweeper 0319529; the loop file has the longer list.
+
+Tell the owner:
+- It needs `openclaw` on the Gateway host (`CLAWSWEEPER_OPENCLAW_BIN` names another binary if it is not on PATH), and a model as `provider/model` in `clawsweeper_model` (`CLAWSWEEPER_OPENCLAW_MODEL`).
+- ClawSweeper starts that OpenClaw with a fresh state directory and its own config, so it does not use the owner's OpenClaw config or auth profiles. The provider key must be in the environment the review command runs in, under the provider's usual name, for example `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY` or `OPENROUTER_API_KEY`. The owner sets it himself, in the Gateway host's environment. The agent never receives, reads, prints or stores it, never reads auth files, and never passes it through exec.
+- The review turn runs with sandbox off and full exec in the checkout, with unrestricted network. GitHub tokens are not passed to it.
+- Limit: a `claude-cli/...` model does not work. ClawSweeper first makes the model read a tracked file and checks the session transcript for that read, and claude-cli turns do not save tool calls there, so the run stops with "OpenClaw checkout inspection did not read the exact challenged path." Use an API-provider model (checked 2026-11-13 on openclaw a846d93c689 and clawsweeper 0319529).
+
+Checks:
+1. `openclaw --version` (or `<CLAWSWEEPER_OPENCLAW_BIN> --version`) must print a version. Record it.
+2. There is no diagnostics command for this route: `codex:local:check` only checks Codex, and ClawSweeper has no check for the OpenClaw runner that avoids a model call. The first model call is the review itself, which begins with a small read challenge. So the first real round is also the smoke check: say that to the owner, and if the round stops at the inspection, record it as a failed round and tell the owner the exact error line.
+3. Ask the owner to confirm, without telling the agent the value, that the provider key for `clawsweeper_model` is set in the Gateway host environment.
+
+The first real review happens in the loop, on a committed change. If a step fails, tell the owner the exact error line. If they choose to skip ClawSweeper, record it in settings.md as above.
+
 ## Setup checks
 
 1. Confirm the "Exec approvals" step was done: the pasted `exec-policy show` output shows ask on miss for this agent.
-2. Tell the owner the gated steps in one short list: push, force-push, open a PR, open an issue, comment, edit a PR, mark ready, request review, resolve a conversation, rerun CI, create a fork, close or reopen. Each needs their yes, every time.
-3. Then ask what to work on: an issue link, a bug, or "find candidates".
+2. Confirm local review: either "Local ClawSweeper" ended with a passing diagnostics check (codex runner) or the `openclaw --version` check with a recorded model (openclaw runner), or settings.md records the owner's opt-out in `local_review_note`.
+3. Tell the owner the gated steps in one short list: push, force-push, open a PR, open an issue, comment, edit a PR, mark ready, request review, resolve a conversation, rerun CI, create a fork, close or reopen. Each needs their yes, every time.
+4. Then ask what to work on: an issue link, a bug, or "find candidates".
 
-## Upgrade from 0.1.x
+## Upgrade from 0.1.x or 0.2.x
 
-Templates have no update command: 0.2.0 is a new agent. The database schema did not change (still version 1).
+Templates have no update command: 0.3.0 is a new agent. The database schema did not change (still version 1).
+
+From 0.2.x: the database already sits at `db_path` outside the workspace, so the new agent can use the same file. Ask the owner to copy their old `settings.md` into this workspace, then add the new lines from `templates/settings.md` (`clawsweeper_runner`, `clawsweeper_model`, `local_review_note`, `review_target`, `review_max_rounds`) and ask the "Local review" questions again, since the recommended default is now clawsweeper. Set `upstream_remote: origin` and `fork_remote: fork` for the fresh clone ("Checkout"). Then do "Local ClawSweeper".
+
+From 0.1.x:
 
 1. Ask the owner to copy, in a terminal, the old agent's `contributions.db` (in the old workspace, usually the folder they gave `--workspace`) to `db_path`, and keep the original as their backup.
-2. Copy `settings.md` from the old workspace too, then add the new `db_path` line from `templates/settings.md`.
+2. Copy `settings.md` from the old workspace too, then add the new lines from `templates/settings.md` (`db_path`, `local_review_note`, `review_target`, `review_max_rounds`).
 3. Approvals in the old database that were asked without a head SHA can no longer be used for push, force-push, open-pr, edit-pr or ready-for-review. Ask again for those steps.
 4. The old checkout can stay where it is, but this agent's file tools reach only its own workspace. Clone a fresh checkout here as "Checkout" says.
 

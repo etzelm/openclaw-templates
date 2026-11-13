@@ -4,7 +4,7 @@
 
 Read or confirm:
 
-- settings.md: upstream repo, database path, checkout folder, remotes, base branch, areas of interest, gate command override, PR mode, local review choice
+- settings.md: upstream repo, database path, checkout folder, remotes, base branch, areas of interest, gate command override, PR mode, local review choice, review target and round cap
 - the database at db_path: candidates considered, contributions, evidence, owner approvals and status history, read through the packaged SQL steps
 - The repo's rule files at current upstream main: CONTRIBUTING.md, root AGENTS.md, the nearest AGENTS.md for each path you touch, `.github/pull_request_template.md`, `.github/ISSUE_TEMPLATE/`, and `docs/reference/pull-request-review-flow.md`
 
@@ -17,6 +17,7 @@ The repo rules decide how the work is done and what a PR needs. The owner gates 
 - The database is one SQLite file at `db_path` (default `~/openclaw-contributor.db`), outside the workspace. exec on the Gateway host refuses `sqlite3` on databases inside the OpenClaw state folder, where a default Add puts this workspace; a database in the home folder works with a default Add.
 - git and gh use the owner's existing login. The agent never handles tokens.
 - Long commands (installs, test suites, builds) run in the background with process and write their output to a log under `evidence/<slug>/`. Poll the log. Do not pull whole logs into the conversation.
+- Local ClawSweeper, when chosen, is a source checkout at `clawsweeper/` in this workspace and runs on the owner's Codex login. Only its local review modes and its diagnostics check run; never its apply, posting or merge commands. Each round sends the change to the model service and uses the owner's quota.
 - There are no scheduled automations. The owner starts each task and each review check.
 - Follow references/contribution-loop.md for the exact phases, the database steps, the approval protocol and the stop rules.
 
@@ -31,24 +32,24 @@ blocks safe or useful progress; otherwise state assumptions and begin.
 4. Scope proposal: write `evidence/<slug>/scope.md` from templates/scope-proposal.md with the problem, the smallest fix, the proof plan and the gates, and wait for the owner's OK
 5. Branch from current upstream main in the checkout, and record the base SHA
 6. Red: reproduce the bug end to end on the base and commit nothing until a failing test or repro shows the reported failure
-7. Green: make the smallest complete fix, run the red proof again to green, and run the tests of every consumer of what changed
+7. Green: make the smallest complete fix, run the red proof again to green, revert the fix once to see the test fail again (mutation check), and run the tests of every consumer of what changed
 8. Gates: run the repo's required checks for the touched paths, or the override in settings.md, and record each result
-9. Simplify: run the repo's pr-simplify pass on the diff, rerun the affected proof, then run the local review route the owner chose
-10. Commit locally, then draft the PR title and body in `evidence/<slug>/pr-body.md` from the repo's PR template
+9. Simplify, commit (signed when the owner's config signs), then run the local review loop: local ClawSweeper on the committed range, fix must-fix findings with the same proof steps, a new run for each new head, until `review_target` is met, a maintainer decision is needed, or `review_max_rounds` is reached
+10. Draft the PR title and body in `evidence/<slug>/pr-body.md` from the repo's PR template, with the local review reported in the review flow doc's terms
 11. Owner gate: ask for one outward step at a time with templates/approval-request.md, act only on a granted approval for the current head, and verify the result on GitHub
-12. Review and CI loop: re-check the live head, classify every failing check with proof, fix findings with the same red, green, gates and simplify steps, and ask again before each push, body edit or review request
+12. Review and CI loop: re-check the live head, classify every failing check with proof, fix findings with the same red, green, gates and simplify steps, and ask again before each push, body edit or review request. Ask for a hosted re-review only when fixes are batched, nothing is pending for the head, and a local round passed
 13. Handoff: regenerate tracker.md, write `evidence/<slug>/handoff.md` from templates/handoff.md, and end with a short summary
 
 ## Example setting
 
 **Request:** Take issue #1234 in the Telegram channel and get it to a PR.
 
-**Expected outcome:** The agent reads the issue and the repo rules at current main, finds no duplicate or earlier decision, and sends a short scope proposal. After the owner's OK it branches from upstream main, adds a test that fails the way the issue describes, fixes it, shows the test green, runs the repo's gates and the simplify pass, and commits locally. It drafts the PR body in the repo template with a `Closes #1234` line and the evidence. Then it asks to push, and after that push is done and verified, asks to open the PR.
+**Expected outcome:** The agent reads the issue and the repo rules at current main, finds no duplicate or earlier decision, and sends a short scope proposal. After the owner's OK it branches from upstream main, adds a test that fails the way the issue describes, fixes it, shows the test green, reverts the fix once to see the test fail again, runs the repo's gates and the simplify pass, commits locally, and reviews the commit with local ClawSweeper until no must-fix finding is left. It drafts the PR body in the repo template with a `Closes #1234` line and the evidence. Then it asks to push, and after that push is done and verified, asks to open the PR.
 
 ## Standard deliverables
 
 - A local branch from current upstream main with one focused commit or a short series
-- `evidence/<slug>/`: scope.md, red and green logs, gate logs, the simplify note, pr-body.md, approval requests and handoff.md
+- `evidence/<slug>/`: scope.md, red, green and mutation logs, gate logs, the simplify note, one ClawSweeper log per review round, pr-body.md, approval requests and handoff.md
 - Database rows for every candidate, contribution, evidence item, approval and status change
 - tracker.md regenerated from the database
 - A short status summary that names the next owner decision
@@ -56,7 +57,8 @@ blocks safe or useful progress; otherwise state assumptions and begin.
 ## Done when
 
 - The candidate has a recorded decision, and a stop rule ended the work or a contribution row exists
-- Red on the base, green on the head and every gate result are recorded with commands, exit codes and commit SHAs, or the gap is named
+- Red on the base, green on the head, the mutation check and every gate result are recorded with commands, exit codes and commit SHAs, or the gap is named
+- Each local review round is recorded with base, head, ratings and remaining findings, and the last round covers the current head, or the gap is named
 - The PR body file follows the current repo template and passes the checks in references/upstream-text.md
 - Every outward step has a granted, used approval row for the head it touched, and its result was verified on GitHub
 - tracker.md was regenerated and the handoff names the next decision and who makes it

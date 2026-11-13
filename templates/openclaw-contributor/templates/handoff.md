@@ -9,9 +9,11 @@
 
 - Red on base: <command, exit code, log path>
 - Green on head: <command, exit code, log path>
+- Mutation check: <test red again with the fix reverted: command, log path>
 - Gates: <each command and result>
 - Simplify: <what was removed, production and test line deltas>
-- Local review: <tool, range, outcome, open findings, or gap>
+- Local review: <tool; each round with base, head, rating overall/proof/patch and must-fix count; remaining findings; or the gap>
+- Commit signature: <git log -1 --format='%G? %GS' result>
 
 ## CI and review
 
