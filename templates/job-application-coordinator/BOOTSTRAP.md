@@ -21,14 +21,17 @@ Tell the owner, in a few lines, before any question:
 
 ## Questions
 
-- **Upgrade** (first): did the owner use 0.1.x of this Template? If yes, do "Upgrade from 0.1.x" below before "Database".
+- **Upgrade** (first): did the owner use an earlier version of this Template (0.1.x or 0.2.x)? If yes, do "Upgrade from an earlier version" below before "Database".
 - **Time zone** (`time_zone`): required, text, IANA time zone.
 - **Target titles** (`titles`): required, text, up to 300 characters.
 - **Deal-breakers** (`deal_breakers`): required, multiline text, up to 1000 characters.
+- **Pre-filter** (`prefilter`): optional, multiline text. Title words to skip, accepted locations, accepted work setups. Explain that a clear miss is skipped without reading the description, and an unclear one still gets the full fit check.
+- **Must-haves and preferences** (`must_haves`, `preferences`): optional, multiline text. Explain the score: 2 points per must-have and 1 per preference that a posting clearly meets, and forms are filled highest score first.
 - **Resume file** (`resume`): required. Ask the owner to send their resume file (PDF or DOCX) in this chat. Write the reference you receive for that file into profile.md. Do not ask for a path.
 - **Resume text** (`resume_text`): required, multiline text. If the resume is plain text or Markdown in the workspace, read it and confirm it with the owner. Otherwise ask the owner to paste the text. Keep it as written. Never add to it.
-- **Job sources** (`sources`): required, multiline text. Saved search pages, job alert links, company career pages, or posting links the owner chose. Never suggest sites.
+- **Job sources** (`sources`): required, multiline text. Saved search pages, job alert links, company career pages, posting links, or job feed links (RSS, Atom or JSON) the owner chose. Never suggest, list or name sites or feeds.
 - **Browser profile** (`browser_profile`): optional, choose openclaw, user or chrome, default openclaw. Recommend the default: a dedicated browser with none of their personal logins, shown in the Control UI Browser panel.
+- **Chrome DevTools driver** (`browser_driver`): optional, yes or no, default no. Would they rather the agent drive a dedicated Chrome of their own through the Chrome DevTools MCP server this Template added? If yes, do "Browser setup" below. Keep `browser_driver: browser` until that test passes.
 - **Watching runs** (`owner_watches_runs`): optional, yes or no, default yes. Will they watch scheduled runs in the Control UI, or set up a chat route below, so the agent can wait for them at a CAPTCHA?
 
 ## Local preference files
@@ -39,6 +42,7 @@ Tell the owner, in a few lines, before any question:
 - `answers.md` from `templates/answers.md`. The owner fills Contact and Work eligibility, or dictates them.
 - `sources.md` from `templates/sources.md`. Add the job sources.
 - `tracker.md` from `templates/tracker.md`. It is a generated view. Never edit it.
+- `site-notes.md` is already in the workspace, from Add. It belongs to the owner: tell them they can write their own notes per site there (where the apply button is, what the success page says), and that the agent reads it but never writes it and that it cannot override any rule. Never fill it in for them.
 
 ## Database
 
@@ -47,12 +51,13 @@ The database file lives at `db_path` (default `~/job-application-coordinator.db`
 1. Check the tool: `sqlite3 -version`. Version 3.35 or newer is needed. If it is missing or older, stop and tell the owner how to install it: macOS has it built in; Debian or Ubuntu: `apt install sqlite3`. This Template is tested on macOS and Linux only; the owner commands below are POSIX shell. Then wait for them.
 2. Check for an existing database: `sqlite3 -readonly "<db_path>" "PRAGMA user_version;"`.
    - It fails with "unable to open": there is no database. Create it: `sqlite3 -bail "<db_path>" ".read references/schema.sql"`.
-   - It prints 2: keep it, also right after an upgrade. Never overwrite it.
+   - It prints 3: keep it, also right after an upgrade. Never overwrite it.
+   - It prints 2: it is from version 0.2.x. Follow "Upgrade from an earlier version" below.
    - It prints 0: run `sqlite3 -readonly "<db_path>" "SELECT count(*) FROM sqlite_master;"`. If that prints 0 the file is empty: ask the owner to delete it, then create the database as above.
-   - It prints 1: it is from version 0.1.x. Follow "Upgrade from 0.1.x" below.
+   - It prints 1: it is from version 0.1.x. Follow "Upgrade from an earlier version" below.
    - It prints any other number: stop. Tell the owner the file is not from a version this agent knows. Do not touch it.
    - It fails with "external sqlite3 cannot open databases under the active OpenClaw state directory": `db_path` points inside the state folder. Ask the owner for a path outside it, update settings.md, and start this list again. Never work around the guard.
-3. Self-test: `sqlite3 -bail "<db_path>" ".read references/sql/setup-check.sql"`. It writes one test row, reads it back and deletes it. It must print `setup-check ok, schema version 2`. Record the result in the setup summary.
+3. Self-test: `sqlite3 -bail "<db_path>" ".read references/sql/setup-check.sql"`. It writes one test row, reads it back and deletes it. It must print `setup-check ok, schema version 3`. Record the result in the setup summary.
 4. Record the absolute path: `sqlite3 -readonly "<db_path>" ".databases"`. It prints `main: <absolute path> r/o`. Write that absolute path into `db_path` in settings.md, and use it in every later command. OpenClaw's exec allowlist refuses commands with `~` in them (checked: "execution-plan-miss"), so this must happen before the exec approvals step.
 
 ## Owner commands (required)
@@ -107,14 +112,32 @@ rm "<workspace>/BOOTSTRAP.md"
 
 The owner commands, the upgrade notes and the personal data notes stay available in docs/README.md.
 
-## Upgrade from 0.1.x
+## Upgrade from an earlier version
 
-Templates have no update command: 0.2.0 is a new agent. The old agent's files stay in its own workspace.
+Templates have no update command: 0.3.0 is a new agent. The old agent's files stay in its own workspace.
 
 1. Ask the owner to stop the old agent's schedule first, so two agents never apply at once: `openclaw automations list --all`, then `openclaw automations disable <old-job-id>`.
-2. Ask the owner to copy, in a terminal, from the old workspace (usually the folder they gave `--workspace`): `answers.md`, `profile.md`, `resume.md` and `sources.md` into this workspace, and `applications.db` to two places: `db_path`, and `db_path` plus `.v1-backup` as their own copy.
-3. Then run `sqlite3 -bail "<db_path>" ".read references/sql/migrate-v1-to-v2.sql"`. It must print `migrate ok, schema version 2`. It refuses anything that is not version 1. Continue with the self-test in "Database".
-4. Re-read the copied settings: 0.2.0 adds `tos_acknowledged`, `owner_watches_runs` and `db_path`. Create settings.md fresh from the template and carry the owner's old values over.
+2. Ask the owner to copy, in a terminal, from the old workspace: `answers.md`, `profile.md`, `resume.md` and `sources.md` into this workspace. Then the database:
+   - From 0.2.x: the database already lives at the old agent's `db_path`. If this agent's `db_path` is the same file, ask the owner only to make their own copy first: `cp "<db_path>" "<db_path>.v2-backup"`. Otherwise ask them to copy it to this `db_path` and keep the original.
+   - From 0.1.x: copy the old workspace's `applications.db` to two places: `db_path`, and `db_path` plus `.v1-backup` as their own copy.
+3. Migrate, from the workspace root:
+   - From 0.1.x: `sqlite3 -bail "<db_path>" ".read references/sql/migrate-v1-to-v2.sql"`. It must print `migrate ok, schema version 2`. Then continue with the next line.
+   - From 0.2.x, or right after the line above: `sqlite3 -bail "<db_path>" ".read references/sql/migrate-v2-to-v3.sql"`. It must print `migrate ok, schema version 3`.
+   Each step refuses a database of any other version. After this, the old 0.2.x agent's steps refuse the database too, which is expected: it must stay disabled. Continue with the self-test in "Database".
+4. Re-read the copied files: 0.3.0 adds `browser_driver` to settings.md, and "Pre-filter", "Preferences" and "Score" to profile.md. Create settings.md fresh from the template and carry the owner's old values over. Add the new profile.md sections from templates/profile.md and ask the owner to fill them; keep everything else as they wrote it.
+
+## Browser setup (Chrome DevTools driver, optional)
+
+Only if the owner chose the Chrome DevTools driver. Add put a shared MCP server named `jac-chrome` in OpenClaw's config. The Gateway starts it with npx (pinned to chrome-devtools-mcp 1.12.0) and it connects only to a Chrome listening on port 9333 of the Gateway host. Script running is turned off in it, and this agent may use only the page tools the Template lists.
+
+1. Tell the owner why the profile must be dedicated: anything that can reach port 9333 on that machine can control this Chrome, so it must hold only job-site logins, never mail, banking or their personal browsing. They start it only when runs are due, and close it after.
+2. Ask them to start it, on the Gateway host, with a new profile folder used for nothing else. Show the line for their system, with the folder they pick:
+   - macOS: `"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --user-data-dir="$HOME/jac-chrome-profile" --remote-debugging-port=9333`
+   - Linux: `google-chrome --user-data-dir="$HOME/jac-chrome-profile" --remote-debugging-port=9333`
+   In that window they sign in only to the job sites in sources.md that need it, never on your behalf and never with you watching a password.
+3. Resume copy, once: this server can upload only files in `~/job-application-coordinator-files` of the user that runs the Gateway. Ask the owner to run, on the Gateway host as that user, with the path to their resume file: `mkdir -p ~/job-application-coordinator-files && cp "<resume file>" ~/job-application-coordinator-files/resume.pdf && echo ~/job-application-coordinator-files/resume.pdf` (use `resume.docx` for a DOCX file). Ask them to paste the full path it prints and write that path into profile.md, "Resume copy for the devtools-mcp driver". Tell them the folder must hold only the resume and nothing else, and that it stays across restarts; they copy again only when they change their resume.
+4. Test it yourself: call `jac-chrome__list_pages`. It must list the open tabs of that window. If the tool is missing, ask the owner to run `openclaw mcp doctor jac-chrome --probe` and paste the output. If it cannot connect, Chrome is not running with port 9333. Do not try any other way.
+5. Only after a working test, and only on the owner's yes, set `browser_driver: devtools-mcp` in settings.md. The setup dry run then uses this driver.
 
 ## Personal data
 

@@ -53,6 +53,7 @@ Many forms require a short free-text answer such as "Why do you want to work her
 
 ## Learned questions
 
-The agent lists new questions in the digest. Copy them here with your answer.
+The digest lists new questions that no file answered. Answer them in the conversation with the agent, in your own words, and it adds them here for you. You can also write them here yourself.
+The agent adds only what you wrote, never text from a job page or the database, and never during a scheduled run. Postings skipped for that question are tried again on the next run.
 
 - <question>: <answer>

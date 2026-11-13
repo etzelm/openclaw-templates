@@ -1,9 +1,9 @@
--- Regenerate tracker.md from the database at the end of every run. No input. Overwrites tracker.md.
+-- Regenerate tracker.md from the database at the end of every run: one row per application, then the funnel per source and overall. No input. Overwrites tracker.md.
 -- Run from the workspace root:
 --   sqlite3 -bail <db_path> ".read references/sql/tracker.sql"
 .bail on
 PRAGMA foreign_keys = ON;
-CREATE TEMP TABLE schema_guard (v INTEGER CHECK (v = 2));
+CREATE TEMP TABLE schema_guard (v INTEGER CHECK (v = 3));
 INSERT INTO temp.schema_guard SELECT user_version FROM pragma_user_version;
 
 .headers on
@@ -20,6 +20,7 @@ SELECT
   replace(replace(p.title, '|', '/'), char(10), ' ') AS title,
   p.link AS link,
   replace(replace(p.fit_reason, '|', '/'), char(10), ' ') AS "fit reason",
+  coalesce(p.score, '') AS score,
   coalesce((SELECT group_concat(replace(replace(x.field_label, '|', '/'), char(10), ' '), '; ')
             FROM answers AS x WHERE x.application_id = a.id AND x.flagged = 1), '') AS "flagged answers",
   a.status AS status,
@@ -31,6 +32,39 @@ SELECT
 FROM applications AS a
 JOIN postings AS p ON p.id = a.posting_id
 ORDER BY a.day DESC, a.id DESC;
+.print ""
+.print "## Funnel"
+.print ""
+.print "Counts from the whole history, per source and overall. found: postings saved. pre-filtered: clear misses skipped before the description was read. fit: passed the fit check. filled: a form filled to the last screen (dry run, waiting for the owner, or sent). applied: sent and confirmed, or later moved to interviewing or offer. interviewing and offer: set by the owner."
+.print ""
+WITH f AS (
+  SELECT
+    CASE WHEN p.source = '' THEN '(none)' ELSE replace(replace(p.source, '|', '/'), char(10), ' ') END AS source,
+    p.stage = 'prefiltered' AS prefiltered,
+    p.stage = 'fit' AS fit,
+    EXISTS (SELECT 1 FROM applications AS a JOIN status_events AS e ON e.application_id = a.id
+            WHERE a.posting_id = p.id AND e.to_status IN ('dry-run', 'ready-for-owner-review', 'applied')) AS filled,
+    EXISTS (SELECT 1 FROM applications AS a JOIN status_events AS e ON e.application_id = a.id
+            WHERE a.posting_id = p.id
+              AND ((e.to_status = 'applied' AND e.note <> 'submit clicked, unconfirmed')
+                   OR e.to_status IN ('interviewing', 'offer-review'))) AS applied,
+    EXISTS (SELECT 1 FROM applications AS a JOIN status_events AS e ON e.application_id = a.id
+            WHERE a.posting_id = p.id AND e.to_status IN ('interviewing', 'offer-review')) AS interviewing,
+    EXISTS (SELECT 1 FROM applications AS a JOIN status_events AS e ON e.application_id = a.id
+            WHERE a.posting_id = p.id AND e.to_status = 'offer-review') AS offer
+  FROM postings AS p
+  WHERE p.link <> 'setup-check://row'
+)
+SELECT source, found, "pre-filtered", fit, filled, applied, interviewing, offer FROM (
+  SELECT 0 AS o, source, count(*) AS found, sum(prefiltered) AS "pre-filtered", sum(fit) AS fit,
+         sum(filled) AS filled, sum(applied) AS applied, sum(interviewing) AS interviewing, sum(offer) AS offer
+  FROM f GROUP BY source
+  UNION ALL
+  SELECT 1, 'all', count(*), coalesce(sum(prefiltered), 0), coalesce(sum(fit), 0), coalesce(sum(filled), 0),
+         coalesce(sum(applied), 0), coalesce(sum(interviewing), 0), coalesce(sum(offer), 0)
+  FROM f
+)
+ORDER BY o, source;
 .output stdout
 .mode list
 .headers off

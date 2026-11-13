@@ -1,7 +1,7 @@
 #!/bin/zsh
 # J14: a 0.1.x (schema 1) applications.db upgrades to schema 2 with the
-# packaged migrate step, keeps its rows, passes setup-check, and the
-# migrate step refuses to run twice.
+# packaged migrate step, keeps its rows, and the migrate step refuses to run
+# twice. 0.3.0: the chain continues with migrate-v2-to-v3, then setup-check.
 # Usage: jac-migrate.test.sh <new package dir> <old 0.1.x package dir>
 OLD="${2:?old package dir}"; OLD="${OLD:A}"
 source "${0:A:h}/lib.sh" "$1"
@@ -22,8 +22,10 @@ OUT="$(sqlite3 -bail "$DB" ".read references/sql/migrate-v1-to-v2.sql" 2>&1)"; R
 expect_has "migrate prints ok" "migrate ok, schema version 2"
 OUT="$(sqlite3 -bail "$DB" ".read references/sql/migrate-v1-to-v2.sql" 2>&1)"; RC=$?
 expect_fail "migrate refuses to run twice"
+OUT="$(sqlite3 -bail "$DB" ".read references/sql/migrate-v2-to-v3.sql" 2>&1)"; RC=$?
+expect_has "chain continues to version 3" "migrate ok, schema version 3"
 OUT="$(sqlite3 -bail "$DB" ".read references/sql/setup-check.sql" 2>&1)"; RC=$?
-expect_has "setup-check on migrated db" "setup-check ok, schema version 2"
+expect_has "setup-check on migrated db" "setup-check ok, schema version 3"
 step "$DB" cap-count '{"step":"cap-count","day":"2026-11-01"}'
 expect_has "old row keeps its day in the cap" '"cap_count":1'
 step "$DB" set-status '{"step":"set-status","application_id":1,"status":"closed","note":"","now":"2026-11-02T10:00:00Z"}'
@@ -32,11 +34,11 @@ expect_has "closing the old row keeps the count" '"cap_count":1'
 step "$DB" find-posting '{"step":"find-posting","company":"Old Co","title":"Engineer","link":"https://jobs.example.com/old"}'
 expect_has "old posting still found" "Old Co"
 
-# A fresh v2 database and a migrated one have the same columns and triggers.
+# A fresh v3 database and a migrated one have the same columns and triggers.
 FRESH="$SCRATCH/data/fresh.db"
 sqlite3 -bail "$FRESH" ".read references/schema.sql"
 cols() { sqlite3 "$1" "SELECT group_concat(name || ':' || type || ':' || \"notnull\" || ':' || coalesce(dflt_value,''), ',') FROM pragma_table_info('status_events');"; }
 trg() { sqlite3 "$1" "SELECT group_concat(name || '=' || replace(replace(sql, char(10), ' '), '  ', ' '), ';') FROM (SELECT name, sql FROM sqlite_master WHERE type IN ('trigger','index') AND sql IS NOT NULL ORDER BY name);"; }
-RC=0; [[ "$(cols "$DB")" == "$(cols "$FRESH")" ]] && ok "status_events columns match fresh v2" || { OUT="$(cols "$DB") vs $(cols "$FRESH")"; bad "columns"; }
-[[ "$(trg "$DB")" == "$(trg "$FRESH")" ]] && ok "triggers and indexes match fresh v2" || { OUT="differ"; bad "triggers"; }
+RC=0; [[ "$(cols "$DB")" == "$(cols "$FRESH")" ]] && ok "status_events columns match fresh v3" || { OUT="$(cols "$DB") vs $(cols "$FRESH")"; bad "columns"; }
+[[ "$(trg "$DB")" == "$(trg "$FRESH")" ]] && ok "triggers and indexes match fresh v3" || { OUT="differ"; bad "triggers"; }
 finish

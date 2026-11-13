@@ -8,7 +8,7 @@ sqlite3 -bail "$DB" ".read references/schema.sql" >/dev/null 2>&1 || { echo "FAI
 V="$(sqlite3 "$DB" 'PRAGMA user_version;')"
 D1=2026-11-10; D2=2026-11-11
 posting() {
-  step "$DB" save-posting '{"step":"save-posting","company":"Co '$1'","title":"Engineer","link":"https://jobs.example.com/'$1'","first_seen":"'$D1'T09:00:00Z"}'
+  step "$DB" save-posting '{"step":"save-posting","company":"Co '$1'","title":"Engineer","link":"https://jobs.example.com/'$1'","first_seen":"'$D1'T09:00:00Z","stage":"fit","score":5}'
 }
 app() { # posting_id status day new_attempt
   step "$DB" save-application '{"step":"save-application","posting_id":'$1',"status":"'$2'","note":"","now":"'$3'T10:00:00Z","day":"'$3'","new_attempt":'$4',"auto_retry":0}'

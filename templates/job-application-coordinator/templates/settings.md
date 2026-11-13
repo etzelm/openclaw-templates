@@ -61,7 +61,11 @@ Hard limits the agent never crosses, whatever this file says: at most 25 applica
 
 ## Browser
 
+- browser_driver: browser
+  - browser (the packaged default): the agent uses OpenClaw's browser tool with browser_profile below.
+  - devtools-mcp: the agent uses the Chrome DevTools MCP server this Template adds (`jac-chrome`), attached to a dedicated Chrome you start with its own profile folder, holding only your job-site logins. Setup explains how and switches this only after a working test. Script running is turned off in that server.
 - browser_profile: openclaw
+  - Used only with browser_driver: browser.
   - openclaw (default): a dedicated browser that OpenClaw manages, with none of your personal logins. Sign in there only to job sites, if a site needs it. You see it in the Control UI Browser panel and clear checks there.
   - user or chrome: your own signed-in Chrome. The agent could then reach every site that browser is logged in to. Only the Template's rules keep it on job sites, so use these only if you accept that.
 
