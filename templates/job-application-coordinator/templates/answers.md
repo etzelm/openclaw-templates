@@ -45,6 +45,12 @@ Leave these as "<blank>" to answer "decline" or leave the field empty.
 - Veteran status: <blank>
 - Disability status: <blank>
 
+## Motivation
+
+Many forms require a short free-text answer such as "Why do you want to work here?". Without one, those postings are skipped. Write it yourself; the agent never writes it for you and uses it as written.
+
+- Why this role or company (one or two sentences, true for any company you list): <blank>
+
 ## Learned questions
 
 The agent lists new questions in the digest. Copy them here with your answer.

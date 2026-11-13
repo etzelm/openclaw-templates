@@ -1,9 +1,9 @@
 -- Setup check: write one test row, read it back, delete it. Prints setup-check ok. No input.
 -- Run from the workspace root:
---   sqlite3 -bail applications.db ".read references/sql/setup-check.sql"
+--   sqlite3 -bail <db_path> ".read references/sql/setup-check.sql"
 .bail on
 PRAGMA foreign_keys = ON;
-CREATE TEMP TABLE schema_guard (v INTEGER CHECK (v = 1));
+CREATE TEMP TABLE schema_guard (v INTEGER CHECK (v = 2));
 INSERT INTO temp.schema_guard SELECT user_version FROM pragma_user_version;
 
 .headers on

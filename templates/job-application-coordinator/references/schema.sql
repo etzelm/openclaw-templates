@@ -1,7 +1,7 @@
--- applications.db schema, version 1.
--- Setup runs this once, only when applications.db does not exist:
---   sqlite3 -bail applications.db ".read references/schema.sql"
--- Never run it against an existing database. No automatic migrations in v1.
+-- Job application coordinator database schema, version 2.
+-- Setup runs this once, only when no database exists at db_path (settings.md):
+--   sqlite3 -bail <db_path> ".read references/schema.sql"
+-- Never run it against an existing database. A version 1 database (0.1.x) is upgraded with sql/migrate-v1-to-v2.sql.
 
 PRAGMA foreign_keys = ON;
 
@@ -76,10 +76,15 @@ CREATE TABLE status_events (
   at TEXT NOT NULL,
   from_status TEXT,
   to_status TEXT NOT NULL,
-  note TEXT NOT NULL DEFAULT ''
+  note TEXT NOT NULL DEFAULT '',
+  -- Local date in the owner's time_zone of the application row when the event happened.
+  -- The daily cap counts applications from these rows, so moving a row on later never
+  -- lowers an earlier day's count. Added in version 2.
+  day TEXT NOT NULL DEFAULT ''
 );
 
 CREATE INDEX status_events_application ON status_events (application_id, at);
+CREATE INDEX status_events_day ON status_events (day, to_status);
 
 CREATE TABLE runs (
   id INTEGER PRIMARY KEY,
@@ -90,20 +95,21 @@ CREATE TABLE runs (
   counts TEXT NOT NULL DEFAULT '{}' CHECK (json_valid(counts))
 );
 
--- Every status change, by the agent or by the owner, leaves a status_events row.
+-- Every status change, by the agent or by the owner, and every retry on a new day,
+-- leaves a status_events row.
 CREATE TRIGGER applications_insert_event AFTER INSERT ON applications
 BEGIN
-  INSERT INTO status_events (application_id, at, from_status, to_status, note)
-  VALUES (NEW.id, NEW.updated_at, NULL, NEW.status, NEW.note);
+  INSERT INTO status_events (application_id, at, from_status, to_status, note, day)
+  VALUES (NEW.id, NEW.updated_at, NULL, NEW.status, NEW.note, NEW.day);
 END;
 
-CREATE TRIGGER applications_status_event AFTER UPDATE OF status, note ON applications
-WHEN OLD.status IS NOT NEW.status OR OLD.note IS NOT NEW.note
+CREATE TRIGGER applications_status_event AFTER UPDATE OF status, note, day ON applications
+WHEN OLD.status IS NOT NEW.status OR OLD.note IS NOT NEW.note OR OLD.day IS NOT NEW.day
 BEGIN
-  INSERT INTO status_events (application_id, at, from_status, to_status, note)
-  VALUES (NEW.id, NEW.updated_at, OLD.status, NEW.status, NEW.note);
+  INSERT INTO status_events (application_id, at, from_status, to_status, note, day)
+  VALUES (NEW.id, NEW.updated_at, OLD.status, NEW.status, NEW.note, NEW.day);
 END;
 
-PRAGMA user_version = 1;
+PRAGMA user_version = 2;
 
 COMMIT;

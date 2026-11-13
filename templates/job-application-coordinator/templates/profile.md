@@ -30,10 +30,8 @@ Skip any posting that matches one of these.
 ## Resume
 
 - Resume text: in resume.md. The agent fills work history, education and skills from it.
-- Resume file: <file reference the browser tool can upload>
+- Resume file: <filled in by the agent during setup>
   - This is the file the agent uploads when a form asks for one.
-  - The browser tool uploads only from two places. Use one:
-    - A path in the OpenClaw temp uploads folder on the browser host, for example `/tmp/openclaw/uploads/resume.pdf`.
-    - A `media://inbound/<id>` reference: send the file to this agent in chat and paste the reference it gives you.
-  - The temp folder can be cleared on restart. Put the file back if an upload fails.
+  - To set it, send your resume file (PDF or DOCX) to this agent in chat. The agent writes the reference it receives here. You do not need to know where the file is stored.
+  - Stored uploads can be cleared when OpenClaw restarts. If an upload fails, the agent tells you; send the file again.
   - The agent stops the run if no file is named here. A posting whose upload fails is skipped. Two failed uploads in a row end the run.
