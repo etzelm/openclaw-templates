@@ -1,6 +1,6 @@
 -- Look up a candidate by url, or by repo and number, with its contributions. Input: url, or repo and number.
 -- Run from the workspace root:
---   sqlite3 -bail -json contributions.db ".read references/sql/find-candidate.sql"
+--   sqlite3 -bail -json <db_path> ".read references/sql/find-candidate.sql"
 -- Input: write db-input.json with the write tool first, with "step": "find-candidate".
 -- Issue, PR and page text goes only into db-input.json, never into the command line.
 .bail on

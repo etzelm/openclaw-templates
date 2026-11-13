@@ -1,6 +1,6 @@
 -- Change a contribution's status and, when given, its head SHA, base SHA or PR url. Input: contribution_id, status, note, now, and optional head_sha, base_sha, pr_url.
 -- Run from the workspace root:
---   sqlite3 -bail -json contributions.db ".read references/sql/set-status.sql"
+--   sqlite3 -bail -json <db_path> ".read references/sql/set-status.sql"
 -- Input: write db-input.json with the write tool first, with "step": "set-status".
 -- Issue, PR and page text goes only into db-input.json, never into the command line.
 .bail on

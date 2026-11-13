@@ -3,7 +3,7 @@
 - Issue: <link>
 - Branch: <branch> at <head SHA>, based on <upstream>/<base> at <base SHA>
 - PR: <link, or "not opened">
-- Status: <status from contributions.db>
+- Status: <status from the database>
 
 ## Proven
 

@@ -1,8 +1,8 @@
 # Contribution loop
 
-SOUL.md has the purpose and boundaries. workspace/AGENTS.md has the workflow summary. This file has the exact rules. Follow it in every task.
+SOUL.md has the purpose and boundaries. AGENTS.md has the workflow summary. This file has the exact rules. Follow it in every task.
 
-`<checkout>` below is the `checkout_dir` from settings.md. `<upstream>`, `<fork>` and `<base>` are `upstream_remote`, `fork_remote` and `base_branch`. `<slug>` is the contribution's short name, such as `telegram-reply-thread`.
+`<checkout>` below is the `checkout_dir` from settings.md. `<db_path>` is `db_path` from settings.md: the absolute path setup recorded. Use it as written, never with `~`, so it matches the sqlite3 allowlist entry. `<upstream>`, `<fork>` and `<base>` are `upstream_remote`, `fork_remote` and `base_branch`. `<slug>` is the contribution's short name, such as `telegram-reply-thread`.
 
 ## The repo is the authority
 
@@ -22,13 +22,15 @@ If a rule here and a repo rule differ on how to do the work, the repo wins. If a
 
 ## What exec may run
 
-Without asking:
+Setup sets this agent's exec mode to `ask` with nothing allowlisted and makes references/ read-only (docs/README.md, "Add it"). So OpenClaw itself asks the owner before every command, sqlite3 included, unless the owner chose "Always allow here" for that exact command. That prompt is a second lock, not a substitute for the rules below: an outward step still needs a granted approval in the database first, and the owner may have chosen "Always allow here" for some local commands.
+
+Without a recorded approval:
 
 - `git` on the checkout for local work: status, log, diff, show, fetch, switch, branch, add, commit, restore of your own changes, and rebase of a branch that was never pushed.
 - Read-only `gh`: `gh issue list|view`, `gh pr list|view|diff|checks`, `gh search issues|prs|code`, `gh run list|view`, `gh repo view`, `gh auth status`, and `gh api` with GET only (no `-X`/`--method` other than GET, no `-f`, `-F` or `--input`).
 - The repo's own install, test, lint, typecheck, format, build and docs commands, as its rule files name them, inside the checkout.
 - `pnpm test:ci-failed <pr>` and its `--run` mode, if the repo provides it.
-- `sqlite3` only with the packaged steps below, `sqlite3 -version`, and the one-time schema setup.
+- `sqlite3` only against `<db_path>`, with the packaged steps below, `sqlite3 -version`, setup's read-only checks (`PRAGMA user_version;`, `SELECT count(*) FROM sqlite_master;`, `.databases`), and the one-time schema setup. Never a dot-command such as `.shell`, `.system`, `.load` or a piped `.output`, and never write under references/.
 
 Only with a granted approval for that exact step (see "Owner approvals"):
 
@@ -44,12 +46,12 @@ Never:
 
 ## Database
 
-contributions.db is the source of truth. tracker.md is a view made from it.
+The database is one SQLite file at `<db_path>`, outside the workspace. OpenClaw's exec guard refuses sqlite3 on databases inside the OpenClaw state folder, where a default Add puts this workspace. It is the source of truth. tracker.md is a view made from it.
 
 Every step works the same way:
 
 1. Write `db-input.json` in the workspace root with the write tool. It is one JSON object with `"step"` set to the step name and the values the step's header lists. Put issue and PR text only in these JSON values.
-2. Run from the workspace root: `sqlite3 -bail -json contributions.db ".read references/sql/<step>.sql"`.
+2. Run from the workspace root: `sqlite3 -bail -json "<db_path>" ".read references/sql/<step>.sql"`, with the double quotes. `db-input.json` stays in the workspace.
 3. Read the JSON it returns. A non-zero exit means the step refused: read the error, fix the input, and do not work around the check.
 
 Times are ISO 8601 UTC from session_status.
@@ -62,21 +64,30 @@ Times are ISO 8601 UTC from session_status.
 | `save-contribution` | Start a contribution. Refuses unless the candidate is `approved`. |
 | `set-status` | Move a contribution to a new status, with head SHA, base SHA or PR url. |
 | `add-evidence` | Record one proof item: command, exit code, result, commit SHA, log path. |
-| `ask-approval` | Write ahead before asking the owner for one outward step. |
+| `ask-approval` | Write ahead before asking the owner for one outward step. Refuses push, force-push, open-pr, edit-pr and ready-for-review without the commit SHA. |
 | `decide-approval` | Record the owner's answer, quoted. |
-| `use-approval` | Run right before the outward step. Refuses unless granted, unused, same action and same head. |
+| `use-approval` | Run right before the outward step. Refuses unless granted, unused, same action and same head. A head-bound approval with no SHA never matches. |
 | `approval-outcome` | Record the verified result of the step. |
 | `tracker` | Regenerate tracker.md. |
 
 Contribution statuses: `scope-approved`, `reproducing`, `fixing`, `gates`, `ready-local`, `awaiting-owner`, `pushed`, `pr-open`, `in-review`, `blocked-maintainer-decision`, `merged`, `closed`, `abandoned`.
 
+## GitHub search pacing
+
+GitHub's search API allows only a few requests a minute. `gh search issues|prs|code` counts against it; `gh issue view` and `gh pr view` do not.
+
+- Leave at least 10 seconds between `gh search` calls, and make at most 12 in one task phase. Combine key words into one query instead of one search per word.
+- On a rate limit error (`API rate limit exceeded`, `secondary rate limit`, HTTP 403 or 429), stop searching. Run `gh api rate_limit` once, wait until the `search` reset time if it is under 5 minutes, then continue. Otherwise tell the owner the duplicate check is incomplete, list what is left to search, and do not propose a scope until it is done.
+- Never retry a search in a loop.
+
 ## 1. Start
 
-1. Get the time with session_status. Read settings.md. Required lines are `upstream_repo`, `checkout_dir`, `upstream_remote`, `fork_remote`, `fork_repo` and `base_branch`, plus `areas` when the owner asks you to find candidates. A required line that still shows `<...>` ends the task: say which line in one sentence. `<blank>` is a valid value, and optional lines may keep their placeholders.
-2. Run `sqlite3 -readonly contributions.db "PRAGMA user_version;"`. It must print 1.
+1. Get the time with session_status. Read settings.md. If `upstream_repo` is not `openclaw/openclaw`, stop: this Template only works for that repo. Required lines are `upstream_repo`, `db_path`, `checkout_dir`, `upstream_remote`, `fork_remote`, `fork_repo` and `base_branch`, plus `areas` when the owner asks you to find candidates. A required line that still shows `<...>` ends the task: say which line in one sentence. `<blank>` is a valid value, and optional lines may keep their placeholders.
+2. Run `sqlite3 -readonly "<db_path>" "PRAGMA user_version;"`. It must print 1.
 3. Check `git -C <checkout> status -sb`. Unrelated local changes stay untouched. If the checkout is on a branch you did not create, do not switch it: tell the owner.
-4. Re-read the repo rules as "The repo is the authority" says.
-5. Check open contributions in the database. If one is `awaiting-owner` or `in-review`, mention it before starting new work.
+4. Check that the files this loop depends on still exist upstream. For each of `CONTRIBUTING.md`, `AGENTS.md`, `.github/pull_request_template.md`, `docs/reference/pull-request-review-flow.md` and `.agents/skills/pr-simplify/SKILL.md`, run `git -C <checkout> cat-file -e <upstream>/<base>:<path>`. If any is missing, stop the task and tell the owner which path moved: this Template version expects it, and working without it would skip a repo rule. Do not guess a replacement.
+5. Re-read the repo rules as "The repo is the authority" says.
+6. Check open contributions in the database. If one is `awaiting-owner` or `in-review`, mention it before starting new work.
 
 ## 2. Intake
 
@@ -178,7 +189,7 @@ Run each one, in the background when it takes more than a minute, with its log u
 Ask for one outward step at a time. Never bundle "push and open the PR" into one approval.
 
 1. Get the current head SHA: `git -C <checkout> rev-parse HEAD`.
-2. Run `ask-approval` with the action, the exact command, and the head SHA.
+2. Run `ask-approval` with the action, the exact command, and the head SHA. The full commit SHA from step 1 is required for push, force-push, open-pr, edit-pr and ready-for-review, and for every other action tied to a contribution except open-issue and create-fork; never a branch name or `HEAD`.
 3. Send the owner the request from templates/approval-request.md: the approval id, the exact command, the body file path when there is one, the head SHA, the diff stat, and what will become public.
 4. Wait for the owner's answer in this conversation. Record it with `decide-approval`, quoting the owner. Only a clear yes to that request is `granted`. Anything else is `denied` or stays pending.
 5. Right before acting, run `use-approval` with the current head. If it refuses, do not act: ask again.

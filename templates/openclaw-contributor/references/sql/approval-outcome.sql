@@ -1,6 +1,6 @@
 -- Record what happened after an approved step: the verified result, such as the pushed SHA or the PR url. Input: approval_id, outcome.
 -- Run from the workspace root:
---   sqlite3 -bail -json contributions.db ".read references/sql/approval-outcome.sql"
+--   sqlite3 -bail -json <db_path> ".read references/sql/approval-outcome.sql"
 -- Input: write db-input.json with the write tool first, with "step": "approval-outcome".
 -- Issue, PR and page text goes only into db-input.json, never into the command line.
 .bail on

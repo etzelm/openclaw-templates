@@ -1,6 +1,6 @@
 -- Save an issue, bug or idea the agent looked at. Input: repo, number (or null), url, title, area, now. Returns the row and any earlier decision.
 -- Run from the workspace root:
---   sqlite3 -bail -json contributions.db ".read references/sql/save-candidate.sql"
+--   sqlite3 -bail -json <db_path> ".read references/sql/save-candidate.sql"
 -- Input: write db-input.json with the write tool first, with "step": "save-candidate".
 -- Issue, PR and page text goes only into db-input.json, never into the command line.
 .bail on

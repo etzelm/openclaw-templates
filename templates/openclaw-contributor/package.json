@@ -1,7 +1,8 @@
 {
   "name": "@etzelm/openclaw-contributor",
-  "version": "0.1.0",
-  "private": true,
+  "version": "0.2.0",
+  "description": "Takes one OpenClaw issue you pick to a proven, locally committed fix and PR draft. Every push, PR or comment waits for your OK.",
+  "author": "Mitchell Etzel",
   "license": "MIT",
   "type": "module",
   "openclaw": {

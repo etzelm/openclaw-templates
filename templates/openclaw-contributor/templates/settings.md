@@ -5,7 +5,7 @@ Edit the values after the colons. The agent reads this file at the start of ever
 ## Repository
 
 - upstream_repo: openclaw/openclaw
-  - The project you contribute to.
+  - Fixed. The loop is written for OpenClaw's own rule files, PR template, bots and CI. The agent refuses to start a task if this is changed.
 - checkout_dir: openclaw
   - Folder in this workspace that holds the git checkout. It must stay inside the workspace.
 - upstream_remote: upstream
@@ -40,6 +40,11 @@ Edit the values after the colons. The agent reads this file at the start of ever
 - open_pr_as: ready
   - ready or draft. The repo asks for a ready PR once the required builds and focused proof pass.
   - Either way, opening the PR is a separate OK from you.
+
+## Database
+
+- db_path: ~/openclaw-contributor.db
+  - The SQLite file that records candidates, evidence and your approvals. Setup replaces `~` with the absolute path, because OpenClaw's exec allowlist does not accept `~`. It must be outside the OpenClaw state folder (by default `~/.openclaw`), because OpenClaw refuses sqlite3 on files inside it.
 
 ## Time
 

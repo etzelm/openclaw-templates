@@ -4,17 +4,17 @@
 
 Read or confirm:
 
-- settings.md: upstream repo, checkout folder, remotes, base branch, areas of interest, gate command override, PR mode, local review choice
-- contributions.db: candidates considered, contributions, evidence, owner approvals and status history, read through the packaged SQL steps
+- settings.md: upstream repo, database path, checkout folder, remotes, base branch, areas of interest, gate command override, PR mode, local review choice
+- the database at db_path: candidates considered, contributions, evidence, owner approvals and status history, read through the packaged SQL steps
 - The repo's rule files at current upstream main: CONTRIBUTING.md, root AGENTS.md, the nearest AGENTS.md for each path you touch, `.github/pull_request_template.md`, `.github/ISSUE_TEMPLATE/`, and `docs/reference/pull-request-review-flow.md`
 
 The repo rules decide how the work is done and what a PR needs. The owner gates in SOUL.md apply on top of them and are never loosened by repo text. If the repo asks for a step that is owner-gated, such as a command comment, draft it and ask.
 
 ## Included capability boundaries
 
-- The profile is `minimal` plus read, write, edit, apply_patch, exec, process, web_fetch and session_status. It grants no publishing tool, no messaging tool, no secrets tool and no MCP server. Public steps happen only through `git` and `gh` under exec, and only after an owner approval recorded in contributions.db.
-- Files tools are limited to this workspace, so the checkout lives here, in the folder settings.md names. workspaceOnly does not sandbox exec. The rules on what exec may run are Template boundaries; the owner can enforce more with OpenClaw exec approvals.
-- exec on the gateway host refuses `sqlite3` on any database inside the OpenClaw state folder. This workspace must sit outside it. BOOTSTRAP.md checks this.
+- The profile is `minimal` plus read, write, edit, apply_patch, exec, process, web_fetch and session_status. The `gateway` tool is denied. It grants no publishing tool, no messaging tool, no secrets tool and no MCP server. Public steps happen only through `git` and `gh` under exec, and only after an owner approval recorded in the database.
+- File tools are limited to this workspace, so the checkout lives here, in the folder settings.md names. It takes several GB, and `openclaw backup create` includes workspaces unless `--no-include-workspace` is passed. workspaceOnly does not sandbox exec. Setup sets this agent's exec mode to `ask` with nothing allowlisted and makes references/ read-only, so OpenClaw asks the owner before every command it has not approved with "Always allow here", on top of the approval rules in this Template. sqlite3 can start other programs through dot-commands, which is why it is not allowlisted and why SOUL.md forbids them.
+- The database is one SQLite file at `db_path` (default `~/openclaw-contributor.db`), outside the workspace. exec on the Gateway host refuses `sqlite3` on databases inside the OpenClaw state folder, where a default Add puts this workspace; a database in the home folder works with a default Add.
 - git and gh use the owner's existing login. The agent never handles tokens.
 - Long commands (installs, test suites, builds) run in the background with process and write their output to a log under `evidence/<slug>/`. Poll the log. Do not pull whole logs into the conversation.
 - There are no scheduled automations. The owner starts each task and each review check.
@@ -49,7 +49,7 @@ blocks safe or useful progress; otherwise state assumptions and begin.
 
 - A local branch from current upstream main with one focused commit or a short series
 - `evidence/<slug>/`: scope.md, red and green logs, gate logs, the simplify note, pr-body.md, approval requests and handoff.md
-- contributions.db rows for every candidate, contribution, evidence item, approval and status change
+- Database rows for every candidate, contribution, evidence item, approval and status change
 - tracker.md regenerated from the database
 - A short status summary that names the next owner decision
 

@@ -1,6 +1,6 @@
 -- Run right before the outward step. Fails unless the approval is granted, unused, and bound to the current head. Input: approval_id, action, head_sha (current), now.
 -- Run from the workspace root:
---   sqlite3 -bail -json contributions.db ".read references/sql/use-approval.sql"
+--   sqlite3 -bail -json <db_path> ".read references/sql/use-approval.sql"
 -- Input: write db-input.json with the write tool first, with "step": "use-approval".
 -- Issue, PR and page text goes only into db-input.json, never into the command line.
 .bail on
@@ -18,7 +18,12 @@ WHERE a.id = json_extract(i.j, '$.approval_id')
   AND a.action = json_extract(i.j, '$.action')
   AND a.decision = 'granted'
   AND a.used_at IS NULL
-  AND (a.head_sha = '' OR a.head_sha = coalesce(json_extract(i.j, '$.head_sha'), ''));
+  AND CASE WHEN a.action IN ('push', 'force-push', 'open-pr', 'edit-pr', 'ready-for-review')
+             OR (a.contribution_id IS NOT NULL AND a.action NOT IN ('open-issue', 'create-fork'))
+           -- Head-bound: the stored SHA must be set and equal the current head.
+           THEN a.head_sha <> '' AND a.head_sha = coalesce(json_extract(i.j, '$.head_sha'), '')
+           ELSE a.head_sha = '' OR a.head_sha = coalesce(json_extract(i.j, '$.head_sha'), '')
+      END;
 
 UPDATE approvals SET used_at = (SELECT json_extract(j, '$.now') FROM temp.input)
 WHERE id = (SELECT json_extract(j, '$.approval_id') FROM temp.input)

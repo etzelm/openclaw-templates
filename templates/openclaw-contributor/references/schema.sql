@@ -1,6 +1,6 @@
--- contributions.db schema, version 1.
--- Setup runs this once, only when contributions.db does not exist:
---   sqlite3 -bail contributions.db ".read references/schema.sql"
+-- OpenClaw contributor database schema, version 1.
+-- Setup runs this once, only when no database exists at db_path (settings.md):
+--   sqlite3 -bail <db_path> ".read references/schema.sql"
 -- Never run it against an existing database. No automatic migrations in v1.
 
 PRAGMA foreign_keys = ON;

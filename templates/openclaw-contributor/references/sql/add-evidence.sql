@@ -1,6 +1,6 @@
 -- Record one proof item. Input: contribution_id, kind, command, exit_code, result, commit_sha, log_path, note, now.
 -- Run from the workspace root:
---   sqlite3 -bail -json contributions.db ".read references/sql/add-evidence.sql"
+--   sqlite3 -bail -json <db_path> ".read references/sql/add-evidence.sql"
 -- Input: write db-input.json with the write tool first, with "step": "add-evidence".
 -- Issue, PR and page text goes only into db-input.json, never into the command line.
 .bail on

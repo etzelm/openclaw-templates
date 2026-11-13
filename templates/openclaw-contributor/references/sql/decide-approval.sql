@@ -1,6 +1,6 @@
 -- Record the owner's answer to one approval request. Input: approval_id, decision (granted or denied), owner_words (the owner's reply, quoted), now.
 -- Run from the workspace root:
---   sqlite3 -bail -json contributions.db ".read references/sql/decide-approval.sql"
+--   sqlite3 -bail -json <db_path> ".read references/sql/decide-approval.sql"
 -- Input: write db-input.json with the write tool first, with "step": "decide-approval".
 -- Issue, PR and page text goes only into db-input.json, never into the command line.
 .bail on

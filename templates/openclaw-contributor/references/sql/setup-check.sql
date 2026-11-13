@@ -1,6 +1,6 @@
 -- Setup check: write test rows, check the approval guards, read back, delete. Prints setup-check ok. No input.
 -- Run from the workspace root:
---   sqlite3 -bail contributions.db ".read references/sql/setup-check.sql"
+--   sqlite3 -bail <db_path> ".read references/sql/setup-check.sql"
 .bail on
 PRAGMA foreign_keys = ON;
 CREATE TEMP TABLE schema_guard (v INTEGER CHECK (v = 1));

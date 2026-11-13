@@ -1,6 +1,6 @@
 -- Start a contribution for an approved candidate. Input: candidate_id, slug, branch, base_sha, evidence_dir, now. Status starts at scope-approved.
 -- Run from the workspace root:
---   sqlite3 -bail -json contributions.db ".read references/sql/save-contribution.sql"
+--   sqlite3 -bail -json <db_path> ".read references/sql/save-contribution.sql"
 -- Input: write db-input.json with the write tool first, with "step": "save-contribution".
 -- Issue, PR and page text goes only into db-input.json, never into the command line.
 .bail on

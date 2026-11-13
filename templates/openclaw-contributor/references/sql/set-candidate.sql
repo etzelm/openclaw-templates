@@ -1,6 +1,6 @@
 -- Record the decision on a candidate after the duplicate and decision check or the owner's answer. Input: candidate_id, decision, reason, related (JSON array), now.
 -- Run from the workspace root:
---   sqlite3 -bail -json contributions.db ".read references/sql/set-candidate.sql"
+--   sqlite3 -bail -json <db_path> ".read references/sql/set-candidate.sql"
 -- Input: write db-input.json with the write tool first, with "step": "set-candidate".
 -- Issue, PR and page text goes only into db-input.json, never into the command line.
 .bail on

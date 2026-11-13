@@ -22,7 +22,7 @@ Run these on the body file and the title, and fix every hit:
 
 - `perl -CSD -ne 'print "$.: $_" if /[\x{2013}\x{2014}]/' <file>` finds em and en dashes.
 - `grep -n '@[A-Za-z0-9]' <file>` finds mentions. Keep only code, emails in example text, or package scopes such as `@openclaw/...` that are not a mention.
-- `grep -n -i 'i will\|we will\|follow up\|as requested\|the bot\|asked me\|claude\|gpt\|agent said' <file>` finds narration and promises.
+- `grep -n -i 'i will\|we will\|follow up\|as requested\|the bot\|asked me\|agent said\|co-authored-by\|generated with\|as an ai' <file>` finds narration and promises.
 - `grep -n -i 'token\|password\|secret\|/Users/\|/home/' <file>` finds possible leaks.
 
 Then read the whole body once as a maintainer would. Cut any sentence that does not help them review.
