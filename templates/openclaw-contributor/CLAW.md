@@ -5,7 +5,7 @@ categories:
 agent:
   id: openclaw-contributor
   name: OpenClaw contributor
-  description: Takes one OpenClaw issue you pick to a proven, locally committed and reviewed fix and PR draft. Every push, PR or comment waits for your OK.
+  description: Turns one OpenClaw issue you pick into a proven, reviewed fix and a ready PR draft. Nothing goes public until you OK each step.
   identity:
     name: OpenClaw contributor
     avatar: avatars/openclaw-contributor.svg
@@ -75,6 +75,8 @@ workspace:
       path: templates/handoff.md
     - source: avatars/openclaw-contributor.svg
       path: avatars/openclaw-contributor.svg
+    - source: assets/icon.png
+      path: avatars/catalog.png
     - source: README.md
       path: docs/README.md
     - source: CHANGELOG.md
@@ -108,6 +110,7 @@ Takes one OpenClaw issue or bug the owner picks to a clean, proven pull request 
 - Needs a strong model. The loop is long and strict; a small model is likely to skip proof steps.
 - Local review: setup recommends a local ClawSweeper source checkout in this workspace (about 1 GB more) and the Codex CLI logged in with your own account (`codex login --device-auth`, which you run yourself). Every review round sends the change to that model service and uses your quota; a full round takes several minutes, and the loop runs up to 3 rounds per change by default. You can opt out at setup; the PR evidence then names the gap.
 - Local review runner: Codex (default) or ClawSweeper's OpenClaw runner. The OpenClaw runner uses your installed OpenClaw and a model you choose as `provider/model`, with the provider key set in the Gateway host environment by you, never given to the agent. It needs an API-provider model: a claude-cli model fails ClawSweeper's checkout inspection. It has no no-cost diagnostics check, so the first review round is the smoke test. Its review turn runs with full exec and open network in the checkout.
+- Pin where its commands run: setup asks you to set `agents.entries.<agent-id>.tools.exec.host` to `gateway`. Unpinned, exec can follow a node the session uses, such as a laptop, and the checkout, installs, tests and every approval prompt land there. Builds and tests run in this agent's workspace on the pinned host.
 - Setup sets this agent's exec mode to `ask` with nothing allowlisted and makes the packaged SQL steps read-only, so every command, sqlite3 included, waits for your OK in OpenClaw's approval prompt until you choose "Always allow here" for that exact command. Setup gives the exact commands.
 - Tested on macOS and Linux only.
 - Only for openclaw/openclaw. The database lives outside the workspace at `db_path` (default `~/openclaw-contributor.db`), so a default Add works.

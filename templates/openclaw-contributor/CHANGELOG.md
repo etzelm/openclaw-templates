@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.4.1
+
+Catalog polish and two fixes from live use of 0.4.0. No database change.
+
+- The catalog icon ships. `assets/icon.png` is now listed in `workspace.files` (copied to `avatars/catalog.png`), so `openclaw templates build` packs it and ClawHub uses it as the Template icon. Before, the build left it out and the catalog showed a generic box.
+- New artwork: a teal Blobster in navy overalls holding a pull request card, as a 512 px icon and a matching avatar SVG.
+- Setup pins this agent's exec host: `agents.entries.<agent-id>.tools.exec.host` set to `gateway`, in the same required block as the ask mode. Unpinned, exec followed the owner's paired laptop and sent every approval prompt there. Setup checks with `pwd` that commands run in the workspace. The loop never sets `host` or `node` on exec, and installs, builds and tests stay on the pinned host.
+- Setup asks the approval relay question every time, as its own question, and records the answer. README explains the relay under "Add it".
+- README rewritten for people browsing the catalog: what it does, how you stay in control, an example, then the details. New "Skills and plugins" section says why none are declared.
+- Shorter catalog description.
+- "Upgrade in place" covers 0.4.0 to 0.4.1 (files and the host pin only) and 0.3.x (with the migration).
+
 ## 0.4.0
 
 Fixes from the first live use of 0.3.0 on a real issue, and the ClawHub scan finding on 0.1.0.

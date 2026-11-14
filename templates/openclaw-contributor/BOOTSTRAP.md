@@ -1,6 +1,6 @@
 # First-run setup
 
-Use these instructions only while this Template's local preferences are not yet initialized. Setup is done when settings.md exists with no `<...>` left in a required line, the database self-test passed, the exec approvals step is confirmed, local review is set up or the opt-out is recorded, and the owner has removed this file ("Finish setup" below). Until the owner removes it, OpenClaw keeps showing this file.
+Use these instructions only while this Template's local preferences are not yet initialized. Setup is done when settings.md exists with no `<...>` left in a required line, the database self-test passed, the exec host and approvals step is confirmed, the approval relay question is answered, local review is set up or the opt-out is recorded, and the owner has removed this file ("Finish setup" below). Until the owner removes it, OpenClaw keeps showing this file.
 
 1. Read the existing workspace and user context. Reuse facts already supplied.
 2. Ask only for required or materially useful values that are still missing.
@@ -18,6 +18,8 @@ Tell the owner, in a few lines, before any question:
 - Every push, PR, issue, comment, edit, review request, CI rerun and fork needs their yes, each time, for the exact command and head SHA shown.
 - The OpenClaw checkout and its dependencies take several GB in this agent's workspace. `openclaw backup create` includes workspaces unless they pass `--no-include-workspace`.
 - The loop is long and strict and needs a strong model.
+- This agent's commands must run on the Gateway host, where its workspace is. Setup asks them to pin that, so commands and approval prompts never land on another device, such as a laptop.
+- If they answer approval requests in another session, for example their main agent, setup can record that session as the approval relay.
 - Before anything goes public, the agent reviews its own committed change with a local ClawSweeper, the same reviewer OpenClaw runs on PRs. Setup offers to install it in this workspace (about 1 GB with dependencies). It runs on their own Codex login by default, or through their installed OpenClaw with an API-provider model they choose, so every review round uses their model quota.
 
 ## Database location
@@ -37,7 +39,7 @@ The database is one file at `db_path` (default `~/openclaw-contributor.db`), out
 - **Review target** (`review_target`): optional, default `no-must-fix`. Offer a rating floor (for example `no-must-fix, rating B`) and say ratings are review signals, not merge targets.
 - **Review rounds** (`review_max_rounds`): optional, number 1 to 5, default 3.
 - **PR mode** (`open_pr_as`): optional, choose ready or draft, default ready.
-- **Approval relay** (`approval_relay`): optional, default blank. Only if the owner will answer approval requests in another session that passes the answers on: that session key or agent id. Say that a passed-on yes counts only when it names the approval id, command, head SHA and body hash, and that OpenClaw's exec prompt still asks them.
+- **Approval relay** (`approval_relay`): always ask, as its own question: "Will you answer my approval requests here, or in another session that passes your answers on, such as your main agent?" Here: leave it blank. Another session: record its session key or agent id (for example `main`). Say that a passed-on yes counts only when it names the approval id, command, head SHA and body hash, and that OpenClaw's exec prompt still asks them before the command runs. Record the answer either way, so the question is not asked again.
 - **Time zone** (`time_zone`): optional, IANA time zone.
 
 ## Local preference files
@@ -50,10 +52,11 @@ The database is one file at `db_path` (default `~/openclaw-contributor.db`), out
 
 Run these from the workspace root with exec, and report each result:
 
-1. `git --version` and `gh --version`. If either is missing, stop and tell the owner to install it.
-2. `gh auth status`. It must show a logged-in account for github.com. Never add `--show-token`. If it is not logged in, ask the owner to run `gh auth login` themselves, then wait.
-3. `node --version` and `pnpm --version`. Compare them with the Node and pnpm versions the repo's CONTRIBUTING.md asks for, once the checkout exists.
-4. `sqlite3 -version`. Version 3.35 or newer is needed. If it is missing or older, stop and tell the owner how to install it: macOS has it built in; Debian or Ubuntu: `apt install sqlite3`. This Template is tested on macOS and Linux only; the owner commands below are POSIX shell.
+1. `pwd`. It must print `<workspace>`. If it prints another path or fails, exec runs somewhere else, for example on a paired node. Stop, do the "Exec host and approvals" step first, and run `pwd` again.
+2. `git --version` and `gh --version`. If either is missing, stop and tell the owner to install it.
+3. `gh auth status`. It must show a logged-in account for github.com. Never add `--show-token`. If it is not logged in, ask the owner to run `gh auth login` themselves, then wait.
+4. `node --version` and `pnpm --version`. Compare them with the Node and pnpm versions the repo's CONTRIBUTING.md asks for, once the checkout exists.
+5. `sqlite3 -version`. Version 3.35 or newer is needed. If it is missing or older, stop and tell the owner how to install it: macOS has it built in; Debian or Ubuntu: `apt install sqlite3`. This Template is tested on macOS and Linux only; the owner commands below are POSIX shell.
 
 ## Database
 
@@ -68,17 +71,20 @@ Run these from the workspace root with exec, with the exact `db_path` value in p
    - It fails with the state folder message: see "Database location".
 2. Self-test: `sqlite3 -bail "<db_path>" ".read references/sql/setup-check.sql"`. It writes test rows, checks that approvals are single-use, reads them back and deletes them. (The head-SHA rules live in the ask-approval and use-approval steps.) It must print `setup-check ok, schema version 2`.
 3. Run `sqlite3 -bail "<db_path>" ".read references/sql/tracker.sql"` once to create tracker.md from the database.
-4. Record the absolute path: `sqlite3 -readonly "<db_path>" ".databases"`. It prints `main: <absolute path> r/o`. Write that absolute path into `db_path` in settings.md, and use it in every later command. OpenClaw's exec allowlist refuses commands with `~` in them (checked: "execution-plan-miss"), so this must happen before the exec approvals step.
+4. Record the absolute path: `sqlite3 -readonly "<db_path>" ".databases"`. It prints `main: <absolute path> r/o`. Write that absolute path into `db_path` in settings.md, and use it in every later command. OpenClaw's exec allowlist refuses commands with `~` in them (checked: "execution-plan-miss"), so this must happen before the exec host and approvals step.
 
-## Exec approvals (required)
+## Exec host and approvals (required)
 
-The tool grant includes exec with the owner's git and gh login. The owner gates in this Template are rules the agent follows; this step adds a lock OpenClaw enforces: every command waits for the owner's OK in OpenClaw's approval prompt. sqlite3 is not allowlisted on purpose: sqlite3 can start other programs itself (for example with `.shell`), so a blanket sqlite3 entry would be a way around the prompt. Show the owner this block with `<agent-id>` and `<workspace>` filled in, ask them to run it in a terminal on the Gateway host, and paste the output of the last command:
+The tool grant includes exec with the owner's git and gh login. The owner gates in this Template are rules the agent follows; this step adds two things OpenClaw enforces. First, the commands run on the Gateway host, where this workspace and its checkout are. Without a pin, exec can follow a node the session uses (seen live: a paired laptop got every command and every prompt). Second, every command waits for the owner's OK in OpenClaw's approval prompt. sqlite3 is not allowlisted on purpose: sqlite3 can start other programs itself (for example with `.shell`), so a blanket sqlite3 entry would be a way around the prompt. Show the owner this block with `<agent-id>` and `<workspace>` filled in, ask them to run it in a terminal on the Gateway host, and paste the output of the last command:
 
 ```sh
+openclaw config set 'agents.entries.<agent-id>.tools.exec.host' gateway
 openclaw config set 'agents.entries.<agent-id>.tools.exec.mode' ask
 chmod -R a-w "<workspace>/references"
 openclaw exec-policy show --agent <agent-id>
 ```
+
+The first line pins exec to the Gateway host. Unpinned (`auto`), a single exec call may name a node, and the session's runtime line names its active node; pinned, OpenClaw refuses that with "exec host not allowed". Heavy work (the OpenClaw install, builds, test suites, ClawSweeper rounds) runs there too, in this workspace, in the background with logs. The agent never moves it to another machine. If the owner wants it on a bigger machine, the way is to run this agent on a Gateway on that machine. A named node (`tools.exec.host` set to `node` plus `tools.exec.node` set to its name) works only when that node sees this same workspace path, because the file tools and the database steps read it here. After the pin, run `pwd` again (see "Tools").
 
 The `chmod` makes the packaged SQL steps read-only, so they cannot be rewritten before they run. Tell the owner:
 - Each packaged database command, for example `sqlite3 -bail -json "<db_path>" ".read references/sql/ask-approval.sql"`, asks once. Choose "Always allow here" for it: that approval covers only that exact command in this folder, so any other sqlite3 command still asks.
@@ -158,16 +164,19 @@ The first real review happens in the loop, on a committed change. If a step fail
 
 ## Setup checks
 
-1. Confirm the "Exec approvals" step was done: the pasted `exec-policy show` output shows ask on miss for this agent.
-2. Confirm local review: either "Local ClawSweeper" ended with a passing diagnostics check (codex runner) or the `openclaw --version` check with a recorded model (openclaw runner), or settings.md records the owner's opt-out in `local_review_note`.
-3. Tell the owner the gated steps in one short list: push, force-push, open a PR, open an issue, comment, edit a PR, mark ready, request review, resolve a conversation, rerun CI, create a fork, close or reopen. Each needs their yes, every time.
-4. Then ask what to work on: an issue link, a bug, or "find candidates".
+1. Confirm the "Exec host and approvals" step was done: `pwd` prints `<workspace>`, and the pasted `exec-policy show` output shows ask on miss for this agent.
+2. Confirm `approval_relay` in settings.md matches the owner's answer: blank, or the session or agent that passes their answers on.
+3. Confirm local review: either "Local ClawSweeper" ended with a passing diagnostics check (codex runner) or the `openclaw --version` check with a recorded model (openclaw runner), or settings.md records the owner's opt-out in `local_review_note`.
+4. Tell the owner the gated steps in one short list: push, force-push, open a PR, open an issue, comment, edit a PR, mark ready, request review, resolve a conversation, rerun CI, create a fork, close or reopen. Each needs their yes, every time.
+5. Then ask what to work on: an issue link, a bug, or "find candidates".
 
 ## Upgrade from an earlier version
 
-Templates have no update command. 0.4.0 changes the database to schema version 2 (approval body hash, `withdrawn` and `recorded-outside`). Every row is kept.
+Templates have no update command. 0.4.0 changed the database to schema version 2 (approval body hash, `withdrawn` and `recorded-outside`). Every row is kept. 0.4.1 does not change the database.
 
-1. Database (all versions). The owner runs these in a terminal, with the real paths, and pastes the output. The first line is their backup:
+- From 0.4.0: the database is already version 2. Keep it (the "Database" step prints 2). Ask the owner to copy their old `settings.md` into this workspace. Nothing is new in it; ask the "Approval relay" question if `approval_relay` is blank. Then do "Exec host and approvals" for this agent id.
+
+1. Database (0.3.x and older, version 1). The owner runs these in a terminal, with the real paths, and pastes the output. The first line is their backup:
 
    ```sh
    cp -p "<db_path>" "<db_path>.v1-backup"

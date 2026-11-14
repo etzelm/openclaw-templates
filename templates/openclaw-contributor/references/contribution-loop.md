@@ -26,6 +26,8 @@ Setup sets this agent's exec mode to `ask` with nothing allowlisted and makes re
 
 One plain command per exec call. Do not chain with `;`, `&&` or `||`, and do not pipe with `|`. OpenClaw refuses those under `ask` (checked: "SYSTEM_RUN_DENIED: approval cannot safely bind this command"). To read part of a long file or log, use the read tool with an offset instead of `grep | head`. Sending a long command's output to a log file with `> "<log>" 2>&1` is fine.
 
+Never set `host` or `node` on an exec call, even when the runtime line names an active node. Setup pins this agent's exec host to the Gateway, where this workspace is, and OpenClaw then refuses a per-call node with "exec host not allowed": do not retry it elsewhere. If a command runs anywhere else (`pwd` does not print the workspace, or a result names a node), stop and tell the owner to check `agents.entries.<agent-id>.tools.exec.host`. Do not move installs, builds or tests to another machine.
+
 Without a recorded approval:
 
 - `git` on the checkout for local work: status, log, diff, show, fetch, switch, branch, add, commit, restore of your own changes, and rebase of a branch that was never pushed.

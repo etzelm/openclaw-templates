@@ -1,13 +1,13 @@
 #!/bin/zsh
-# Release gates for the OpenClaw contributor Template 0.4.0. Run on a build host.
+# Release gates for the OpenClaw contributor Template 0.4.1. Run on a build host.
 # Usage: gates-occ.sh <package dir> <out dir> [tests dir]
 # Leak grep allows two public names (claude-cli, ANTHROPIC_API_KEY) used for the ClawSweeper OpenClaw runner limit and key list.
-# Needs ~/work/occ-v04/oc (OpenClaw main build) and ~/work/occ-v04/clawhub (npm clawhub).
+# Needs ~/work/occ-v041/oc (OpenClaw main build) and ~/work/occ-v041/clawhub (npm clawhub).
 set -u -o pipefail
 P="${1:?package dir}"; OUT="${2:?out}"; T="${3:-}"
 mkdir -p "$OUT"; P="${P:A}"; OUT="${OUT:A}"
-OC=(node "$HOME/work/occ-v04/oc/openclaw.mjs")
-CH=("$HOME/work/occ-v04/clawhub/node_modules/.bin/clawhub")
+OC=(node "$HOME/work/occ-v041/oc/openclaw.mjs")
+CH=("$HOME/work/occ-v041/clawhub/node_modules/.bin/clawhub")
 mkdir -p "$OUT"
 FAIL=0
 gate() { if [[ $2 -eq 0 ]]; then echo "GATE PASS $1"; else echo "GATE FAIL $1 (rc=$2)"; FAIL=1; fi; }
@@ -15,8 +15,9 @@ NAME=$(node -p "require('$P/package.json').name.split('/')[1]")
 VER=$(node -p "require('$P/package.json').version")
 BASE="etzelm-$NAME-$VER"
 echo "=== $BASE"
-echo "openclaw $(git -C "$HOME/work/occ-v04/oc" rev-parse --short HEAD), clawhub $("${CH[@]}" -V 2>/dev/null | tail -1)"
+echo "openclaw $(git -C "$HOME/work/occ-v041/oc" rev-parse --short HEAD), clawhub $("${CH[@]}" -V 2>/dev/null | tail -1)"
 "${OC[@]}" templates validate "$P" > "$OUT/validate.log" 2>&1; gate "validate" $?
+! grep -q "Excluded: assets/icon.png" "$OUT/validate.log"; gate "validate does not exclude assets/icon.png" $?
 "${OC[@]}" templates dev "$P" > "$OUT/dev.log" 2>&1; gate "dev" $?
 rm -f "$OUT/$BASE.tgz" "$OUT/$BASE.b.tgz"
 "${OC[@]}" templates build "$P" --out "$OUT/$BASE.tgz" > "$OUT/build1.log" 2>&1; gate "build 1" $?
@@ -28,7 +29,10 @@ echo "sha256 $BASE.tgz $A"
 rm -f "$OUT/$BASE.b.tgz"
 echo "$A  $BASE.tgz" > "$OUT/$BASE.tgz.sha256"
 tar tzf "$OUT/$BASE.tgz" | sort > "$OUT/files.txt"
+grep -qx "package/assets/icon.png" "$OUT/files.txt"; gate "artifact contains package/assets/icon.png" $?
 "${CH[@]}" package publish "$OUT/$BASE.tgz" --family template --dry-run > "$OUT/clawhub-dry-run.log" 2>&1; gate "clawhub package publish --dry-run" $?
+"${CH[@]}" package publish "$OUT/$BASE.tgz" --family template --dry-run --json > "$OUT/clawhub-dry-run.json" 2>&1
+grep -q "assets/icon.png" "$OUT/clawhub-dry-run.log" "$OUT/clawhub-dry-run.json"; gate "clawhub dry run lists assets/icon.png" $?
 X="$OUT/extract"; rm -rf "$X"; mkdir -p "$X"; tar xzf "$OUT/$BASE.tgz" -C "$X"
 LEAK='(/Use[r]s/|/home/[a-z]|192\.168\.|\.local\b|mitchell|etzel@|@live\.com|@gmail|stu[d]io|macbook|nas\b|qnap|gitlab|workboard|claude|anthropic|opus|sonnet|haiku|fable|gpt-|deepseek|qwen|llama|mlx)'
 grep -rniE "$LEAK" "$X" | grep -viE 'Mitchell Etzel|@etzelm/|finds possible leaks' | sed -E 's/claude-cli|ANTHROPIC_API_KEY//g' | grep -iE "$LEAK" > "$OUT/leak.log"; [[ ! -s "$OUT/leak.log" ]]; gate "leak grep" $?
