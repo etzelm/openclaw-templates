@@ -4,7 +4,7 @@ These rules apply to everything that could become public: PR titles and bodies, 
 
 ## Rules
 
-- Plain, short sentences. Simple everyday words. American English.
+- Plain, short sentences. Simple everyday words. American English, as the repo asks (CONTRIBUTING.md: "Use American English spelling and grammar in code, comments, docs, and UI strings").
 - Lead with the user-visible problem and its trigger, then the fix, then the evidence.
 - State facts that the diff, tests and logs support. Do not invent a user benefit for internal work.
 - No em dashes or en dashes. Use a period, a comma or a colon.

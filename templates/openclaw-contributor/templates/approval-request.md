@@ -10,7 +10,9 @@
 <the exact command, e.g. git -C openclaw push fork-remote branch-name>
 ```
 
-<For a PR, issue, comment or edit: the body file path, e.g. evidence/<slug>/pr-body.md, and its title. Paste the body below or say where to read it.>
+<For a PR, issue, comment or edit: the body file path, e.g. evidence/<slug>/pr-body.md, its sha256, and its title. Paste the body below or say where to read it.>
+
+- Body sha256: <shasum -a 256 of the body file, or "no body file">
 
 ## What becomes public
 
@@ -27,4 +29,4 @@
 
 <For open-pr as ready, or ready-for-review: "Hosted ClawSweeper reviews this PR automatically once, now. Later pushes do not start another review.">
 
-Reply yes to approve this one step for this head. Any other reply, or a new head, means I ask again.
+Reply yes to approve this one step for this head and this body. Any other reply, a new head or a changed body means I ask again.

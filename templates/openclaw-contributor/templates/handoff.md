@@ -13,7 +13,7 @@
 - Gates: <each command and result>
 - Simplify: <what was removed, production and test line deltas>
 - Local review: <tool; each round with base, head, rating overall/proof/patch and must-fix count; remaining findings; or the gap>
-- Commit signature: <git log -1 --format='%G? %GS' result>
+- Commit signature: <git log -1 --format='%G? %GS' result, or "unsigned, signing not configured">
 
 ## CI and review
 

@@ -1,7 +1,8 @@
--- OpenClaw contributor database schema, version 1.
+-- OpenClaw contributor database schema, version 2.
 -- Setup runs this once, only when no database exists at db_path (settings.md):
 --   sqlite3 -bail <db_path> ".read references/schema.sql"
--- Never run it against an existing database. No automatic migrations in v1.
+-- Never run it against an existing database. A version 1 database (0.1.x to 0.3.x)
+-- is upgraded in place with references/sql/migrate-v1-to-v2.sql (BOOTSTRAP.md, "Upgrade").
 
 PRAGMA foreign_keys = ON;
 
@@ -78,8 +79,15 @@ CREATE TABLE approvals (
   -- The exact command and body file shown to the owner.
   exact_step TEXT NOT NULL CHECK (length(exact_step) BETWEEN 1 AND 4000),
   head_sha TEXT NOT NULL DEFAULT '',
+  -- sha256 of the --body-file shown to the owner, when the command has one.
+  body_sha256 TEXT NOT NULL DEFAULT '' CHECK (body_sha256 = '' OR (length(body_sha256) = 64 AND body_sha256 NOT GLOB '*[^0-9a-f]*')),
   asked_at TEXT NOT NULL,
-  decision TEXT NOT NULL DEFAULT 'pending' CHECK (decision IN ('pending', 'granted', 'denied')),
+  -- granted and denied are the owner's answer. withdrawn: the agent closed the request
+  -- before any answer (the step changed or is no longer needed). recorded-outside: the
+  -- owner did the step outside this agent; the agent only records the verified result.
+  decision TEXT NOT NULL DEFAULT 'pending' CHECK (decision IN (
+    'pending', 'granted', 'denied', 'withdrawn', 'recorded-outside'
+  )),
   owner_words TEXT NOT NULL DEFAULT '',
   decided_at TEXT,
   used_at TEXT,
@@ -126,6 +134,6 @@ BEGIN
   VALUES (NEW.id, NEW.updated_at, OLD.status, NEW.status, NEW.note);
 END;
 
-PRAGMA user_version = 1;
+PRAGMA user_version = 2;
 
 COMMIT;

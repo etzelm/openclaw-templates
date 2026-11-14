@@ -56,6 +56,9 @@ Edit the values after the colons. The agent reads this file at the start of ever
   - ready or draft. The repo asks for a ready PR once the required builds and focused proof pass.
   - Hosted ClawSweeper reviews a PR automatically once, when it opens ready or a draft is marked ready. The agent opens ready only after the local review loop met review_target at that head.
   - Either way, opening the PR is a separate OK from you.
+- approval_relay: <blank>
+  - Blank (default): the agent takes your answer to an approval request only in its own conversation.
+  - Or the session key or agent id of another session that passes your answers on, if you answer there (for example `main` for any session of your main agent). A passed-on yes counts only when it names the approval id, the exact command, the head SHA and the body hash, and says where and when you said it. OpenClaw's exec prompt still asks you before the command runs.
 
 ## Database
 

@@ -1,13 +1,13 @@
 #!/bin/zsh
-# Release gates for the OpenClaw contributor Template 0.3.0. Run on a build host.
-# Usage: gates-occ.sh <package dir> <out dir>
+# Release gates for the OpenClaw contributor Template 0.4.0. Run on a build host.
+# Usage: gates-occ.sh <package dir> <out dir> [tests dir]
 # Leak grep allows two public names (claude-cli, ANTHROPIC_API_KEY) used for the ClawSweeper OpenClaw runner limit and key list.
-# Needs ~/work/occ-v03/oc (OpenClaw main build) and ~/work/occ-v03/clawhub (npm clawhub).
+# Needs ~/work/occ-v04/oc (OpenClaw main build) and ~/work/occ-v04/clawhub (npm clawhub).
 set -u -o pipefail
-P="${1:?package dir}"; OUT="${2:?out}"
+P="${1:?package dir}"; OUT="${2:?out}"; T="${3:-}"
 mkdir -p "$OUT"; P="${P:A}"; OUT="${OUT:A}"
-OC=(node "$HOME/work/occ-v03/oc/openclaw.mjs")
-CH=("$HOME/work/occ-v03/clawhub/node_modules/.bin/clawhub")
+OC=(node "$HOME/work/occ-v04/oc/openclaw.mjs")
+CH=("$HOME/work/occ-v04/clawhub/node_modules/.bin/clawhub")
 mkdir -p "$OUT"
 FAIL=0
 gate() { if [[ $2 -eq 0 ]]; then echo "GATE PASS $1"; else echo "GATE FAIL $1 (rc=$2)"; FAIL=1; fi; }
@@ -15,7 +15,7 @@ NAME=$(node -p "require('$P/package.json').name.split('/')[1]")
 VER=$(node -p "require('$P/package.json').version")
 BASE="etzelm-$NAME-$VER"
 echo "=== $BASE"
-echo "openclaw $(git -C "$HOME/work/occ-v03/oc" rev-parse --short HEAD), clawhub $("${CH[@]}" --version 2>/dev/null | tail -1)"
+echo "openclaw $(git -C "$HOME/work/occ-v04/oc" rev-parse --short HEAD), clawhub $("${CH[@]}" -V 2>/dev/null | tail -1)"
 "${OC[@]}" templates validate "$P" > "$OUT/validate.log" 2>&1; gate "validate" $?
 "${OC[@]}" templates dev "$P" > "$OUT/dev.log" 2>&1; gate "dev" $?
 rm -f "$OUT/$BASE.tgz" "$OUT/$BASE.b.tgz"
@@ -34,5 +34,10 @@ LEAK='(/Use[r]s/|/home/[a-z]|192\.168\.|\.local\b|mitchell|etzel@|@live\.com|@gm
 grep -rniE "$LEAK" "$X" | grep -viE 'Mitchell Etzel|@etzelm/|finds possible leaks' | sed -E 's/claude-cli|ANTHROPIC_API_KEY//g' | grep -iE "$LEAK" > "$OUT/leak.log"; [[ ! -s "$OUT/leak.log" ]]; gate "leak grep" $?
 grep -rn $'\u2014' "$X" > "$OUT/emdash.log"; [[ ! -s "$OUT/emdash.log" ]]; gate "no em dashes" $?
 rm -rf "$X"
+if [[ -n "$T" ]]; then
+  for t in "$T"/occ-*.test.sh; do
+    zsh "$t" "$P" > "$OUT/sql-$(basename "$t" .test.sh).log" 2>&1; gate "sql $(basename "$t"): $(tail -1 "$OUT/sql-$(basename "$t" .test.sh).log")" $?
+  done
+fi
 echo "gates failed=$FAIL"
 exit $FAIL

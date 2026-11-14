@@ -1,16 +1,25 @@
--- Record the owner's answer to one approval request. Input: approval_id, decision (granted or denied), owner_words (the owner's reply, quoted), now.
+-- Close one pending approval request. Input: approval_id, decision, owner_words, now.
+-- decision: granted or denied (the owner's answer, quoted in owner_words, with where and when they said it if it was relayed);
+-- withdrawn (you close it before any answer: the step changed or is no longer needed; owner_words says why);
+-- recorded-outside (the owner did the step outside this agent; owner_words says who did it and on whose word).
 -- Run from the workspace root:
 --   sqlite3 -bail -json <db_path> ".read references/sql/decide-approval.sql"
 -- Input: write db-input.json with the write tool first, with "step": "decide-approval".
 -- Issue, PR and page text goes only into db-input.json, never into the command line.
 .bail on
 PRAGMA foreign_keys = ON;
-CREATE TEMP TABLE schema_guard (v INTEGER CHECK (v = 1));
+CREATE TEMP TABLE schema_guard (v INTEGER CHECK (v = 2));
 INSERT INTO temp.schema_guard SELECT user_version FROM pragma_user_version;
 CREATE TEMP TABLE input (j TEXT NOT NULL CHECK (json_valid(j)));
 INSERT INTO temp.input VALUES (CAST(readfile('db-input.json') AS TEXT));
 CREATE TEMP TABLE step_guard (s TEXT CHECK (s = 'decide-approval'));
 INSERT INTO temp.step_guard SELECT json_extract(j, '$.step') FROM temp.input;
+
+CREATE TEMP TABLE decision_guard (ok INTEGER CHECK (ok = 1));
+INSERT INTO temp.decision_guard SELECT
+  json_extract(j, '$.decision') IN ('granted', 'denied', 'withdrawn', 'recorded-outside')
+  AND length(trim(coalesce(json_extract(j, '$.owner_words'), ''))) > 0
+FROM temp.input;
 
 CREATE TEMP TABLE pending_guard (n INTEGER CHECK (n = 1));
 INSERT INTO temp.pending_guard SELECT count(*) FROM approvals

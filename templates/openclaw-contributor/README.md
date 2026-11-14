@@ -41,6 +41,16 @@ Nothing is allowlisted, not even sqlite3: sqlite3 can start other programs itsel
 
 Work with the agent in the Control UI or a chat channel with exec approvals, where the prompts can reach you. A turn started with `openclaw agent` from a terminal is headless, and commands that need approval are denied there.
 
+If you answer approval requests in another session that passes your answers on (for example your main agent), name it in `approval_relay`. A passed-on yes counts only when it names the approval id, the exact command, the head SHA and the body hash.
+
+### From a local build
+
+Found on a live setup with OpenClaw 2026.11.3:
+
+- `openclaw templates add` takes the unpacked package folder, not the `.tgz` (a `.tgz` fails with `unsupported_manifest_format`). Unpack it first: `tar xzf <file>.tgz` gives a `package/` folder.
+- An Add from local files refuses while the Gateway runs ("stop the Gateway before Add"). Stop it for the Add, or install from ClawHub instead, which works with the Gateway running.
+- To give the agent more tools later, add them to `tools.allow` for the agent. The config refuses `allow` and `alsoAllow` in the same scope.
+
 ## Owner-gated steps
 
 Each needs your yes in chat, every time, for the exact command and head SHA shown, and then your OK in OpenClaw's exec approval prompt: push, force-push, open a PR, open an issue, post or edit a comment or review reply, edit a PR title or body, mark ready for review, request a review, resolve a review conversation, rerun CI, create a fork, close or reopen. The agent never merges, never tags people, and never asks maintainers questions in comments. An approval for a push, force-push, PR, PR edit or ready-for-review is bound to the commit SHA it was asked for and can never be used for a later head.
@@ -53,25 +63,47 @@ OpenClaw's CONTRIBUTING.md (checked at upstream main on 2026-11-12) welcomes AI-
 
 - 0.2.0, agent-driven, on an isolated test host with no GitHub login: two candidates were stopped correctly (one already had an open PR, one needed a maintainer decision); the third reached the scope proposal: [examples/first-gate-message.md](examples/first-gate-message.md), [examples/scope.md](examples/scope.md), [examples/tracker.md](examples/tracker.md).
 - 0.3.0, on openclaw/openclaw#198360, on an isolated test host with no GitHub login: Add, setup and the whole loop up to the first push request, run by hand from this Template's instructions in the workspace Add created: [examples/pr-body.md](examples/pr-body.md), [examples/push-approval.md](examples/push-approval.md).
+- 0.3.0, first live use, model-driven, on a real host: the agent adopted a fix made in another session, filed openclaw/openclaw#198642 and pushed the branch, each after the owner's yes and OpenClaw's exec prompt. PR openclaw/openclaw#198646 was opened by the owner from another session after an exec prompt failed to reach them. What the run showed is fixed in 0.4.0 (see CHANGELOG.md).
 
 Author names are removed.
 
 ## Not yet tested live
 
-Tested in the 0.3.0 run, by following the files step by step in a workspace made by Add (not by a model): setup's database steps and exec approval commands, the local ClawSweeper setup (clone, install, build, diagnostics, which correctly reported Codex as logged out), the checkout, branch, red test, green, mutation check, consumer tests, targeted gates, simplify, local commit, one local ClawSweeper `--local-range` round on the commit (complete, checkout access verified, no findings), the PR body draft, and the write-ahead push approval. The run found and fixed three problems in the instructions: ClawSweeper's pnpm commands must run from inside `clawsweeper/`; the upstream remote must be `origin`; and a partial clone's remotes cannot be renamed safely.
+Tested live with 0.3.0 and a model: adopting work from another session, the issue gate, the push gate with both locks (the database approval and OpenClaw's exec prompt), relayed owner answers, and evidence and approval rows for each step. Tested for 0.4.0 by the package's SQL tests and an isolated Add and upgrade, not yet by a model.
 
 Not yet tested live:
 
-- A model following the 0.3.0 loop end to end. In 0.2.0 a model ran it as far as the scope proposal.
-- ClawSweeper with the OpenClaw runner (written from source, not run) and with the Codex runner. The test host had no Codex login, so the review round used ClawSweeper's local source build with a different model runner.
-- `--local-only` issue and PR reviews: they need a gh login, and the test host had none.
-- More than one review round, a must-fix finding, and the round cap.
-- Signed commits (the test host does not sign).
-- Anything after the first push request: push, PR, hosted review, re-review and the CI loop.
+- The 0.4.0 changes with a model: `withdrawn`, `recorded-outside`, the body hash in approvals, `approval_relay`, the proof images branch.
+- ClawSweeper with the OpenClaw runner (written from source, not run) and with the Codex runner. Both live runs used ClawSweeper's local source build with a different model runner.
+- `--local-only` issue and PR reviews.
+- A must-fix finding, more than two review rounds, and the round cap.
+- Signed commits (no test host signs).
+- The hosted review, re-review and CI loop after the PR opens.
 
-## Upgrade from 0.1.x
+## Upgrade
 
-Templates have no update command. Add 0.3.0 as a new agent and follow "Upgrade from 0.1.x or 0.2.x" in BOOTSTRAP.md. From 0.2.x the database at `db_path` can be used as is; copy your settings.md and add the new review lines. From 0.1.x, copy the old `contributions.db` to `db_path` first (keep the original as a backup). The database schema did not change.
+Templates have no update command. 0.4.0 moves the database to schema version 2 with a packaged step that keeps every row. Two ways:
+
+- **New agent:** Add 0.4.0 and follow "Upgrade from an earlier version" in BOOTSTRAP.md during setup. It reuses the database at `db_path`.
+- **Upgrade in place** (0.3.x only): keep the agent, its config, sessions and checkout, and replace the packaged files. Run this in a terminal on the Gateway host while no turn of this agent runs. `<workspace>` is the agent's workspace, `<db_path>` the absolute path in settings.md, and `<pkg>` the unpacked 0.4.0 `package/` folder. Download it from ClawHub with `curl -fsSL -o occ.tgz "https://clawhub.ai/api/v1/packages/%40etzelm%2Fopenclaw-contributor/versions/0.4.0/artifact/download"`, then `tar xzf occ.tgz`.
+
+  ```sh
+  cp -p "<db_path>" "<db_path>.v1-backup"
+  tar czf "<workspace>.0.3-files.tgz" -C "<workspace>" AGENTS.md SOUL.md settings.md references templates docs
+  chmod -R u+w "<workspace>/references"
+  cp -R "<pkg>/references/." "<workspace>/references/"
+  cp -R "<pkg>/templates/." "<workspace>/templates/"
+  cp "<pkg>/workspace/AGENTS.md" "<workspace>/AGENTS.md"
+  awk 'f; /^---$/ && ++n == 2 {f = 1}' "<pkg>/CLAW.md" > "<workspace>/SOUL.md"
+  cp "<pkg>/README.md" "<workspace>/docs/README.md"
+  cp "<pkg>/CHANGELOG.md" "<workspace>/docs/CHANGELOG.md"
+  cp -R "<pkg>/examples/." "<workspace>/docs/examples/"
+  chmod -R a-w "<workspace>/references"
+  sqlite3 -bail "<db_path>" ".read <workspace>/references/sql/migrate-v1-to-v2.sql"
+  cd "<workspace>" && sqlite3 -bail "<db_path>" ".read references/sql/setup-check.sql"
+  ```
+
+  The migration prints `migrate ok, schema version 2`, the check `setup-check ok, schema version 2`. settings.md is kept; add `approval_relay` from `templates/settings.md` if you use a relay. Your own files, such as USER.md, are not touched. The packaged database commands keep the same command line, so earlier "Always allow here" choices still apply, and the last `chmod` makes the new SQL files read-only again. To roll back, restore both backups.
 
 ## How it differs
 

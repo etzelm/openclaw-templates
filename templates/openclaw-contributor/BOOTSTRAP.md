@@ -26,7 +26,7 @@ The database is one file at `db_path` (default `~/openclaw-contributor.db`), out
 
 ## Questions
 
-- **Upgrade** (first): did the owner use an earlier version of this Template? If yes, do "Upgrade from 0.1.x or 0.2.x" below before "Database".
+- **Upgrade** (first): did the owner use an earlier version of this Template? If yes, do "Upgrade from an earlier version" below before "Database".
 - **Your fork** (`fork_repo`): required, text, `owner/repo`. If the owner has no fork yet, creating one is an owner-gated step: ask before running `gh repo fork`.
 - **Fork remote name** (`fork_remote`): required, text, default `fork`. Not `origin`: that name stays with openclaw/openclaw (see "Checkout").
 - **Areas of interest** (`areas`): required, text, up to 300 characters. Parts of OpenClaw the owner wants to work on.
@@ -37,6 +37,7 @@ The database is one file at `db_path` (default `~/openclaw-contributor.db`), out
 - **Review target** (`review_target`): optional, default `no-must-fix`. Offer a rating floor (for example `no-must-fix, rating B`) and say ratings are review signals, not merge targets.
 - **Review rounds** (`review_max_rounds`): optional, number 1 to 5, default 3.
 - **PR mode** (`open_pr_as`): optional, choose ready or draft, default ready.
+- **Approval relay** (`approval_relay`): optional, default blank. Only if the owner will answer approval requests in another session that passes the answers on: that session key or agent id. Say that a passed-on yes counts only when it names the approval id, command, head SHA and body hash, and that OpenClaw's exec prompt still asks them.
 - **Time zone** (`time_zone`): optional, IANA time zone.
 
 ## Local preference files
@@ -60,11 +61,12 @@ Run these from the workspace root with exec, with the exact `db_path` value in p
 
 1. Check for an existing database: `sqlite3 -readonly "<db_path>" "PRAGMA user_version;"`.
    - It fails with "unable to open": there is no database. Create it: `sqlite3 -bail "<db_path>" ".read references/schema.sql"`.
-   - It prints 1: keep it, also right after an upgrade copy. Never overwrite it.
+   - It prints 2: keep it. Never overwrite it.
+   - It prints 1: it is from 0.3.x or older. Keep it and ask the owner to upgrade it in place (see "Upgrade from an earlier version"). Never overwrite it.
    - It prints 0: run `sqlite3 -readonly "<db_path>" "SELECT count(*) FROM sqlite_master;"`. If that prints 0 the file is empty: ask the owner to delete it, then create the database as above.
    - It prints any other number: stop. Tell the owner the file is not from a version this agent knows. Do not touch it.
    - It fails with the state folder message: see "Database location".
-2. Self-test: `sqlite3 -bail "<db_path>" ".read references/sql/setup-check.sql"`. It writes test rows, checks that approvals are single-use, reads them back and deletes them. (The head-SHA rules live in the ask-approval and use-approval steps.) It must print `setup-check ok, schema version 1`.
+2. Self-test: `sqlite3 -bail "<db_path>" ".read references/sql/setup-check.sql"`. It writes test rows, checks that approvals are single-use, reads them back and deletes them. (The head-SHA rules live in the ask-approval and use-approval steps.) It must print `setup-check ok, schema version 2`.
 3. Run `sqlite3 -bail "<db_path>" ".read references/sql/tracker.sql"` once to create tracker.md from the database.
 4. Record the absolute path: `sqlite3 -readonly "<db_path>" ".databases"`. It prints `main: <absolute path> r/o`. Write that absolute path into `db_path` in settings.md, and use it in every later command. OpenClaw's exec allowlist refuses commands with `~` in them (checked: "execution-plan-miss"), so this must happen before the exec approvals step.
 
@@ -161,18 +163,22 @@ The first real review happens in the loop, on a committed change. If a step fail
 3. Tell the owner the gated steps in one short list: push, force-push, open a PR, open an issue, comment, edit a PR, mark ready, request review, resolve a conversation, rerun CI, create a fork, close or reopen. Each needs their yes, every time.
 4. Then ask what to work on: an issue link, a bug, or "find candidates".
 
-## Upgrade from 0.1.x or 0.2.x
+## Upgrade from an earlier version
 
-Templates have no update command: 0.3.0 is a new agent. The database schema did not change (still version 1).
+Templates have no update command. 0.4.0 changes the database to schema version 2 (approval body hash, `withdrawn` and `recorded-outside`). Every row is kept.
 
-From 0.2.x: the database already sits at `db_path` outside the workspace, so the new agent can use the same file. Ask the owner to copy their old `settings.md` into this workspace, then add the new lines from `templates/settings.md` (`clawsweeper_runner`, `clawsweeper_model`, `local_review_note`, `review_target`, `review_max_rounds`) and ask the "Local review" questions again, since the recommended default is now clawsweeper. Set `upstream_remote: origin` and `fork_remote: fork` for the fresh clone ("Checkout"). Then do "Local ClawSweeper".
+1. Database (all versions). The owner runs these in a terminal, with the real paths, and pastes the output. The first line is their backup:
 
-From 0.1.x:
+   ```sh
+   cp -p "<db_path>" "<db_path>.v1-backup"
+   sqlite3 -bail "<db_path>" ".read <workspace>/references/sql/migrate-v1-to-v2.sql"
+   ```
 
-1. Ask the owner to copy, in a terminal, the old agent's `contributions.db` (in the old workspace, usually the folder they gave `--workspace`) to `db_path`, and keep the original as their backup.
-2. Copy `settings.md` from the old workspace too, then add the new lines from `templates/settings.md` (`db_path`, `local_review_note`, `review_target`, `review_max_rounds`).
-3. Approvals in the old database that were asked without a head SHA can no longer be used for push, force-push, open-pr, edit-pr or ready-for-review. Ask again for those steps.
-4. The old checkout can stay where it is, but this agent's file tools reach only its own workspace. Clone a fresh checkout here as "Checkout" says.
+   It must print `migrate ok, schema version 2`. It refuses a database that is not version 1 and changes nothing on any error. A request still pending becomes `withdrawn`: ask it again. A body-file approval granted before the upgrade has no body hash and cannot be used: ask again.
+2. From 0.3.x or 0.2.x: the database already sits at `db_path` outside the workspace. Ask the owner to copy their old `settings.md` into this workspace, then add the lines that are new since their version from `templates/settings.md` (0.4.0 adds `approval_relay`; 0.3.0 added `clawsweeper_runner`, `clawsweeper_model`, `local_review_note`, `review_target`, `review_max_rounds`). From 0.2.x, also ask the "Local review" questions again, set `upstream_remote: origin` and `fork_remote: fork` for a fresh clone ("Checkout"), and do "Local ClawSweeper".
+3. From 0.1.x: before step 1, ask the owner to copy the old agent's `contributions.db` (in the old workspace) to `db_path` and keep the original. Copy `settings.md` too and add the new lines (`db_path` and the lines above). Approvals asked without a head SHA can no longer be used for push, force-push, open-pr, edit-pr or ready-for-review. The old checkout can stay, but this agent's file tools reach only its own workspace: clone a fresh one here ("Checkout").
+
+To keep an existing 0.3.x agent instead of adding a new one, follow docs/README.md, "Upgrade in place".
 
 ## Finish setup
 

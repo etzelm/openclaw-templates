@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.4.0
+
+Fixes from the first live use of 0.3.0 on a real issue, and the ClawHub scan finding on 0.1.0.
+
+- Database schema version 2, with a packaged migration (`references/sql/migrate-v1-to-v2.sql`) that keeps every row. Setup and the loop check for version 2. A version 1 database is upgraded by the owner, never by the agent. README has an "Upgrade in place" path for a 0.3.x agent.
+- Approvals are bound to what the owner saw: `use-approval` now needs the same exact command, the same head and, for a `--body-file` step, the same `body_sha256`. `ask-approval` needs the body hash for body-file steps. This fixes the ClawHub finding that a head-independent approval accepted any head.
+- New approval decisions: `withdrawn` (the agent closes a stale request before any answer) and `recorded-outside` (the owner did the step outside this agent; the agent only records the verified result). `denied` now means only that the owner said no. `decide-approval` needs `owner_words`.
+- When OpenClaw's exec prompt fails before an approved command runs, the agent checks nothing happened, records `not run: <error>`, tells the owner, and asks a new approval. A spent approval is never re-armed.
+- New optional setting `approval_relay`: answers passed on from a named session or agent count only when they name the approval id, command, head and body hash, and where and when the owner said it.
+- New "Adopt work started elsewhere" section: check a handed-over commit, use a detached worktree when its branch is held, copy outside evidence into `evidence/<slug>/` first, and record who ran each earlier proof.
+- New "Proof images" section: screenshots go on an orphan `proof-assets/<slug>` branch of the fork, pushed under its own approval and linked by SHA-pinned raw URLs before the PR opens, so the hosted review sees them.
+- Agent-authored work gets an issue first, as CONTRIBUTING.md asks. `set-candidate` can set the issue url and number once the issue exists.
+- One plain command per exec call: OpenClaw refuses chained or piped commands under `ask`.
+- The signing check runs only when the owner's git config signs.
+- README: local build facts (Add takes the unpacked folder, a local Add needs the Gateway stopped, extra tools go in `tools.allow`), the live run, and an updated "Not yet tested live".
+- The simplify guide and upstream writing rule are named as files and rules of the openclaw/openclaw repo.
+
 ## 0.3.0
 
 - Local ClawSweeper is the recommended local review. Setup offers a public source checkout in `clawsweeper/` in the workspace (clone, install, build, diagnostics check) and the owner logs in to Codex himself with `codex login --device-auth`. Opting out is explicit and recorded in `local_review_note`.

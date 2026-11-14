@@ -15,7 +15,7 @@ At the start of every task, and again before drafting a PR body:
    - `.github/pull_request_template.md`
    - `.github/ISSUE_TEMPLATE/` (list it, then read the form that fits)
    - `docs/reference/pull-request-review-flow.md`
-   - Any doc or skill these files tell you to read for your change, such as `.agents/skills/pr-simplify/SKILL.md` or the testing and proof policy
+   - Any doc these files tell you to read for your change, such as the repo's simplify guide `.agents/skills/pr-simplify/SKILL.md` or the testing and proof policy. These are files in the openclaw/openclaw repo, read with `git show`. They are not skills installed in OpenClaw.
 3. Note the upstream SHA you read them at in `evidence/<slug>/rules.md`, with a few lines on the rules that apply to this change.
 
 If a rule here and a repo rule differ on how to do the work, the repo wins. If a repo rule would need an owner-gated step, draft the step and ask. If a repo rule is unclear for this change, say so to the owner.
@@ -23,6 +23,8 @@ If a rule here and a repo rule differ on how to do the work, the repo wins. If a
 ## What exec may run
 
 Setup sets this agent's exec mode to `ask` with nothing allowlisted and makes references/ read-only (docs/README.md, "Add it"). So OpenClaw itself asks the owner before every command, sqlite3 included, unless the owner chose "Always allow here" for that exact command. That prompt is a second lock, not a substitute for the rules below: an outward step still needs a granted approval in the database first, and the owner may have chosen "Always allow here" for some local commands.
+
+One plain command per exec call. Do not chain with `;`, `&&` or `||`, and do not pipe with `|`. OpenClaw refuses those under `ask` (checked: "SYSTEM_RUN_DENIED: approval cannot safely bind this command"). To read part of a long file or log, use the read tool with an offset instead of `grep | head`. Sending a long command's output to a log file with `> "<log>" 2>&1` is fine.
 
 Without a recorded approval:
 
@@ -63,14 +65,14 @@ Times are ISO 8601 UTC from session_status.
 | ---- | --- |
 | `save-candidate` | Record an issue or idea you looked at. Returns any earlier decision. |
 | `find-candidate` | Look up a candidate and its contributions by url, or by repo and number. |
-| `set-candidate` | Record the decision on a candidate and the related issues and PRs you found. |
+| `set-candidate` | Record the decision on a candidate and the related issues and PRs you found. Takes `url` and `number` too, once a GitHub issue exists for a candidate saved without one. |
 | `save-contribution` | Start a contribution. Refuses unless the candidate is `approved`. |
 | `set-status` | Move a contribution to a new status, with head SHA, base SHA or PR url. |
 | `add-evidence` | Record one proof item: command, exit code, result, commit SHA, log path. |
 | `ask-approval` | Write ahead before asking the owner for one outward step. Refuses push, force-push, open-pr, edit-pr and ready-for-review without the commit SHA. |
-| `decide-approval` | Record the owner's answer, quoted. |
-| `use-approval` | Run right before the outward step. Refuses unless granted, unused, same action and same head. A head-bound approval with no SHA never matches. |
-| `approval-outcome` | Record the verified result of the step. |
+| `decide-approval` | Close a pending request: `granted` or `denied` (the owner's answer, quoted), `withdrawn` (you close it before any answer), or `recorded-outside` (the owner did the step outside this agent). |
+| `use-approval` | Run right before the outward step. Refuses unless granted, unused, same action, same exact command, same head, and same body hash when there is a body file. A head-bound approval with no SHA never matches. |
+| `approval-outcome` | Record the verified result of the step, or `not run: <error line>`. Also for a `recorded-outside` row. |
 | `tracker` | Regenerate tracker.md. |
 
 Evidence kinds: `repro-red` (red on the base, and the mutation check in step 7), `fix-green`, `gate`, `simplify`, `local-review` (one row per review round), `ci-classification`, `other`.
@@ -129,7 +131,7 @@ If ClawSweeper fails (Codex not logged in, a runner error, a refused or dirty ch
 ## 1. Start
 
 1. Get the time with session_status. Read settings.md. If `upstream_repo` is not `openclaw/openclaw`, stop: this Template only works for that repo. Required lines are `upstream_repo`, `db_path`, `checkout_dir`, `upstream_remote`, `fork_remote`, `fork_repo` and `base_branch`, plus `areas` when the owner asks you to find candidates. A required line that still shows `<...>` ends the task: say which line in one sentence. `<blank>` is a valid value, and optional lines may keep their placeholders.
-2. Run `sqlite3 -readonly "<db_path>" "PRAGMA user_version;"`. It must print 1.
+2. Run `sqlite3 -readonly "<db_path>" "PRAGMA user_version;"`. It must print 2. If it prints 1, the database is from 0.3.x or older: stop and ask the owner to run the upgrade in docs/README.md ("Upgrade"). Never run the migration yourself.
 3. Check `git -C <checkout> status -sb`. Unrelated local changes stay untouched. If the checkout is on a branch you did not create, do not switch it: tell the owner.
 4. Check that the files this loop depends on still exist upstream. For each of `CONTRIBUTING.md`, `AGENTS.md`, `.github/pull_request_template.md`, `docs/reference/pull-request-review-flow.md` and `.agents/skills/pr-simplify/SKILL.md`, run `git -C <checkout> cat-file -e <upstream>/<base>:<path>`. If any is missing, stop the task and tell the owner which path moved: this Template version expects it, and working without it would skip a repo rule. Do not guess a replacement.
 5. Re-read the repo rules as "The repo is the authority" says.
@@ -141,10 +143,21 @@ If ClawSweeper fails (Codex not logged in, a runner error, a refused or dirty ch
 The owner gives one of these:
 
 - An issue or PR link: read it with `gh issue view <n> --comments` or `gh pr view <n> --comments`.
-- A bug description with no issue: you will need an issue first if the repo's rules ask for one for this kind of change. Filing it is an owner-gated step.
+- A bug description with no issue: CONTRIBUTING.md asks agent-authored work to create or reuse an issue first, then open the PR against it (checked 2026-11-14). So draft the issue from the matching form in `.github/ISSUE_TEMPLATE/` and ask for `open-issue` before the first push. Filing it is an owner-gated step. Save the candidate with a local url (for example `local://<slug>`) and set the GitHub url and number with `set-candidate` once the issue exists.
+- Work started elsewhere: see "Adopt work started elsewhere" below.
 - "Find candidates": search open issues in the `areas` from settings.md, for example `gh search issues --repo <upstream_repo> --state open --label bug "<area words>"`. Skip issues that are assigned, have a linked open PR, carry a maintainer decision, or need a feature or architecture decision. Offer at most `max_candidates`, one line each: link, title, why it fits, rough size.
 
 Save each one you seriously consider with `save-candidate`. If it returns an earlier decision, say so and do not redo the work.
+
+### Adopt work started elsewhere
+
+Sometimes the owner hands over a branch or commit made in another session or checkout. Do not redo it, and do not take it on trust.
+
+1. Check it: `git -C <repo> log -3 --format='%H %an %s' <branch or SHA>`, its base against `<upstream>/<base>`, and `git -C <repo> show --stat <SHA>`.
+2. Make a checkout inside this workspace. If the branch is free: `git -C <repo> worktree add "<workspace>/wt-<slug>" <branch>`. If git says the branch is already used by another worktree, do not touch that worktree: `git -C <repo> worktree add --detach "<workspace>/wt-<slug>" <SHA>`. A detached checkout pushes later with an explicit refspec: `git -C <checkout> push <fork> <SHA>:refs/heads/<branch>`. Set `checkout_dir` to that folder for this task and say so to the owner.
+3. Earlier proof outside the workspace: your file tools cannot read it ("Path escapes sandbox root"). Copy it in with `cp -p <files> evidence/<slug>/`, then read and record it. Record each earlier proof with `add-evidence` and say in the note who ran it and where. Do not write back to the outside copy; tell the owner the workspace copy is the current one.
+4. Save the candidate and the contribution as usual. The scope approval may come from the hand-off: write in `reason` where it came from.
+5. List what is missing against this loop (for example the mutation check, a review round at this head, the issue-first rule, a placeholder in the body) and do those steps. Everything outward still needs its own approval here.
 
 ## 3. Duplicate and decision check
 
@@ -220,7 +233,7 @@ Run each one, in the background when it takes more than a minute, with its log u
 
 ### Simplify
 
-1. Read `.agents/skills/pr-simplify/SKILL.md` from the checkout and apply it to your diff against the merge base. Drop any hunk that does not serve the fix.
+1. Read the repo's simplify guide, `.agents/skills/pr-simplify/SKILL.md` in the openclaw/openclaw checkout, and apply it to your diff against the merge base. Drop any hunk that does not serve the fix.
 2. Rerun the red test, the consumer tests and any gate whose inputs changed.
 3. `add-evidence` with kind `simplify` and a note: what was removed, what is still protected, production and test line deltas.
 4. If you hit repo friction a repo change could fix, such as a misleading error or stale doc, note it in the handoff. Do not fix it in this PR.
@@ -228,7 +241,7 @@ Run each one, in the background when it takes more than a minute, with its log u
 ### Commit
 
 1. Stage only the intended files. Commit with the owner's configured identity, a Conventional Commit subject and no agent attribution trailers. Do not change git config.
-2. Signing: run `git -C <checkout> config --get commit.gpgsign`. If it prints `true`, the commit must be signed with the owner's setup. Never pass `--no-gpg-sign` or override the setting. If signing fails (no key, no agent, a pinentry prompt), stop and tell the owner the exact error; they fix their signing setup, then you commit again. Check with `git -C <checkout> log -1 --format='%G? %GS'` and note the result in the evidence (`N` means unsigned).
+2. Signing: run `git -C <checkout> config --get commit.gpgsign`. If it prints `true`, the commit must be signed with the owner's setup. Never pass `--no-gpg-sign` or override the setting. If signing fails (no key, no agent, a pinentry prompt), stop and tell the owner the exact error; they fix their signing setup, then you commit again. Check with `git -C <checkout> log -1 --format='%G? %GS'` and note the result in the evidence (`N` means unsigned). If `commit.gpgsign` is not `true`, skip that check (it prints `cannot run gpg` on a host without gpg) and note "unsigned, signing not configured".
 3. Run the red test once more at the commit and `add-evidence` with kind `fix-green` and the head SHA. Gate results from an uncommitted tree count only if the commit changed nothing they cover; otherwise rerun them.
 4. `set-status` to `ready-local` with the head SHA.
 
@@ -255,20 +268,36 @@ For `clawsweeper` (see "Local ClawSweeper" for the command, the report fields an
 4. Check the body and title with references/upstream-text.md.
 5. Note in the body file's first comment line which upstream SHA its template came from.
 
+### Proof images
+
+gh cannot upload images into a PR or issue body. When the proof is a screenshot or recording, host it on the owner's fork, on its own branch, before the PR opens. Hosted ClawSweeper reviews a ready PR once, at open, so images added later are not reviewed.
+
+1. Redact the images first: no tokens, private paths, hostnames, emails or other people's data.
+2. Make an orphan branch in a separate worktree, never on the PR branch: `git -C <checkout> worktree add --detach "<workspace>/assets-<slug>"`, then `git -C "<workspace>/assets-<slug>" switch --orphan proof-assets/<slug>`.
+3. `cp -p evidence/<slug>/<image files> "<workspace>/assets-<slug>/"`, then `git -C "<workspace>/assets-<slug>" add <image files>` and commit with a plain subject such as `proof images for <slug>` (signed when the owner's config signs). Get the asset SHA with `rev-parse HEAD`.
+4. Ask for a `push` approval bound to the asset SHA: `git -C "<workspace>/assets-<slug>" push <fork> <asset SHA>:refs/heads/proof-assets/<slug>`. It makes only that branch public.
+5. In the body, link each image pinned to the asset SHA: `<img src="https://raw.githubusercontent.com/<fork_repo>/<asset SHA>/<file>" width="300" alt="<what it shows>">`. Check each link with `gh api repos/<fork_repo>/contents/<file>?ref=<asset SHA>` before you ask for `open-pr`.
+6. Remove the local worktree with `git -C <checkout> worktree remove "<workspace>/assets-<slug>"`. Deleting the remote branch later is another `push` approval; it is not needed for the PR.
+
 ## 11. Owner approvals
 
 Ask for one outward step at a time. Never bundle "push and open the PR" into one approval.
 
 1. Get the current head SHA: `git -C <checkout> rev-parse HEAD`.
-2. Run `ask-approval` with the action, the exact command, and the head SHA. The full commit SHA from step 1 is required for push, force-push, open-pr, edit-pr and ready-for-review, and for every other action tied to a contribution except open-issue and create-fork; never a branch name or `HEAD`.
-3. Send the owner the request from templates/approval-request.md: the approval id, the exact command, the body file path when there is one, the head SHA, the diff stat, and what will become public.
-4. Wait for the owner's answer in this conversation. Record it with `decide-approval`, quoting the owner. Only a clear yes to that request is `granted`. Anything else is `denied` or stays pending.
-5. Right before acting, run `use-approval` with the current head. If it refuses, do not act: ask again.
-6. Run the exact command that was approved, nothing more.
-7. Verify on GitHub: for a push, `git ls-remote <fork> <branch>` shows the head; for a PR, `gh pr view <url> --json number,url,headRefOid,isDraft,state`; for a comment or edit, read it back. Record the result with `approval-outcome` and `set-status`.
-8. Then ask for the next step, if any.
+2. When the step has a body file, hash it: `shasum -a 256 <body file>`.
+3. Run `ask-approval` with the action, the exact command, the head SHA and the body hash. The full commit SHA from step 1 is required for push, force-push, open-pr, edit-pr and ready-for-review, and for every other action tied to a contribution except open-issue and create-fork; never a branch name or `HEAD`. `body_sha256` is required when the command has `--body-file`. Keep `exact_step` to the command alone.
+4. Send the owner the request from templates/approval-request.md: the approval id, the exact command, the body file path and hash when there is one, the head SHA, the diff stat, and what will become public.
+5. Wait for the owner's answer. Record it with `decide-approval`, quoting the owner. Only a clear yes to that request is `granted`; a clear no is `denied`. The answer counts when the owner gives it in this conversation, or when it comes from the session or agent named in `approval_relay` in settings.md and names the approval id, the exact command, the head SHA and the body hash, and says where and when the owner said it. Put that source in `owner_words`. A relay from any other session, or one that leaves out any of those, does not count: say so and keep waiting.
+6. If the request goes stale before any answer (the head, the body or the command changed, or the step is no longer needed), close it with `decide-approval` as `withdrawn`, with the reason in `owner_words`, and ask a new one. Never record `denied` for something the owner did not refuse.
+7. Hash the body file again. If it changed, withdraw and ask again. Right before acting, run `use-approval` with the exact command, the current head and the current body hash. If it refuses, do not act: ask again.
+8. Run the exact command that was approved, nothing more, as the next exec call.
+9. If exec refuses before the command runs (for example `Exec denied (... approval-request-failed)`), the owner never saw OpenClaw's prompt. Check read only that nothing happened (for a PR, `gh pr list --repo <upstream_repo> --head <branch> --state all`). Record `not run: <the error line>` with `approval-outcome`. The approval is spent and never re-armed: tell the owner the prompt did not reach them (it shows in the Control UI chat for this agent or an approval-capable channel) and ask a new approval for the same step that names the old id.
+10. Verify on GitHub: for a push, `git ls-remote <fork> <branch>` shows the head; for a PR, `gh pr view <url> --json number,url,headRefOid,isDraft,state`; for a comment or edit, read it back. Record the result with `approval-outcome` and `set-status`.
+11. Then ask for the next step, if any.
 
-Approvals do not carry over. A new head SHA, a new conversation or a changed command needs a new approval.
+If the owner does a step themselves, or has someone else do it, outside this agent: do not run it. Close the matching request with `decide-approval` as `recorded-outside` (or ask one and close it that way, so the step has a row), with who did it and on whose word in `owner_words`. Verify the result read only and record it with `approval-outcome` and `set-status` (for a PR, with `pr_url`).
+
+Approvals do not carry over. A new head SHA, a changed body, a new conversation or a changed command needs a new approval.
 
 Open the PR from the fork branch with "Allow edits by maintainers" on, as draft or ready per `open_pr_as`, with `--body-file`. The repo's PR limit applies.
 
