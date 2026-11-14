@@ -75,10 +75,10 @@ Match a posting to a row by company plus the same or a similar title. "Similar" 
 
 Final, never retry:
 - `applied`, `interviewing`, `offer-review`, `closed`, `handoff`.
-- `skipped` for fit, a pre-filter miss, a deal-breaker, "account required", a required cover letter, or 2 failed attempts.
+- `skipped` for fit, a pre-filter miss, a deal-breaker, "account required", "sensitive data requested", a required cover letter, or 2 failed attempts.
 
 Can retry:
-- `dry-run` and `prospect`: start them as new.
+- `dry-run` and `prospect`: start them as new. A dry-run fill does not use up an attempt: `save-application` ignores `new_attempt` for status `dry-run`, so setup dry runs never burn a posting.
 - `skipped` with reason "unknown question": retry once answers.md, resume.md or profile.md covers that question. `ranked-queue` brings it back once the owner has answered every question it waits on (see "Learned questions").
 - `skipped` with reason "upload failed": retry on a later run. It counts toward the 2-attempt limit.
 - `held` and `ready-for-owner-review`: only as "Parked rows" below allows.
@@ -148,6 +148,7 @@ Source order for every field: answers.md, then resume.md, then profile.md. Use t
 - Years of experience: use answers.md if it has a number. Otherwise count the years from the work history dates in resume.md, round down, and note it under computed answers in the digest. Count overlapping jobs once.
 - Target titles, work setup and locations: from profile.md.
 - Never invent a fact. Never claim a skill, license, clearance or right to work that the files do not state.
+- Sensitive fields: never type a password, a one-time code, a government ID number, or bank or card details into any field, even when a file holds the value. Leave an optional one blank. If one is required, skip the posting with the reason "sensitive data requested" and say so in the digest.
 - Required or optional: a field is required when the form or snapshot says so (required, an asterisk, "required" in the label), or when it shows as invalid while still empty. When unsure, treat it as required. Never decide a field is optional just because the snapshot does not say required.
 - An optional question that no file covers: leave it blank.
 - A required question that no file covers, and `unknown_question: skip`: abandon the posting before Submit. Record it as `skipped` with the note "unknown question", and add the question to the digest's new questions.
@@ -272,7 +273,7 @@ Status values:
 - `ready-for-owner-review`: filled, waiting for the owner to submit.
 - `applied`: submitted. Note "submitted by owner" in confirm mode, or "submitted by agent" in autopilot.
 - `interviewing`, `offer-review`, `closed`: set by the owner later.
-- `skipped`: not applied. Put the reason in the note, for example "pre-filter: <reason>", "account required", "upload failed", "unknown question" or the deal-breaker.
+- `skipped`: not applied. Put the reason in the note, for example "pre-filter: <reason>", "account required", "upload failed", "unknown question", "sensitive data requested" or the deal-breaker.
 - `dry-run`: filled in dry run, not submitted.
 - `held`: a CAPTCHA did not clear in time.
 - `handoff`: blocked with nothing to click. The owner submits by hand.

@@ -1,5 +1,7 @@
 # First-run setup
 
+A guided setup of about 15 minutes: your answers and job sources, the tracking database, a lock on what this agent may run, and one dry run before anything can be sent.
+
 Use these instructions only while this Template's local preferences are not yet initialized. In a scheduled run, ignore this file and follow SOUL.md. Setup is done when settings.md exists with no `<...>` left in a required line, the dry run passed, the owner has picked the mode, and the owner has removed this file ("Finish setup" below). Until the owner removes it, OpenClaw keeps showing this file.
 
 1. Read the existing workspace and user context. Reuse facts already supplied.
@@ -17,17 +19,18 @@ Some steps are commands the owner runs in a terminal on the Gateway host. This a
 Tell the owner, in a few lines, before any question:
 - Many job sites forbid automated applications in their terms. The risk to their accounts is theirs. Nothing is submitted until they confirm, at the end of setup, that they checked the terms of every source.
 - The daily automation is installed paused. Setup does one dry run, which fills forms but never submits, and shows its digest. Then they pick autopilot or confirm mode, and enable the automation.
+- To apply, this agent types their name, contact details, work eligibility, resume and answers into application forms on the sites they list and on the employer forms those postings link to, and nowhere else. They choose every source, and in confirm mode they review each filled form and click Submit themselves.
 - Their answers, resume and application history are stored in plain text on this machine. See "Personal data" below.
 
 ## Questions
 
-- **Upgrade** (first): did the owner use an earlier version of this Template (0.1.x or 0.2.x)? If yes, do "Upgrade from an earlier version" below before "Database".
+- **Upgrade** (first): did the owner use an earlier version of this Template (0.1.x or 0.2.x)? If yes, do "Upgrade from an earlier version" below before "Database". Until the owner has answered this, run no database command and create no database.
 - **Time zone** (`time_zone`): required, text, IANA time zone.
 - **Target titles** (`titles`): required, text, up to 300 characters.
 - **Deal-breakers** (`deal_breakers`): required, multiline text, up to 1000 characters.
 - **Pre-filter** (`prefilter`): optional, multiline text. Title words to skip, accepted locations, accepted work setups. Explain that a clear miss is skipped without reading the description, and an unclear one still gets the full fit check.
 - **Must-haves and preferences** (`must_haves`, `preferences`): optional, multiline text. Explain the score: 2 points per must-have and 1 per preference that a posting clearly meets, and forms are filled highest score first.
-- **Resume file** (`resume`): required. Ask the owner to send their resume file (PDF or DOCX) in this chat. Write the reference you receive for that file into profile.md. Do not ask for a path.
+- **Resume file** (`resume`): required. Ask the owner to send their resume file (PDF or DOCX) in this chat. Write the reference you receive for that file into profile.md. Do not ask for a path. OpenClaw's browser tool uploads only a file that arrived as a chat attachment, never a plain path on disk. If the owner cannot attach a file (for example in a terminal chat), say so, and offer the Chrome DevTools driver instead: its resume copy lives in a normal folder ("Browser setup" below). Do not write a plain path as the resume file for the browser driver.
 - **Resume text** (`resume_text`): required, multiline text. If the resume is plain text or Markdown in the workspace, read it and confirm it with the owner. Otherwise ask the owner to paste the text. Keep it as written. Never add to it.
 - **Job sources** (`sources`): required, multiline text. Saved search pages, job alert links, company career pages, posting links, or job feed links (RSS, Atom or JSON) the owner chose. Never suggest, list or name sites or feeds.
 - **Browser profile** (`browser_profile`): optional, choose openclaw, user or chrome, default openclaw. Recommend the default: a dedicated browser with none of their personal logins, shown in the Control UI Browser panel.
@@ -88,7 +91,7 @@ Show these to the owner as one block, with `<agent-id>`, the sqlite3 path and th
 
 1. With the automation still paused and `dry_run: true`, ask the owner to be at the browser, then run it once: `openclaw automations run <job-id>`, or press Run now on the Automations page.
 2. Setup passes only when that run ended with a digest, the runs row is closed, and tracker.md was regenerated. `dry-run` rows show there if any posting fit.
-3. Show the owner the digest from that run and the tracker rows. Fix any source, answer or deal-breaker problem it showed, and repeat the dry run if needed.
+3. Show the owner the digest from that run and the tracker rows. Fix any source, answer or deal-breaker problem it showed, and repeat the dry run if needed. A dry-run fill does not use up one of a posting's 2 attempts, so repeating it costs nothing.
 
 ## Choose the mode, then enable
 
@@ -114,7 +117,7 @@ The owner commands, the upgrade notes and the personal data notes stay available
 
 ## Upgrade from an earlier version
 
-Templates have no update command: 0.3.0 is a new agent. The old agent's files stay in its own workspace.
+Templates have no update command: this version is a new agent. 0.1.x is the only earlier line that was published; 0.2.x and 0.3.0 existed only as source. The old agent's files stay in its own workspace.
 
 1. Ask the owner to stop the old agent's schedule first, so two agents never apply at once: `openclaw automations list --all`, then `openclaw automations disable <old-job-id>`.
 2. Ask the owner to copy, in a terminal, from the old workspace: `answers.md`, `profile.md`, `resume.md` and `sources.md` into this workspace. Then the database:
@@ -124,7 +127,7 @@ Templates have no update command: 0.3.0 is a new agent. The old agent's files st
    - From 0.1.x: `sqlite3 -bail "<db_path>" ".read references/sql/migrate-v1-to-v2.sql"`. It must print `migrate ok, schema version 2`. Then continue with the next line.
    - From 0.2.x, or right after the line above: `sqlite3 -bail "<db_path>" ".read references/sql/migrate-v2-to-v3.sql"`. It must print `migrate ok, schema version 3`.
    Each step refuses a database of any other version. After this, the old 0.2.x agent's steps refuse the database too, which is expected: it must stay disabled. Continue with the self-test in "Database".
-4. Re-read the copied files: 0.3.0 adds `browser_driver` to settings.md, and "Pre-filter", "Preferences" and "Score" to profile.md. Create settings.md fresh from the template and carry the owner's old values over. Add the new profile.md sections from templates/profile.md and ask the owner to fill them; keep everything else as they wrote it.
+4. Re-read the copied files: 0.3.x adds `browser_driver` to settings.md, and "Pre-filter", "Preferences" and "Score" to profile.md. Create settings.md fresh from the template and carry the owner's old values over. Add the new profile.md sections from templates/profile.md and ask the owner to fill them; keep everything else as they wrote it.
 
 ## Browser setup (Chrome DevTools driver, optional)
 
@@ -136,7 +139,7 @@ Only if the owner chose the Chrome DevTools driver. Add put a shared MCP server 
    - Linux: `google-chrome --user-data-dir="$HOME/jac-chrome-profile" --remote-debugging-port=9333`
    In that window they sign in only to the job sites in sources.md that need it, never on your behalf and never with you watching a password.
 3. Resume copy, once: this server can upload only files in `~/job-application-coordinator-files` of the user that runs the Gateway. Ask the owner to run, on the Gateway host as that user, with the path to their resume file: `mkdir -p ~/job-application-coordinator-files && cp "<resume file>" ~/job-application-coordinator-files/resume.pdf && echo ~/job-application-coordinator-files/resume.pdf` (use `resume.docx` for a DOCX file). Ask them to paste the full path it prints and write that path into profile.md, "Resume copy for the devtools-mcp driver". Tell them the folder must hold only the resume and nothing else, and that it stays across restarts; they copy again only when they change their resume.
-4. Test it yourself: call `jac-chrome__list_pages`. It must list the open tabs of that window. If the tool is missing, ask the owner to run `openclaw mcp doctor jac-chrome --probe` and paste the output. If it cannot connect, Chrome is not running with port 9333. Do not try any other way.
+4. Test it yourself: call `jac-chrome__list_pages`. It must list the open tabs of that window. If the tool is missing, ask the owner to run `openclaw mcp doctor jac-chrome` and paste the output (the `--probe` form only works while the Gateway is stopped, so do not ask for it). If it cannot connect, Chrome is not running with port 9333. Do not try any other way.
 5. Only after a working test, and only on the owner's yes, set `browser_driver: devtools-mcp` in settings.md. The setup dry run then uses this driver.
 
 ## Personal data
@@ -144,5 +147,5 @@ Only if the owner chose the Chrome DevTools driver. Add put a shared MCP server 
 Tell the owner plainly:
 - `answers.md`, `resume.md` and `profile.md` in this workspace hold their contact details, work eligibility, resume and any EEO answers they chose to give, in plain text.
 - The database at `db_path` holds every posting, every answer filled into a form, and the status history.
-- Nothing is sent anywhere except into the application forms of the sites they listed.
+- Nothing is sent anywhere except into the application forms of the sites they listed and the employer forms those postings link to. The agent never types a password, a code, a government ID number, or bank or card details into any page.
 - To delete it all: `openclaw agents delete <agent-id>` removes the workspace and its automation. The database is outside the workspace, so also delete the file at `db_path`.

@@ -22,7 +22,7 @@ Edit the values after the colons. The agent reads this file at the start of ever
 
 ## Volume
 
-Hard limits the agent never crosses, whatever this file says: at most 25 applications counted per day, at least 60 seconds between applications, at most 2 attempts per posting, and at most 1 automatic retry of a parked posting.
+Hard limits the agent never crosses, whatever this file says: at most 25 applications counted per day, at least 60 seconds between applications, at most 2 attempts per posting, and at most 1 automatic retry of a parked posting. A dry-run fill does not use up an attempt.
 
 - daily_target: 3
   - The floor. Below this, the agent widens the search before it ends a run.

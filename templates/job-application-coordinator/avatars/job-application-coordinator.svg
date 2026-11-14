@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="-12 -18 144 144" role="img">
+<metadata>MIT License. Copyright (c) 2026 etzelm.</metadata>
+<title>Job Application Coordinator</title><desc>An indigo Blobster in a navy jacket and gold tie holds up a resume with a green check mark.</desc>
+<defs><clipPath id="coordinator-body-clip"><path d="M60 8 C32 8 16 32 16 52 C16 72 30 90 44 95 L44 104 L54 104 L54 96 C58 97.5 62 97.5 66 96 L66 104 L76 104 L76 95 C90 90 104 72 104 52 C104 32 88 8 60 8 Z"/></clipPath></defs>
+<g stroke="#4656C9" stroke-width="4" stroke-linecap="round" fill="none"><path d="M46 14 Q38 4 31 7"/><path d="M74 14 Q82 4 89 7"/></g>
+<path d="M20 42 C5 37 0 47 5 57 C10 67 20 62 25 52 C28 45 25 42 20 42 Z" fill="#3F4DB3"/>
+<path d="M60 8 C32 8 16 32 16 52 C16 72 30 90 44 95 L44 104 L54 104 L54 96 C58 97.5 62 97.5 66 96 L66 104 L76 104 L76 95 C90 90 104 72 104 52 C104 32 88 8 60 8 Z" fill="#5B6CE0"/>
+<g clip-path="url(#coordinator-body-clip)"><path d="M10 62 L46 56 L60 74 L74 56 L110 62 V110 H10 Z" fill="#1F2A44"/><path d="M46 56 L60 78 L74 56 Z" fill="#FFFFFF"/><path d="M56.5 58 H63.5 L65.5 64 L60 90 L54.5 64 Z" fill="#F2A93B"/><path d="M46 56 L52 74 L60 78 M74 56 L68 74 L60 78" fill="none" stroke="#141C30" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></g>
+<ellipse cx="48" cy="28" rx="20" ry="11" fill="#ffffff" opacity="0.14"/>
+<g><circle cx="45" cy="34" r="5.5" fill="#0a1014"/><circle cx="75" cy="34" r="5.5" fill="#0a1014"/><circle cx="46.5" cy="32.5" r="2.2" fill="#EEF1FF"/><circle cx="76.5" cy="32.5" r="2.2" fill="#EEF1FF"/></g>
+<g><rect x="84" y="24" width="38" height="50" rx="6" fill="#FFFFFF" stroke="#1F2A44" stroke-width="3.5"/><circle cx="95" cy="37" r="4.5" fill="#5B6CE0"/><g fill="none" stroke="#1F2A44" stroke-width="3" stroke-linecap="round"><path d="M104 34.5 H114"/><path d="M104 40 H111"/><path d="M92 49 H114"/><path d="M92 55.5 H114"/><path d="M92 62 H103"/></g><circle cx="116" cy="70" r="9.5" fill="#2FA36B" stroke="#FFFFFF" stroke-width="2.5"/><path d="M111.5 70.5 L114.8 73.8 L120.8 66.8" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M100 42 C115 37 120 47 115 57 C110 67 100 62 95 52 C92 45 95 42 100 42 Z" fill="#3F4DB3" transform="translate(-10 27)"/></g>
+</svg>
