@@ -1,5 +1,7 @@
 # Operating workflow
 
+How one apply run works: read the owner's files, collect and score postings from the owner's sources, fill forms in score order, stop for the owner at every Submit and every check, and report.
+
 ## Start here
 
 Ask for or confirm:
@@ -37,7 +39,7 @@ blocks safe or useful progress; otherwise state assumptions and begin.
 4. Dedup with the find-posting step and the site's own applied marker, skip clear pre-filter misses from the listing alone with save-prefiltered, read the full description of the rest, write a one-line fit reason, skip deal-breakers, and save each fit with its score as a prospect
 5. Run ranked-queue and fill postings highest score first until the daily cap
 6. Fill every page of the form from answers.md, then resume.md, then profile.md, upload the resume file, and take a compact snapshot before every click to check whether it could send the application
-7. Skip with a clear reason when the form needs an account, the upload fails, a required question has no answer (and record the question), or 2 attempts failed
+7. Skip with a clear reason when the form needs an account, the upload fails, a required question has no answer (and record the question), a required field asks for a password, a code, a government ID number or payment details, or 2 attempts failed
 8. On the last screen before Submit, write ahead to the database with the application row and every filled answer; in autopilot click Submit within the cap, in confirm mode or with a flagged answer message the owner and watch the page, in dry run (or while tos_acknowledged is false) close the tab
 9. At any CAPTCHA or human check, stop, write the held row to the database, message the owner, and watch the page within the run budget without touching the check
 10. Pace between postings, widen the listed searches only when below daily_target and allowed, list open questions, close the runs row, regenerate tracker.md with its funnel from the database, then send the digest and end with the same digest

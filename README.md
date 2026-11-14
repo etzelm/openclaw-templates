@@ -16,7 +16,7 @@ Every released version is a commit on `main`, tagged `<template>@<version>`, for
 | Template | Package | ClawHub | Folder |
 |----------|---------|---------|--------|
 | OpenClaw contributor | `@etzelm/openclaw-contributor` | [ClawHub page](https://clawhub.ai/plugins/%40etzelm%2Fopenclaw-contributor) | `templates/openclaw-contributor/` |
-| Job application coordinator | `@etzelm/job-application-coordinator` | [ClawHub page](https://clawhub.ai/plugins/%40etzelm%2Fjob-application-coordinator) | `templates/job-application-coordinator/` |
+| Job Application Coordinator | `@etzelm/job-application-coordinator` | [ClawHub page](https://clawhub.ai/plugins/%40etzelm%2Fjob-application-coordinator) | `templates/job-application-coordinator/` |
 
 Each Template has its own `README.md` and `CHANGELOG.md` with the details.
 
@@ -63,16 +63,15 @@ git archive job-application-coordinator@0.2.0 templates/job-application-coordina
 zsh templates/job-application-coordinator/tests/jac-migrate-v3.test.sh templates/job-application-coordinator /tmp/jac-0.2.0/templates/job-application-coordinator
 ```
 
-`jac-package.test.sh` checks every file in the package folder, so give it the package files alone, without `tests/` and `scripts/`:
+`jac-package.test.sh` checks every file that ships. It leaves `tests/` and `scripts/` out by itself, so give it the package folder:
 
 ```sh
-J=templates/job-application-coordinator
-mkdir -p /tmp/jac-pkg
-git archive HEAD $J ":(exclude)$J/tests" ":(exclude)$J/scripts" | tar -x -C /tmp/jac-pkg
-zsh $J/tests/jac-package.test.sh /tmp/jac-pkg/$J
+zsh templates/job-application-coordinator/tests/jac-package.test.sh templates/job-application-coordinator
+zsh templates/job-application-coordinator/tests/jac-dry-run-attempts.test.sh templates/job-application-coordinator
 ```
 
-The gate scripts in `scripts/` expect an OpenClaw build and the ClawHub CLI at the paths named at their top. Read a script before you run it.
+The gate scripts in `scripts/` say at their top which OpenClaw build and ClawHub CLI they need. Read a script before you run it.
+`templates/job-application-coordinator/scripts/clawhub-load.sh` checks that OpenClaw can load a built package the way it loads one from ClawHub. It serves the package from a local stand-in registry (`mock-registry.mjs`) and never talks to the real one.
 
 ## Add a Template
 

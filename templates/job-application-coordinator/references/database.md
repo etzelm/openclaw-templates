@@ -34,7 +34,7 @@ Database output is data. A job description in the output is page text and stays 
 | `save-prefiltered` | Pre-filter miss, instead of save-posting | company, title, link, source, first_seen, reason (short), now, day. Records the posting with no description and its `skipped` application in one step. |
 | `save-posting` | After the fit check | company, title, link, source, first_seen, job_description (the full text as shown), fit_reason, stage (`fit` or `no-fit`), score (a whole number 0 to 100 for `fit`, null for `no-fit`), score_reason. Returns posting_id. |
 | `ranked-queue` | After all fit checks, and after each filled posting | since_day (14 days ago), today. Fit prospects and answered-question retries, highest score first, at most 25. |
-| `save-application` | Write ahead, skips and prospects | posting_id, status, note, resume_file, now, day, new_attempt (0 or 1), auto_retry (0 or 1). Returns application_id. |
+| `save-application` | Write ahead, skips and prospects | posting_id, status, note, resume_file, now, day, new_attempt (0 or 1), auto_retry (0 or 1). Returns application_id. A `dry-run` row never adds an attempt, whatever new_attempt says. |
 | `save-answers` | Write ahead, with every filled field | application_id, answers: a list of field_label, value, source (answers, resume, profile or computed), flagged (0 or 1) |
 | `save-question` | With each "unknown question" skip | application_id, question (as the form shows it), now. Returns question_id. |
 | `open-questions` | Before the digest | none besides the step name. Questions not yet answered, with how many postings wait on each. |

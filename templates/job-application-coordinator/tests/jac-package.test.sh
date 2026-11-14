@@ -6,6 +6,14 @@
 set -u
 PKG="${1:?package dir}"; PKG="${PKG:A}"
 REGEX="${0:A:h}/../scripts/vendor-names.regex"
+# In the repo, tests/ and scripts/ sit inside the package folder but are not packed.
+# Check a copy without them, so the whole-package greps see only what ships.
+if [[ -d "$PKG/tests" || -d "$PKG/scripts" ]]; then
+  PKGCOPY="$(mktemp -d "${TMPDIR:-/tmp}/jacpkg.XXXXXX")"
+  trap 'rm -rf "$PKGCOPY"' EXIT
+  (cd "$PKG" && tar cf - --exclude ./tests --exclude ./scripts --exclude ./dist --exclude ./tmp .) | (cd "$PKGCOPY" && tar xf -)
+  PKG="$PKGCOPY"
+fi
 FAILS=0; PASSES=0
 ok() { PASSES=$((PASSES + 1)); echo "PASS $1"; }
 bad() { FAILS=$((FAILS + 1)); echo "FAIL $1 :: ${2:-}"; }

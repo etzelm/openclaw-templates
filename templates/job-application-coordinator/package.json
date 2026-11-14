@@ -1,7 +1,7 @@
 {
   "name": "@etzelm/job-application-coordinator",
-  "version": "0.3.0",
-  "description": "Applies to jobs from your own sources in a dedicated browser, holds at every CAPTCHA, and tracks each application in SQLite. Installs paused, in dry run.",
+  "version": "0.3.1",
+  "description": "Fills job applications on the sites you choose from your own answers and resume, and tracks every one. Starts paused, in dry run.",
   "author": "Mitchell Etzel",
   "license": "MIT",
   "type": "module",

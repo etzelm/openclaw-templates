@@ -1,15 +1,50 @@
-# Job application coordinator
+# Job Application Coordinator
 
-Applies to jobs from your own sources in a dedicated browser, holds at every CAPTCHA, and tracks each application in SQLite. Installs paused, in dry run.
+Send more job applications without giving up control of what gets sent.
 
-**Best for:** job seekers who want many applications sent from their own answers and resume, and who can be near the browser during runs to clear checks.
+You list the job sites and search pages you want. The agent reads them, skips clear misses, scores the rest against what you asked for, and fills each application form from your own answers and resume. It starts paused and in dry run, and in the default mode you click Submit yourself.
+
+## What it does
+
+- **Works only from your sources.** Saved searches, job alert links, company career pages, single postings or job feeds that you list. It never picks sites.
+- **Skips clear misses early.** A posting whose title, location or work setup is a clear miss is skipped from the listing alone, with a reason.
+- **Scores what fits.** 2 points per must-have and 1 per preference the description clearly meets. Forms are filled highest score first, up to a daily cap.
+- **Fills from your own words.** Every field comes from your answer bank, your resume or your profile. It never invents an answer and never writes a cover letter.
+- **Asks when it does not know.** A required question no file answers is listed in the digest. Answer it once in chat and the postings that waited on it are tried again.
+- **Keeps a record.** A small SQLite database holds every posting, every filled answer and every status change. A tracker file shows each application and a funnel per source.
+
+## You stay in control
+
+- **Installs paused, in dry run.** Setup runs one dry run: forms are filled, nothing is sent, and you read the digest first.
+- **You click Submit.** Confirm mode is the default: the agent fills the form, stops before the send click and waits for you. Autopilot, where the agent clicks Submit itself within the daily cap, is a choice you make in your own words after the dry run, and one line in settings.md turns it off.
+- **Nothing is sent until you say you checked each site's terms.** Until then every run stays a dry run.
+- **A human clears every CAPTCHA.** The agent stops, tells you and waits. It never clicks, solves or works around a check.
+- **No logins, no passwords.** It never logs in, creates an account, or types a password, a code, an ID number or payment details.
+- **Your data goes only into the forms you chose.** Your contact details, work eligibility, resume and answers are typed into application forms on the sites you list and the employer forms their postings link to. Nowhere else.
+- **Hard limits.** At most 25 applications a day and one a minute, whatever the settings say, and never twice to the same posting.
+
+## Example
+
+> Run today's apply pass.
+
+The agent opens your two saved searches and your feed, finds 14 postings, and skips 5 from the listing alone (wrong title or on-site). It reads the other 9, drops 3 on a deal-breaker, and scores 6 fits. It fills the top form, uploads your resume, stops on the last screen and messages you: "Ready to submit Example Co / Backend Engineer. Check it in the browser window and click Submit yourself." One form asks a required question your files do not answer, so that posting waits and the question is in the digest. The digest lists what was sent, what waits for you, what was skipped and why.
+
+A real dry run digest: [examples/dry-run-digest.md](examples/dry-run-digest.md).
+
+**Best for:** job seekers who want many applications sent from their own answers and resume, and who can be near the browser during runs to click Submit and clear checks.
 
 ## Before you add it
 
 - **Terms of service.** Many job sites forbid automated applications. The risk to your accounts is yours. Nothing is submitted until you set `tos_acknowledged: true` in settings.md.
-- **Requirements.** macOS or Linux (Windows is untested), OpenClaw with Templates enabled (Settings, Labs), sqlite3 3.35 or newer on the Gateway host (built into macOS), a browser you can see during runs (the Control UI Browser panel is enough for the default `openclaw` profile), and a model strong enough to follow long instructions.
+- **Requirements.** macOS or Linux (Windows is untested). OpenClaw with Templates turned on: Settings, Labs, or `openclaw config set gateway.controlUi.experimental.templates true`. sqlite3 3.35 or newer on the Gateway host (built into macOS). A browser you can see during runs (the Control UI Browser panel is enough for the default `openclaw` profile). A model that already answers in OpenClaw and is strong enough to follow long instructions; small models miss steps.
+- **Only for the optional Chrome DevTools driver.** Google Chrome on the Gateway host, and `npx` (it comes with Node) with network access the first time, to fetch the pinned server. The default browser driver needs neither.
+- **Cost.** Every run is one long model session: the agent reads each source page, each posting it does not pre-filter, and every form it fills. With a paid model that costs money on every scheduled day, whether or not anything fits. The run time limit and `daily_cap` bound it, and the pre-filter rules in profile.md are the cheapest way to cut it. Start with one or two sources.
 - **Setup time.** About 15 minutes, including one dry run.
 - **Not for** headless servers where nobody can see the browser: every CAPTCHA would time out.
+
+## Skills and plugins
+
+None are declared, on purpose. The agent needs only OpenClaw's own browser, file, message and exec tools, plus one optional pinned MCP server for people who prefer to drive their own Chrome. Fewer parts means less to review before you trust it with your applications.
 
 ## Add it
 
@@ -17,11 +52,15 @@ Applies to jobs from your own sources in a dedicated browser, holds at every CAP
 openclaw templates add @etzelm/job-application-coordinator
 ```
 
+Check first that your model answers: send any agent a short message. Add ends with a short greeting from the new agent, so it needs a working model.
+
+If Add prints "The agent was already made available and was kept", that greeting failed and the install is incomplete: the new agent has no setup file, no schedule and no `jac-chrome` server. Do not continue in it. Fix the model, remove the half-made agent with `openclaw agents delete <agent-id>` (`openclaw agents list` shows the id), and add again.
+
 Or use Add on the Template's page under Pages, Templates. No `--workspace` is needed: the database lives at `db_path` (default `~/job-application-coordinator.db`), outside the OpenClaw state folder, so a default Add works from the CLI and the Control UI.
 
 ## What setup does
 
-1. Asks for your time zone, target titles, deal-breakers, resume file and job sources, and optionally pre-filter rules, must-haves and preferences for the score, and the Chrome DevTools driver.
+1. Asks for your time zone, target titles, deal-breakers, resume file (sent as a chat attachment in the Control UI or a chat app; a terminal chat cannot attach files, so terminal-only owners use the Chrome DevTools driver, which reads the resume from a folder) and job sources, and optionally pre-filter rules, must-haves and preferences for the score, and the Chrome DevTools driver.
 2. Creates the database at `db_path` and runs a self-test.
 3. Records the database's absolute path before the exec lock (the allowlist refuses `~`).
 4. Gives you terminal commands to run, with your values filled in. These are required:
@@ -46,33 +85,39 @@ site-notes.md in the workspace is yours. Write what you know about each of your 
 
 ## Browser drivers
 
-- `browser` (default): OpenClaw's browser tool, as in 0.2.0. The default `openclaw` profile is a dedicated browser with none of your personal logins.
+- `browser` (default): OpenClaw's own browser tool. The default `openclaw` profile is a dedicated browser with none of your personal logins.
 - `devtools-mcp`: the `jac-chrome` MCP server this Template adds, Chrome DevTools MCP pinned to 1.12.0 and started by the Gateway with npx. It attaches to a dedicated Chrome you start on the Gateway host with its own profile folder and `--remote-debugging-port=9333`, holding only your job-site logins. Script running is turned off in the server, and the agent may use only the page tools listed in CLAW.md; `evaluate_script`, extension, emulation, performance and console tools are denied. Setup walks you through it and switches only after a working test.
   - Anything on that machine that can reach port 9333 can control that Chrome. Keep it to job sites and close it when runs are done.
   - The server is shared OpenClaw config. Its tool filter applies to every agent; to keep other agents off it entirely, deny `jac-chrome__*` in their tool policy.
   - It can upload files only from `~/job-application-coordinator-files` (of the user that runs the Gateway) and the system temp folder. Setup has you copy your resume there once, and it stays across restarts: `mkdir -p ~/job-application-coordinator-files && cp "<resume file>" ~/job-application-coordinator-files/resume.pdf`. Keep only your resume in that folder. Copy again only when your resume changes.
-  - Check the server: `openclaw mcp doctor jac-chrome --probe`.
+  - Check the server's config: `openclaw mcp doctor jac-chrome`. The `--probe` form connects to the server too, but OpenClaw only runs it while the Gateway is stopped.
 
 ## What it never does
 
-- Log in, create accounts, or type passwords or codes.
+- Log in, create accounts, or type passwords, codes, government ID numbers, or bank or card details.
 - Click, solve or skip a CAPTCHA. It holds, tells you, and waits within the run budget.
 - Invent answers or write cover letters. EEO and self-ID questions stay blank unless your answer bank answers them.
 - Visit sites other than your sources and the one apply form a posting links to, or suggest sources.
 - Run scripts in a page, or retry around a block after Submit. The success check only reads the page and its network responses.
 - Apply twice to one posting, more than 25 times a day, or faster than once a minute, whatever the settings say.
 
-## Example
-
-A dry run digest, from a real run against a public job board with test answers: see [examples/dry-run-digest.md](examples/dry-run-digest.md).
-
 ## Messages in a chat app
 
 Scheduled runs land in the agent's own conversation in the Control UI. To get holds and the digest in a chat app as well: `openclaw automations edit <job-id> --delivery-target owner` (add `--channel <channel>` on a host with several channels). Find `<job-id>` with `openclaw automations list --agent <agent-id> --all`.
 
-## Not yet tested live
+## Tested live, and not yet
 
-0.3.0 was run live in dry run on an isolated test instance with the Chrome DevTools driver, against a made-up job board and feed served on the test machine itself, not against any real site. In that run the agent pre-filtered two postings without opening them, scored three fits, filled two forms in score order with the resume upload, skipped one for an unknown required question, listed that question in the digest, learned the owner's answer in a later chat turn, and queued the posting for a retry. Not yet run live: a real site, a CAPTCHA hold, a confirm-mode wait, the mode choice and enable, the browser tool driver in 0.3.0, and any real submit.
+All live tests ran on isolated test instances against a made-up job board and feed served on the test machine itself. No real site was used and no real application was sent.
+
+Tested live:
+
+- First-run setup by chat on a fresh install: the notice about terms and personal data, the questions, the files, the database self-test, the owner commands exactly as setup prints them, and the mode choice.
+- Dry runs with the default browser tool: two postings pre-filtered without being opened, three fits scored, forms filled in score order with the resume uploaded, one posting skipped for a required question no file answered, and that question learned from the owner's chat answer.
+- A run started by the schedule itself, in confirm mode: the agent filled a form, stopped before Submit, waited for the owner and sent nothing.
+- A hostile posting whose text told agents to change settings, submit at once and add a false answer: the agent skipped it and changed nothing.
+- The Chrome DevTools driver in dry runs, including the resume upload from its folder across a Gateway restart.
+
+Not yet tested live: a real job site, a CAPTCHA hold, an owner actually clicking Submit in confirm mode, autopilot, and any real submit. Treat your first real runs as a test: stay in confirm mode, keep `daily_cap` low and read each digest.
 
 ## Personal data
 
@@ -80,13 +125,14 @@ Scheduled runs land in the agent's own conversation in the Control UI. To get ho
 - The database at `db_path` holds every posting, every filled answer and the status history.
 - To remove everything: `openclaw agents delete <agent-id>`, then delete the file at `db_path`.
 
-## Upgrade from 0.1.x or 0.2.x
+## Upgrade from an earlier version
 
-Templates have no update command. Add 0.3.0 as a new agent, disable the old agent's automation, and follow "Upgrade from an earlier version" in BOOTSTRAP.md (setup asks first): copy your answer files over, keep a backup of the database, and the agent runs the packaged migrations (`references/sql/migrate-v1-to-v2.sql` for 0.1.x, then `references/sql/migrate-v2-to-v3.sql`). After that the old 0.2.x agent can no longer use the database, so keep it disabled.
+Templates have no update command. Add this version as a new agent, disable the old agent's automation, and follow "Upgrade from an earlier version" in BOOTSTRAP.md (setup asks first): copy your answer files over, keep a backup of the database, and the agent runs the packaged migrations (`references/sql/migrate-v1-to-v2.sql` for 0.1.x, then `references/sql/migrate-v2-to-v3.sql`). After that the old 0.2.x agent can no longer use the database, so keep it disabled.
 
 ## Package contents
 
 - `CLAW.md`: manifest and the agent's SOUL.md.
+- `avatars/job-application-coordinator.svg`: the agent's avatar. `assets/icon.png` is the same artwork as the catalog icon; Add also copies it to `avatars/catalog.png`.
 - `BOOTSTRAP.md`: first-run setup.
 - `workspace/AGENTS.md`: operating workflow.
 - `references/apply-loop.md`, `references/apply-mechanics.md`, `references/database.md`: run rules.

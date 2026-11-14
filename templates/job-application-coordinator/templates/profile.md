@@ -53,8 +53,9 @@ Skip any posting that matches one of these.
 - Resume text: in resume.md. The agent fills work history, education and skills from it.
 - Resume file: <filled in by the agent during setup>
   - This is the file the agent uploads when a form asks for one.
-  - To set it, send your resume file (PDF or DOCX) to this agent in chat. The agent writes the reference it receives here. You do not need to know where the file is stored.
-  - Stored uploads can be cleared when OpenClaw restarts. If an upload fails, the agent tells you; send the file again.
+  - To set it, send your resume file (PDF or DOCX) to this agent as a chat attachment, in the Control UI or a chat app. The agent writes the reference it receives here. You do not need to know where the file is stored.
+  - A terminal chat cannot attach files, and OpenClaw's browser tool uploads only chat attachments, not a path on disk. If you only use a terminal, use the devtools-mcp driver below: it reads the resume from a normal folder.
+  - OpenClaw keeps chat attachments unless your config sets `attachments.ttlHours`. If an upload fails, the agent tells you; send the file again.
   - The agent stops the run if no file is named here. A posting whose upload fails is skipped. Two failed uploads in a row end the run.
 - Resume copy for the devtools-mcp driver: <blank>
   - Only needed when settings.md has `browser_driver: devtools-mcp`. That server can upload only files in `~/job-application-coordinator-files` on the Gateway host. Setup has you copy your resume there once; put its full path here, the one the setup command prints (your home folder, then `job-application-coordinator-files/resume.pdf`).

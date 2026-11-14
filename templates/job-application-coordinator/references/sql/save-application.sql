@@ -1,4 +1,5 @@
 -- Write ahead: insert or update the application row. Run it before any owner message and before any Submit click. Input: posting_id, status, note, resume_file, now, day, new_attempt (0 or 1), auto_retry (0 or 1). A status_events row is added by trigger.
+-- new_attempt is ignored for status dry-run: a dry-run fill does not count toward the 2 attempts.
 -- Run from the workspace root:
 --   sqlite3 -bail -json <db_path> ".read references/sql/save-application.sql"
 -- Input: write db-input.json with the write tool first, with "step": "save-application".
@@ -16,7 +17,8 @@ INSERT INTO applications (posting_id, status, attempts, auto_retries, resume_fil
 SELECT
   json_extract(j, '$.posting_id'),
   json_extract(j, '$.status'),
-  coalesce(json_extract(j, '$.new_attempt'), 0),
+  -- A dry-run fill never clicks Submit, so it uses up none of the 2 attempts.
+  CASE WHEN json_extract(j, '$.status') = 'dry-run' THEN 0 ELSE coalesce(json_extract(j, '$.new_attempt'), 0) END,
   coalesce(json_extract(j, '$.auto_retry'), 0),
   coalesce(json_extract(j, '$.resume_file'), ''),
   json_extract(j, '$.day'),
