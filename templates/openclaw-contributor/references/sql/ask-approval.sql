@@ -1,11 +1,11 @@
--- Write ahead before asking the owner for one outward step. Input: candidate_id, contribution_id (or null), action, exact_step, head_sha, body_sha256, now. head_sha (the commit SHA, 7 to 64 lowercase hex characters, never a branch name or HEAD) is required for push, force-push, open-pr, edit-pr and ready-for-review, and for any other action with a contribution_id except open-issue and create-fork. body_sha256 (64 lowercase hex, from shasum -a 256 of the body file) is required when exact_step has --body-file. Returns the approval id to name in the request.
+-- Write ahead before asking the owner for one outward step. Input: candidate_id, contribution_id (or null), action, exact_step, head_sha, body_sha256, now. head_sha (the commit SHA, 7 to 64 lowercase hex characters, never a branch name or HEAD) is required for push, force-push, open-pr, edit-pr and ready-for-review, and for any other action with a contribution_id except open-issue and create-fork. body_sha256 (64 lowercase hex, from shasum -a 256 of the body file) is required when exact_step has --body-file or -F. Inline --body or -b is refused. Returns the approval id to name in the request.
 -- Run from the workspace root:
 --   sqlite3 -bail -json <db_path> ".read references/sql/ask-approval.sql"
 -- Input: write db-input.json with the write tool first, with "step": "ask-approval".
 -- Issue, PR and page text goes only into db-input.json, never into the command line.
 .bail on
 PRAGMA foreign_keys = ON;
-CREATE TEMP TABLE schema_guard (v INTEGER CHECK (v = 2));
+CREATE TEMP TABLE schema_guard (v INTEGER CHECK (v = 3));
 INSERT INTO temp.schema_guard SELECT user_version FROM pragma_user_version;
 CREATE TEMP TABLE input (j TEXT NOT NULL CHECK (json_valid(j)));
 INSERT INTO temp.input VALUES (CAST(readfile('db-input.json') AS TEXT));
@@ -25,9 +25,14 @@ INSERT INTO temp.head_guard SELECT
 FROM temp.input;
 
 -- A step with a body file is bound to that file's content: the owner approves the text they read.
+-- Body text never goes inline (--body, -b): only from a file, -F or --body-file, bound by its hash.
 CREATE TEMP TABLE body_guard (ok INTEGER CHECK (ok = 1));
 INSERT INTO temp.body_guard SELECT
-  CASE WHEN json_extract(j, '$.exact_step') GLOB '*--body-file*'
+  CASE WHEN ' ' || json_extract(j, '$.exact_step') || ' ' GLOB '* --body *'
+         OR ' ' || json_extract(j, '$.exact_step') || ' ' GLOB '* -b *'
+       THEN 0
+       WHEN json_extract(j, '$.exact_step') GLOB '*--body-file*'
+         OR ' ' || json_extract(j, '$.exact_step') || ' ' GLOB '* -F *'
        THEN coalesce(length(json_extract(j, '$.body_sha256')), 0) = 64
        ELSE 1 END
 FROM temp.input;

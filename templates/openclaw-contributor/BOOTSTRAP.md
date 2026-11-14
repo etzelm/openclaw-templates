@@ -1,6 +1,6 @@
 # First-run setup
 
-Use these instructions only while this Template's local preferences are not yet initialized. Setup is done when settings.md exists with no `<...>` left in a required line, the database self-test passed, the exec host and approvals step is confirmed, the approval relay question is answered, local review is set up or the opt-out is recorded, and the owner has removed this file ("Finish setup" below). Until the owner removes it, OpenClaw keeps showing this file.
+Use these instructions only while this Template's local preferences are not yet initialized. Setup is done when settings.md exists with no `<...>` left in a required line, the database self-test passed, the exec host and approvals step is confirmed, the approval relay question is answered, the commit identity and signing check passed (or the signing opt-out is recorded), local review is set up or the opt-out is recorded, and the owner has removed this file ("Finish setup" below). Until the owner removes it, OpenClaw keeps showing this file.
 
 1. Read the existing workspace and user context. Reuse facts already supplied.
 2. Ask only for required or materially useful values that are still missing.
@@ -20,6 +20,8 @@ Tell the owner, in a few lines, before any question:
 - The loop is long and strict and needs a strong model.
 - This agent's commands must run on the Gateway host, where its workspace is. Setup asks them to pin that, so commands and approval prompts never land on another device, such as a laptop.
 - If they answer approval requests in another session, for example their main agent, setup can record that session as the approval relay.
+- Commits in the checkout use their GitHub noreply address and are signed. Setup gives them the git commands for this checkout only and checks a test commit.
+- After a PR opens, the agent keeps working on it until hosted ClawSweeper marks it ready for a maintainer look. It asks once for a standing grant for that PR (signed pushes, body edits, one re-review per head) and watches the PR with one automation on its own session, which it removes at the end.
 - Before anything goes public, the agent reviews its own committed change with a local ClawSweeper, the same reviewer OpenClaw runs on PRs. Setup offers to install it in this workspace (about 1 GB with dependencies). It runs on their own Codex login by default, or through their installed OpenClaw with an API-provider model they choose, so every review round uses their model quota.
 
 ## Database location
@@ -40,7 +42,10 @@ The database is one file at `db_path` (default `~/openclaw-contributor.db`), out
 - **Review rounds** (`review_max_rounds`): optional, number 1 to 5, default 3.
 - **PR mode** (`open_pr_as`): optional, choose ready or draft, default ready.
 - **Approval relay** (`approval_relay`): always ask, as its own question: "Will you answer my approval requests here, or in another session that passes your answers on, such as your main agent?" Here: leave it blank. Another session: record its session key or agent id (for example `main`). Say that a passed-on yes counts only when it names the approval id, command, head SHA and body hash, and that OpenClaw's exec prompt still asks them before the command runs. Record the answer either way, so the question is not asked again.
-- **Time zone** (`time_zone`): optional, IANA time zone.
+- **Commit email** (`commit_email`) and **signing** (`signing`): required. Asked in "Commit identity and signing" below.
+- **Watch hours** (`watch_hours`): optional, default `06:00-23:00`. The hours, in `time_zone`, when the PR watcher checks an open PR.
+- **Runner prefix** (`runner_prefix`): optional, default blank. Ask only if the owner says heavy work should run on another machine. Record the prefix exactly as they give it; never invent one.
+- **Time zone** (`time_zone`): optional, IANA time zone. Used for the watcher's hours.
 
 ## Local preference files
 
@@ -64,12 +69,12 @@ Run these from the workspace root with exec, with the exact `db_path` value in p
 
 1. Check for an existing database: `sqlite3 -readonly "<db_path>" "PRAGMA user_version;"`.
    - It fails with "unable to open": there is no database. Create it: `sqlite3 -bail "<db_path>" ".read references/schema.sql"`.
-   - It prints 2: keep it. Never overwrite it.
-   - It prints 1: it is from 0.3.x or older. Keep it and ask the owner to upgrade it in place (see "Upgrade from an earlier version"). Never overwrite it.
+   - It prints 3: keep it. Never overwrite it.
+   - It prints 2 or 1: it is from an earlier version (2: 0.4.0 or 0.4.1; 1: 0.3.x or older). Keep it and ask the owner to upgrade it in place (see "Upgrade from an earlier version"). Never overwrite it.
    - It prints 0: run `sqlite3 -readonly "<db_path>" "SELECT count(*) FROM sqlite_master;"`. If that prints 0 the file is empty: ask the owner to delete it, then create the database as above.
    - It prints any other number: stop. Tell the owner the file is not from a version this agent knows. Do not touch it.
    - It fails with the state folder message: see "Database location".
-2. Self-test: `sqlite3 -bail "<db_path>" ".read references/sql/setup-check.sql"`. It writes test rows, checks that approvals are single-use, reads them back and deletes them. (The head-SHA rules live in the ask-approval and use-approval steps.) It must print `setup-check ok, schema version 2`.
+2. Self-test: `sqlite3 -bail "<db_path>" ".read references/sql/setup-check.sql"`. It writes test rows, checks that approvals are single-use and that a row can be granted under a standing grant, reads them back and deletes them. (The head-SHA and grant rules live in the approval steps.) It must print `setup-check ok, schema version 3`.
 3. Run `sqlite3 -bail "<db_path>" ".read references/sql/tracker.sql"` once to create tracker.md from the database.
 4. Record the absolute path: `sqlite3 -readonly "<db_path>" ".databases"`. It prints `main: <absolute path> r/o`. Write that absolute path into `db_path` in settings.md, and use it in every later command. OpenClaw's exec allowlist refuses commands with `~` in them (checked: "execution-plan-miss"), so this must happen before the exec host and approvals step.
 
@@ -90,7 +95,8 @@ The `chmod` makes the packaged SQL steps read-only, so they cannot be rewritten 
 - Each packaged database command, for example `sqlite3 -bail -json "<db_path>" ".read references/sql/ask-approval.sql"`, asks once. Choose "Always allow here" for it: that approval covers only that exact command in this folder, so any other sqlite3 command still asks.
 - They may also choose "Always allow here" for repeated local commands they are comfortable with, such as `git status` or a focused `pnpm test` in the checkout.
 - Local ClawSweeper: each review round runs `pnpm run review -- --local-range ...` (with the `CLAWSWEEPER_RUNNER=openclaw CLAWSWEEPER_OPENCLAW_MODEL=...` prefix for the OpenClaw runner) in `<workspace>/clawsweeper` (or `--local-only --item-number <n>` for an issue or their own PR) and spends model quota. Approving each round once is the default and keeps the cost visible. "Always allow here" is fine only for that exact local review command. Never choose it, and never approve at all, for ClawSweeper `apply-artifacts`, `apply-decisions`, or any command that posts, labels, merges or changes GitHub; the agent never runs those.
-- Never choose "Always allow" for `git push`, any `gh pr`, `gh issue`, `gh repo fork`, `gh run rerun`, a `gh api` call that writes, or any sqlite3 command that is not a packaged step. Approve those once, after the agent's own approval request in chat.
+- Never choose "Always allow" for `git push`, a writing `gh pr` or `gh issue` command (create, edit, comment, review, ready, close, reopen, merge), `gh repo fork`, `gh run rerun`, a `gh api` call that writes, or any sqlite3 command that is not a packaged step. Approve those once, after the agent's own approval request in chat.
+- The one card to answer with "Always allow" after a PR opens is the PR watcher's read-only `gh pr view <n> --repo openclaw/openclaw --json ...` (loop step 12). It covers only that command for that one watcher; otherwise it asks every 15 minutes.
 
 Approval prompts show only where an approver can see them: the Control UI chat for this agent, or a chat channel with exec approvals. A turn started from `openclaw agent` in a terminal is headless, and OpenClaw denies a command that needs approval there ("Headless runs cannot wait for interactive exec approval"). Tell the owner to work with this agent in the Control UI or an approval-capable chat.
 
@@ -115,7 +121,49 @@ Then:
 
 If the owner already has a checkout somewhere else, explain that this agent's file tools only reach its own workspace, and that a separate checkout here keeps its dependencies separate, as CONTRIBUTING.md asks.
 
-Commit signing: run `git -C <checkout_dir> config --get commit.gpgsign` and tell the owner the result. If it prints `true`, commits will be signed with their setup, and the agent stops when signing fails instead of committing unsigned. The agent never changes git config.
+## Commit identity and signing (required, before the first commit)
+
+Do this right after "Checkout", before any commit. Commits made with the owner's global git config can carry a private email address and go out unsigned; once pushed, that address is public. This step sets the author and signing for the checkout only. The agent never changes git config itself: the owner runs the commands.
+
+1. Propose `commit_email`, the owner's GitHub noreply address. Read it with `gh api user --jq .id` and `gh api user --jq .login`; the address is `<id>+<login>@users.noreply.github.com`. GitHub shows it under Settings, Emails, "Keep my email addresses private". Record the owner's choice in settings.md.
+2. Ask how commits are signed (`signing`): ssh (default) or gpg. Ask also for the name to put on commits.
+3. Show the block for their choice with the real values, and ask them to run it in a terminal on the Gateway host. `<repo>` is `<workspace>/<checkout_dir>`. These are settings of this one checkout: they apply to every worktree of it and to nothing else on the machine.
+
+   ssh:
+
+   ```sh
+   git -C "<repo>" config user.name "<name>"
+   git -C "<repo>" config user.email "<commit_email>"
+   git -C "<repo>" config gpg.format ssh
+   git -C "<repo>" config user.signingkey "<absolute path to the public key>"
+   git -C "<repo>" config commit.gpgsign true
+   printf '%s %s\n' "<commit_email>" "$(cat "<absolute path to the public key>")" > "<repo>/.git/allowed_signers"
+   git -C "<repo>" config gpg.ssh.allowedSignersFile "<repo>/.git/allowed_signers"
+   ```
+
+   gpg:
+
+   ```sh
+   git -C "<repo>" config user.name "<name>"
+   git -C "<repo>" config user.email "<commit_email>"
+   git -C "<repo>" config gpg.format openpgp
+   git -C "<repo>" config user.signingkey "<key id>"
+   git -C "<repo>" config commit.gpgsign true
+   ```
+
+   Tell the owner:
+   - The agent commits without a terminal, so the key must sign without a prompt: load it into their ssh-agent or gpg-agent, or use a key made only for signing. For ssh, the public key path works when the private key sits next to it or is in ssh-agent. If a passphrase prompt appears, signing fails and the agent stops.
+   - GitHub shows commits as Verified only when the key is on their account: for ssh, as a signing key (GitHub Settings, SSH and GPG keys, New SSH key, type Signing key); for gpg, a key whose identities include `commit_email`. They add it themselves.
+   - With no key yet, they can make one, for example `ssh-keygen -t ed25519 -f ~/.ssh/openclaw_signing -C "<commit_email>"`.
+4. Check, from the workspace root, one command at a time:
+   - `git -C <checkout_dir> config --show-origin --get user.email` must print `<commit_email>` from the checkout's `.git/config`, not a global file.
+   - `git -C <checkout_dir> config --get commit.gpgsign` must print `true` (skip with `signing: none`).
+   - `git -C <checkout_dir> write-tree` prints a tree id. Then `git -C <checkout_dir> commit-tree -S <tree id> -m "signing test"` prints a test commit id. `-S` is needed here because `commit-tree` does not read `commit.gpgsign` (checked with git 2.54); `git commit` does. The test commit is on no branch and changes nothing in the checkout.
+   - `git -C <checkout_dir> log -1 --format='%G? %ae %ce' <test commit id>` must print `G <commit_email> <commit_email>`. `N` means unsigned, `B` a bad signature, `U` or `E` a key git cannot check (for ssh, the allowed signers line; for gpg, the key's trust). Tell the owner the exact line and run the check again after they fix it.
+
+If the owner does not want signing, record `signing: none` and their reason and the date in `signing_note`. The author check still applies: `commit_email` is required either way.
+
+A checkout that is a worktree of a repository outside this workspace (see the loop's "Adopt work started elsewhere") shares that repository's config with the owner's other work. Never set the identity there with the block above. Use the same lines with `config --worktree` in that one worktree, after `git -C "<repo>" config extensions.worktreeConfig true`, and run the check in it. A worktree config covers only that worktree: repeat it for each new one.
 
 ## Local ClawSweeper
 
@@ -166,15 +214,24 @@ The first real review happens in the loop, on a committed change. If a step fail
 
 1. Confirm the "Exec host and approvals" step was done: `pwd` prints `<workspace>`, and the pasted `exec-policy show` output shows ask on miss for this agent.
 2. Confirm `approval_relay` in settings.md matches the owner's answer: blank, or the session or agent that passes their answers on.
-3. Confirm local review: either "Local ClawSweeper" ended with a passing diagnostics check (codex runner) or the `openclaw --version` check with a recorded model (openclaw runner), or settings.md records the owner's opt-out in `local_review_note`.
-4. Tell the owner the gated steps in one short list: push, force-push, open a PR, open an issue, comment, edit a PR, mark ready, request review, resolve a conversation, rerun CI, create a fork, close or reopen. Each needs their yes, every time.
-5. Then ask what to work on: an issue link, a bug, or "find candidates".
+3. Confirm "Commit identity and signing": the test commit printed `G <commit_email> <commit_email>`, or settings.md records `signing: none` with the owner's reason.
+4. Run the `automations` tool's `list` action. It must answer (an empty list is fine). If the tool is missing, the agent was added without it, for example from an older version: give the owner the command from docs/README.md, "Upgrade in place", that adds `automations` to this agent's tools.
+5. Confirm local review: either "Local ClawSweeper" ended with a passing diagnostics check (codex runner) or the `openclaw --version` check with a recorded model (openclaw runner), or settings.md records the owner's opt-out in `local_review_note`.
+6. Tell the owner the gated steps in one short list: push, force-push, open a PR, open an issue, comment, edit a PR, mark ready, request review, resolve a conversation, rerun CI, create a fork, close or reopen. Each needs their yes, every time. The one exception: after a PR opens, a standing grant they give for that PR covers its signed pushes, body edits and one re-review per head, each still recorded as its own row.
+7. Then ask what to work on: an issue link, a bug, or "find candidates".
 
 ## Upgrade from an earlier version
 
-Templates have no update command. 0.4.0 changed the database to schema version 2 (approval body hash, `withdrawn` and `recorded-outside`). Every row is kept. 0.4.1 does not change the database.
+Templates have no update command. 0.4.0 changed the database to schema version 2 (approval body hash, `withdrawn` and `recorded-outside`). 0.4.2 changes it to version 3 (standing grants, the `hosted-review` evidence kind). Every row is kept, and pending requests stay pending.
 
-- From 0.4.0: the database is already version 2. Keep it (the "Database" step prints 2). Ask the owner to copy their old `settings.md` into this workspace. Nothing is new in it; ask the "Approval relay" question if `approval_relay` is blank. Then do "Exec host and approvals" for this agent id.
+- From 0.4.0 or 0.4.1 (version 2): the owner backs up and upgrades the database in a terminal, with the real paths, and pastes the output:
+
+   ```sh
+   cp -p "<db_path>" "<db_path>.v2-backup"
+   sqlite3 -bail "<db_path>" ".read '<workspace>/references/sql/migrate-v2-to-v3.sql'"
+   ```
+
+   It must print `migrate ok, schema version 3, ...`. It refuses a database that is not version 2 and changes nothing on any error. Then ask the owner to copy their old `settings.md` into this workspace and add the lines new in 0.4.2 from `templates/settings.md`: `commit_email`, `signing`, `signing_note`, `runner_prefix`, `watch_hours`. Ask the "Approval relay" question if `approval_relay` is blank. Then do "Exec host and approvals" for this agent id, and "Commit identity and signing" for the existing checkout.
 
 1. Database (0.3.x and older, version 1). The owner runs these in a terminal, with the real paths, and pastes the output. The first line is their backup:
 
@@ -183,8 +240,8 @@ Templates have no update command. 0.4.0 changed the database to schema version 2
    sqlite3 -bail "<db_path>" ".read <workspace>/references/sql/migrate-v1-to-v2.sql"
    ```
 
-   It must print `migrate ok, schema version 2`. It refuses a database that is not version 1 and changes nothing on any error. A request still pending becomes `withdrawn`: ask it again. A body-file approval granted before the upgrade has no body hash and cannot be used: ask again.
-2. From 0.3.x or 0.2.x: the database already sits at `db_path` outside the workspace. Ask the owner to copy their old `settings.md` into this workspace, then add the lines that are new since their version from `templates/settings.md` (0.4.0 adds `approval_relay`; 0.3.0 added `clawsweeper_runner`, `clawsweeper_model`, `local_review_note`, `review_target`, `review_max_rounds`). From 0.2.x, also ask the "Local review" questions again, set `upstream_remote: origin` and `fork_remote: fork` for a fresh clone ("Checkout"), and do "Local ClawSweeper".
+   It must print `migrate ok, schema version 2`. Then run `migrate-v2-to-v3.sql` the same way (above); it must print `migrate ok, schema version 3, ...`. Each refuses a database at the wrong version and changes nothing on any error. A request still pending becomes `withdrawn`: ask it again. A body-file approval granted before the upgrade has no body hash and cannot be used: ask again.
+2. From 0.3.x or 0.2.x: the database already sits at `db_path` outside the workspace. Ask the owner to copy their old `settings.md` into this workspace, then add the lines that are new since their version from `templates/settings.md` (0.4.2 adds `commit_email`, `signing`, `signing_note`, `runner_prefix` and `watch_hours`; 0.4.0 added `approval_relay`; 0.3.0 added `clawsweeper_runner`, `clawsweeper_model`, `local_review_note`, `review_target`, `review_max_rounds`). From 0.2.x, also ask the "Local review" questions again, set `upstream_remote: origin` and `fork_remote: fork` for a fresh clone ("Checkout"), and do "Local ClawSweeper".
 3. From 0.1.x: before step 1, ask the owner to copy the old agent's `contributions.db` (in the old workspace) to `db_path` and keep the original. Copy `settings.md` too and add the new lines (`db_path` and the lines above). Approvals asked without a head SHA can no longer be used for push, force-push, open-pr, edit-pr or ready-for-review. The old checkout can stay, but this agent's file tools reach only its own workspace: clone a fresh one here ("Checkout").
 
 To keep an existing 0.3.x agent instead of adding a new one, follow docs/README.md, "Upgrade in place".

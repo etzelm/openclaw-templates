@@ -25,7 +25,7 @@
 - Mutation check: <test red again with the fix reverted, or the gap>
 - Gates: <pass or fail, with any named gap>
 - Local review: <tool, rounds, last head reviewed, rating, remaining findings; or "none chosen">
-- Commit signature: <signed, or unsigned because the owner's config does not sign>
+- Commits: <every commit since the base shows commit_email as author and committer, and G when signing is set up>
 
 <For open-pr as ready, or ready-for-review: "Hosted ClawSweeper reviews this PR automatically once, now. Later pushes do not start another review.">
 

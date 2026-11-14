@@ -3,7 +3,7 @@
 # ready-for-review) must name the head SHA it was asked for, and must never
 # match a different or later head.
 # 0.4.0: use-approval inputs now also carry exact_step, and body-file steps carry
-# body_sha256 (schema version 2). Assertions are unchanged.
+# body_sha256 (schema version 2, and version 3 from 0.4.2). Assertions are unchanged.
 source "${0:A:h}/lib.sh" "$1"
 DB="$SCRATCH/data/contributions.db"
 sqlite3 -bail "$DB" ".read references/schema.sql" >/dev/null 2>&1 || { echo "FAIL schema"; exit 1; }

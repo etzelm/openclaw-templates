@@ -5,8 +5,8 @@ The database is the source of truth. To change a row, ask the agent.
 
 ## Contributions
 
-| id | slug | issue | status | branch | head | pr | last evidence | waiting for owner | note | updated |
-| -- | ---- | ----- | ------ | ------ | ---- | -- | ------------- | ----------------- | ---- | ------- |
+| id | slug | issue | status | branch | head | pr | last evidence | waiting for owner | standing grant | note | updated |
+| -- | ---- | ----- | ------ | ------ | ---- | -- | ------------- | ----------------- | -------------- | ---- | ------- |
 
 ## Candidates considered
 

@@ -2,6 +2,8 @@
 # 0.4.0, schema version 2: the v1 to v2 migration keeps every row, and the new approval rules hold.
 # Red on 0.3.0 (no migration step, no withdrawn or recorded-outside, use-approval not bound to the
 # exact command or body hash), green on 0.4.0.
+# 0.4.2 (schema version 3): the migrated database gets the v2 to v3 step before the step checks,
+# and a fresh database is version 3. The v2 approval rules are asserted unchanged.
 # Usage: occ-v2.test.sh <package dir>
 FIX="${0:A:h}/fixtures/schema-v1.sql"
 source "${0:A:h}/lib.sh" "$1"
@@ -39,12 +41,14 @@ OUT="$(sqlite3 "$V1" "UPDATE approvals SET used_at = 'y' WHERE id = 2;" 2>&1)"; 
 expect_fail "used-once trigger survives the migration"
 OUT="$(sqlite3 "$V1" "SELECT count(*) FROM sqlite_master WHERE name IN ('approvals_contribution','approvals_decided_once','approvals_used_once','contributions_status_event');")"; RC=0
 [[ "$OUT" == "4" ]] && ok "index and triggers present after migration" || bad "index and triggers present after migration"
+OUT="$(sqlite3 -bail "$V1" ".read references/sql/migrate-v2-to-v3.sql" 2>&1)"; RC=$?
+expect_has "then v2 to v3 (0.4.2)" "migrate ok, schema version 3"
 OUT="$(sqlite3 -bail "$V1" ".read references/sql/setup-check.sql" 2>&1)"; RC=$?
-expect_has "setup-check passes on the migrated database" "setup-check ok, schema version 2"
+expect_has "setup-check passes on the migrated database" "setup-check ok, schema version 3"
 OUT="$(sqlite3 -bail "$V1" ".read references/sql/migrate-v1-to-v2.sql" 2>&1)"; RC=$?
-expect_fail "migration refuses a version 2 database"
+expect_fail "migration refuses a version 3 database"
 OUT="$(sqlite3 "$V1" "PRAGMA user_version;")"; RC=0
-[[ "$OUT" == "2" ]] && ok "still version 2 after the refused rerun" || bad "still version 2 after the refused rerun"
+[[ "$OUT" == "3" ]] && ok "still version 3 after the refused rerun" || bad "still version 3 after the refused rerun"
 # A body-file approval granted before v2 has no hash and can never be used.
 step "$V1" use-approval '{"step":"use-approval","approval_id":4,"action":"edit-pr","exact_step":"gh pr edit 9 --body-file p.md","head_sha":"abc1234",'$N'}'
 expect_fail "pre-v2 body-file approval without a hash is not usable"
@@ -55,7 +59,7 @@ expect_fail "pre-v2 body-file approval refuses an invented hash"
 DB="$SCRATCH/data/v2.db"
 sqlite3 -bail "$DB" ".read references/schema.sql" >/dev/null 2>&1
 OUT="$(sqlite3 "$DB" "PRAGMA user_version;")"; RC=0
-[[ "$OUT" == "2" ]] && ok "fresh schema is version 2" || bad "fresh schema is version 2"
+[[ "$OUT" == "3" ]] && ok "fresh schema is version 3" || bad "fresh schema is version 3"
 step "$DB" save-candidate '{"step":"save-candidate","repo":"openclaw/openclaw","number":null,"url":"board:card-9","title":"t",'$N'}'
 step "$DB" set-candidate '{"step":"set-candidate","candidate_id":1,"decision":"approved","reason":"ok","url":"https://github.com/openclaw/openclaw/issues/42","number":42,'$N'}'
 expect_has "set-candidate sets the issue url and number" '"url":"https://github.com/openclaw/openclaw/issues/42","number":42'
