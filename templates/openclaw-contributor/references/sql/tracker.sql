@@ -3,7 +3,7 @@
 --   sqlite3 -bail <db_path> ".read references/sql/tracker.sql"
 .bail on
 PRAGMA foreign_keys = ON;
-CREATE TEMP TABLE schema_guard (v INTEGER CHECK (v = 2));
+CREATE TEMP TABLE schema_guard (v INTEGER CHECK (v = 3));
 INSERT INTO temp.schema_guard SELECT user_version FROM pragma_user_version;
 
 .headers on
@@ -29,6 +29,8 @@ SELECT
             ORDER BY e.recorded_at DESC, e.id DESC LIMIT 1), '') AS "last evidence",
   coalesce((SELECT group_concat(a.action, ', ') FROM approvals AS a
             WHERE a.contribution_id = k.id AND a.decision = 'pending'), '') AS "waiting for owner",
+  coalesce((SELECT 'grant ' || g.id || ': ' || replace(replace(replace(g.actions, '"', ''), '[', ''), ']', '')
+            FROM grants AS g WHERE g.contribution_id = k.id AND g.ended_at IS NULL), '') AS "standing grant",
   replace(replace(k.note, '|', '/'), char(10), ' ') AS note,
   k.updated_at AS updated
 FROM contributions AS k

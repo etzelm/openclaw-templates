@@ -2,7 +2,7 @@
 
 Send fixes to OpenClaw without losing control of what goes public.
 
-Pick an OpenClaw issue. The agent proves the bug, fixes it, proves the fix, reviews its own commit and drafts the PR. Then it stops and asks. Every push, PR or comment waits for your OK, for that exact step and commit.
+Pick an OpenClaw issue. The agent proves the bug, fixes it, proves the fix, reviews its own commit and drafts the PR. Then it stops and asks. Every push, PR or comment waits for your OK, for that exact step and commit. Once the PR is open, it stays with it until OpenClaw's reviewer marks it ready for a maintainer. There, if you choose, one standing grant for that PR covers its signed pushes, body edits and re-review requests.
 
 ## What it does
 
@@ -11,14 +11,17 @@ Pick an OpenClaw issue. The agent proves the bug, fixes it, proves the fix, revi
 - **Runs the repo's own gates.** It re-reads CONTRIBUTING.md, AGENTS.md and the PR template from upstream main on every task. It never works from memory of them.
 - **Reviews before anything is public.** A local ClawSweeper, the reviewer OpenClaw runs on PRs, checks the committed change until no must-fix finding is left.
 - **Drafts the PR in the repo's template**, with the evidence and the local review result.
-- **Keeps a record.** A small SQLite database holds every candidate, proof, approval and status change.
+- **Stays with the PR.** After the PR opens, it watches the hosted ClawSweeper review and CI, fixes findings with the same proof steps, and stops when the PR is labeled `status: 👀 ready for maintainer look` with required CI green. One automation on its own session checks the PR every 15 minutes and wakes it only on a change, or once a day while nothing changes.
+- **Commits cleanly.** Your GitHub noreply address as author, and signed (ssh or gpg), set for the checkout only. It checks every commit before a push.
+- **Keeps a record.** A small SQLite database holds every candidate, proof, approval, standing grant and status change.
 
 ## You stay in control
 
 - The agent stops at a local commit and a PR body file.
-- Push, PR, issue, comment, edit, review request, CI rerun and fork are separate requests. Each one needs your yes in chat and your OK in OpenClaw's exec prompt.
+- Push, PR, issue, comment, edit, review request, CI rerun and fork are separate requests. Each one needs your yes in chat, and in ask mode your OK in OpenClaw's exec prompt.
 - An approval is bound to the exact command, commit and PR body you saw, and is used once.
-- It never merges, never tags people and never asks maintainers questions in comments.
+- After the PR opens, you can give one standing grant for that PR: signed pushes, body edits, and one `@clawsweeper re-review` per new commit. Each use is still recorded as its own approval. It never covers replies, other comments, force-pushes, closing or reopening. On any human comment it pauses and asks you.
+- It never merges, never tags people and never asks maintainers questions in comments. When a fork's CI waits for a maintainer to approve workflows, it reports that and waits. It never pings anyone.
 - It uses your own git and gh login and never handles a token.
 
 ## Example
@@ -35,6 +38,8 @@ The agent reads the issue and the repo rules at current main, finds no duplicate
 - **Runs on the Gateway host.** The checkout, installs, builds and tests all run there, in the agent's workspace. Setup pins this (see "Add it"). Choose a Gateway host with room: the checkout plus dependencies take several GB, and the first install takes a while. `openclaw backup create` includes agent workspaces unless you pass `--no-include-workspace`.
 - **Model.** Templates cannot pick a model. Use a strong one: the loop is long and strict, and a small model is likely to skip proof steps.
 - **Local ClawSweeper (recommended).** Setup clones the public ClawSweeper source into the agent's workspace (about 1 GB with dependencies). It runs on your own Codex CLI login (you run `codex login --device-auth` yourself), or on ClawSweeper's OpenClaw runner with an API-provider model you name. Each review round uses your model quota and takes several minutes; the loop runs at most `review_max_rounds` (default 3) per change. You can opt out at setup; the PR evidence then names the gap.
+- **Commit signing.** An ssh or gpg key that signs without a prompt, added to your GitHub account as a signing key. Setup gives the git commands for the checkout and checks a test commit.
+- **Automations.** The Template grants the `automations` tool, for one PR watcher at a time on the agent's own session. In ask mode the watcher's read-only `gh pr view` asks you on its first check; choose "Always allow" there, which covers that one command for that one watcher (otherwise it asks every 15 minutes). Each turn the watcher starts still asks before every other command, so in ask mode be at the Control UI or an approval app during your watch hours. If the check is denied, the automation's run list shows the error.
 - **Only for openclaw/openclaw.** The loop reads OpenClaw's own rule files, PR template and bots.
 
 ### ClawSweeper's OpenClaw runner
@@ -63,15 +68,17 @@ openclaw exec-policy show --agent <agent-id>
 ```
 
 - **The host pin** keeps every command, and every approval prompt, on the Gateway host. Without it (the default `auto`), a single exec call may name a node, and the session's runtime line names its active node. Pinned, OpenClaw refuses that. On a live setup, an unpinned agent ran on the owner's paired laptop and flooded it with prompts. A named node (`tools.exec.host` set to `node` and `tools.exec.node` set to its name) works only if that node sees the same workspace path.
-- **Ask mode** makes OpenClaw ask you before every command. Nothing is allowlisted, not even sqlite3: sqlite3 can start other programs itself (for example `.shell`), so a blanket entry would be a way around the prompt. Each packaged database command asks once; choose "Always allow here" for it, which covers only that exact command in that folder. Never choose "Always allow" for `git push`, `gh pr`, `gh issue`, `gh repo fork`, `gh run rerun` or a writing `gh api` call.
+- **Ask mode** makes OpenClaw ask you before every command. Nothing is allowlisted, not even sqlite3: sqlite3 can start other programs itself (for example `.shell`), so a blanket entry would be a way around the prompt. Each packaged database command asks once; choose "Always allow here" for it, which covers only that exact command in that folder. Never choose "Always allow" for `git push`, a writing `gh pr` or `gh issue` command (create, edit, comment, review, ready, close, reopen, merge), `gh repo fork`, `gh run rerun` or a writing `gh api` call. The one exception is the PR watcher's read-only `gh pr view` (below).
 - **The `chmod`** keeps the packaged SQL steps from being rewritten.
 - Each local ClawSweeper round (`pnpm run review -- --local-range ...` in the agent's `clawsweeper/` folder) asks too; approving each round once keeps the model cost visible. Never approve ClawSweeper's `apply-artifacts`, `apply-decisions` or any command that posts or merges; the agent never runs them.
+
+After the checkout exists, setup gives you a short git block that sets your GitHub noreply address and commit signing for that checkout only, then checks that a test commit shows `G`.
 
 When setup ends, remove the setup file: `rm "<workspace>/BOOTSTRAP.md"`.
 
 Work with the agent in the Control UI or a chat channel with exec approvals, where the prompts can reach you. A turn started with `openclaw agent` from a terminal is headless, and commands that need approval are denied there.
 
-**Approval relay.** Setup asks where you will answer approval requests. If you answer in another session that passes your answers on, for example your main agent, it records that session in `approval_relay`. A passed-on yes counts only when it names the approval id, the exact command, the head SHA and the body hash. OpenClaw's exec prompt still asks you.
+**Approval relay.** Setup asks where you will answer approval requests. If you answer in another session that passes your answers on, for example your main agent, it records that session in `approval_relay`. A passed-on yes counts only when it names the approval id, the exact command, the head SHA and the body hash. In ask mode, OpenClaw's exec prompt still asks you.
 
 ### From a local build
 
@@ -83,7 +90,7 @@ Found on a live setup with OpenClaw 2026.11.3:
 
 ## Owner-gated steps
 
-Each needs your yes in chat, every time, for the exact command and head SHA shown, and then your OK in OpenClaw's exec approval prompt: push, force-push, open a PR, open an issue, post or edit a comment or review reply, edit a PR title or body, mark ready for review, request a review, resolve a review conversation, rerun CI, create a fork, close or reopen. The agent never merges, never tags people, and never asks maintainers questions in comments. An approval for a push, force-push, PR, PR edit or ready-for-review is bound to the commit SHA it was asked for and can never be used for a later head.
+Each needs your yes in chat, every time, for the exact command and head SHA shown, and then, in ask mode, your OK in OpenClaw's exec approval prompt: push, force-push, open a PR, open an issue, post or edit a comment or review reply, edit a PR title or body, mark ready for review, request a review, resolve a review conversation, rerun CI, create a fork, close or reopen. The agent never merges, never tags people, and never asks maintainers questions in comments. An approval for a push, force-push, PR, PR edit or ready-for-review is bound to the commit SHA it was asked for and can never be used for a later head. The one exception is the standing grant for an open PR (above), and even then each use gets its own row for its own head.
 
 ## AI disclosure
 
@@ -95,6 +102,7 @@ OpenClaw's CONTRIBUTING.md (checked at upstream main on 2026-11-12) welcomes AI-
 - 0.3.0, on openclaw/openclaw#198360, on an isolated test host with no GitHub login: Add, setup and the whole loop up to the first push request, run by hand from this Template's instructions in the workspace Add created: [examples/pr-body.md](examples/pr-body.md), [examples/push-approval.md](examples/push-approval.md).
 - 0.3.0, first live use, model-driven, on a real host: the agent adopted a fix made in another session, filed openclaw/openclaw#198642 and pushed the branch, each after the owner's yes and OpenClaw's exec prompt. PR openclaw/openclaw#198646 was opened by the owner from another session after an exec prompt failed to reach them. What the run showed is fixed in 0.4.0 (see CHANGELOG.md).
 - 0.4.0, live: with the exec host not pinned, the agent's commands followed the owner's paired laptop and every approval prompt landed there. 0.4.1 pins the host at setup.
+- 0.4.0, live, on openclaw/openclaw#198802: red, green, mutation check, gates and two local ClawSweeper rounds, then the push and the PR (openclaw/openclaw#199042), each on the owner's relayed yes. The first commit carried a private email and was unsigned until it was re-signed by hand, the loop stopped at PR open, and the fork's CI waited on maintainer workflow approval. 0.4.2 fixes all three.
 
 Author names are removed.
 
@@ -109,8 +117,9 @@ Not yet tested live:
 - ClawSweeper with the OpenClaw runner (written from source, not run) and with the Codex runner. Both live runs used ClawSweeper's local source build with a different model runner.
 - `--local-only` issue and PR reviews.
 - A must-fix finding, more than two review rounds, and the round cap.
-- Signed commits (no test host signs).
-- The hosted review, re-review and CI loop after the PR opens.
+- The 0.4.2 phase after the PR opens with a model: the standing grant, the watcher, hosted rounds and the stop conditions. The SQL rules and the watcher check are tested; the loop text is not yet run live.
+- The watcher's first check in ask mode, and "Always allow" for it (written from OpenClaw's docs).
+- Commit signing with gpg. The ssh block and the signed test commit are tested on a test host.
 
 ## Upgrade
 
@@ -134,10 +143,16 @@ Templates have no update command. Publishing a new version does not change agent
   cp "<pkg>/assets/icon.png" "<workspace>/avatars/catalog.png"
   chmod -R a-w "<workspace>/references"
   openclaw config set 'agents.entries.<agent-id>.tools.exec.host' gateway
+  cd "<workspace>" && sqlite3 -bail "<db_path>" ".read references/sql/migrate-v2-to-v3.sql"
   cd "<workspace>" && sqlite3 -bail "<db_path>" ".read references/sql/setup-check.sql"
   ```
 
-  From 0.4.0 that is all: 0.4.1 does not change the database, and the check prints `setup-check ok, schema version 2`. From 0.3.x, run the migration before the check: `sqlite3 -bail "<db_path>" ".read <workspace>/references/sql/migrate-v1-to-v2.sql"` prints `migrate ok, schema version 2`, and add `approval_relay` from `templates/settings.md` to settings.md if you use a relay.
+  From 0.4.0 or 0.4.1: the migration prints `migrate ok, schema version 3, ...` and the check prints `setup-check ok, schema version 3`. From 0.3.x, run `migrate-v1-to-v2.sql` the same way right before the `migrate-v2-to-v3.sql` line; it prints `migrate ok, schema version 2`.
+
+  Then, for 0.4.2:
+  - Add the new lines from `templates/settings.md` to settings.md: `commit_email`, `signing`, `signing_note`, `runner_prefix`, `watch_hours` (and `approval_relay` from 0.3.x).
+  - Run the git block from BOOTSTRAP.md, "Commit identity and signing", for the existing checkout, and let the agent run the test commit check.
+  - Give the agent the `automations` tool. Print its tool list with `openclaw config get 'agents.entries.<agent-id>.tools.allow' --json` (an Add writes `allow`; checked with OpenClaw 2026.11.3). Then set the same list with `"automations"` added, for example `openclaw config set 'agents.entries.<agent-id>.tools.allow' '["presence","session_status","gateway","read","write","edit","apply_patch","exec","process","web_fetch","automations"]' --strict-json`. Keep every tool it already has, and keep `deny` as it is. If your agent uses `alsoAllow` instead, add it there; OpenClaw refuses both in one scope.
 
   settings.md is kept. Your own files, such as USER.md, are not touched. The packaged database commands keep the same command line, so earlier "Always allow here" choices still apply, and the last `chmod` makes the SQL files read-only again. To roll back, restore both backups.
 
@@ -155,13 +170,15 @@ Templates have no update command. Publishing a new version does not change agent
 - `references/ci-triage.md` classifies failing checks with proof.
 - `references/upstream-text.md` has the writing rules and checks for anything public.
 - `references/schema.sql` and `references/sql/` define and use the local SQLite tracker at `db_path`.
-- `templates/` holds settings, the tracker view, the scope proposal, the approval request and the handoff.
+- `references/pr-watch.js` is the read-only check the PR watcher runs.
+- `templates/` holds settings, the tracker view, the scope proposal, the approval request, the standing grant request and the handoff.
 - `avatars/openclaw-contributor.svg` is the agent's avatar. `assets/icon.png` is the same artwork as the catalog icon; Add also copies it to `avatars/catalog.png`.
 - `BOOTSTRAP.md` guides first-run setup and creates local preferences without packaging answers.
-- Declared capability: OpenClaw tool profile `minimal` plus `read`, `write`, `edit`, `apply_patch`, `exec`, `process`, `web_fetch`, `session_status` with workspace-only file access. The `gateway` tool that `minimal` includes is denied.
+- Declared capability: OpenClaw tool profile `minimal` plus `read`, `write`, `edit`, `apply_patch`, `exec`, `process`, `web_fetch`, `session_status`, `automations` with workspace-only file access. The `gateway` tool that `minimal` includes is denied.
 - Capability boundary: exec is not limited by workspaceOnly. Public steps happen through `git` and `gh` under exec, and the Template allows them only after a recorded owner approval. The required exec host and approvals step keeps exec on the Gateway host and makes OpenClaw ask you before each command too, unless you chose "Always allow here" for it.
 - Capability boundary: local ClawSweeper runs under exec from the agent's `clawsweeper/` folder, on your Codex login or, for the OpenClaw runner, your OpenClaw with a provider key from your environment, only in its review modes (`--local-range`, `--local-only`) and its diagnostics check. It never gets a GitHub token in `--local-range` mode and posts nothing.
-- Capability boundary: no MCP servers, plugins, skills, automations, messaging or publishing tools.
+- Capability boundary: `automations` is granted for one purpose: one watcher per open PR, on the agent's own session, running the packaged read-only check (`references/pr-watch.js`, one `gh pr view`) every 15 minutes within `watch_hours`. The agent removes it at the end. Like every automation check, it runs with the agent's own exec policy.
+- Capability boundary: no MCP servers, plugins, skills, messaging or publishing tools.
 
 MIT licensed. See [CHANGELOG.md](CHANGELOG.md).
 

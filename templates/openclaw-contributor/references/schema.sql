@@ -1,8 +1,9 @@
--- OpenClaw contributor database schema, version 2.
+-- OpenClaw contributor database schema, version 3.
 -- Setup runs this once, only when no database exists at db_path (settings.md):
 --   sqlite3 -bail <db_path> ".read references/schema.sql"
 -- Never run it against an existing database. A version 1 database (0.1.x to 0.3.x)
--- is upgraded in place with references/sql/migrate-v1-to-v2.sql (BOOTSTRAP.md, "Upgrade").
+-- is upgraded in place with references/sql/migrate-v1-to-v2.sql, then migrate-v2-to-v3.sql.
+-- A version 2 database (0.4.0, 0.4.1) needs only migrate-v2-to-v3.sql (BOOTSTRAP.md, "Upgrade").
 
 PRAGMA foreign_keys = ON;
 
@@ -54,7 +55,8 @@ CREATE TABLE evidence (
   id INTEGER PRIMARY KEY,
   contribution_id INTEGER NOT NULL REFERENCES contributions (id) ON DELETE CASCADE,
   kind TEXT NOT NULL CHECK (kind IN (
-    'repro-red', 'fix-green', 'gate', 'simplify', 'local-review', 'ci-classification', 'other'
+    'repro-red', 'fix-green', 'gate', 'simplify', 'local-review', 'hosted-review',
+    'ci-classification', 'other'
   )),
   command TEXT NOT NULL DEFAULT '',
   exit_code INTEGER,
@@ -66,6 +68,41 @@ CREATE TABLE evidence (
 );
 
 CREATE INDEX evidence_contribution ON evidence (contribution_id, recorded_at);
+
+-- Standing grants: the owner allows a short list of outward steps for one open PR, once.
+-- Each use is still its own approvals row, granted under the grant (grant_id).
+CREATE TABLE grants (
+  id INTEGER PRIMARY KEY,
+  contribution_id INTEGER NOT NULL REFERENCES contributions (id) ON DELETE RESTRICT,
+  pr_url TEXT NOT NULL CHECK (length(pr_url) BETWEEN 1 AND 2000),
+  -- JSON array, a subset of push, edit-pr, request-review.
+  actions TEXT NOT NULL CHECK (
+    json_valid(actions) AND json_type(actions) = 'array' AND json_array_length(actions) > 0
+  ),
+  -- The scope and the stop conditions shown to the owner, as they saw them.
+  scope TEXT NOT NULL CHECK (length(scope) BETWEEN 1 AND 4000),
+  stop_conditions TEXT NOT NULL CHECK (length(stop_conditions) BETWEEN 1 AND 4000),
+  owner_words TEXT NOT NULL CHECK (length(trim(owner_words)) > 0),
+  granted_at TEXT NOT NULL,
+  ended_at TEXT,
+  end_reason TEXT NOT NULL DEFAULT ''
+);
+
+-- At most one open grant per contribution.
+CREATE UNIQUE INDEX grants_one_open ON grants (contribution_id) WHERE ended_at IS NULL;
+
+CREATE TRIGGER grants_actions_known BEFORE INSERT ON grants
+WHEN EXISTS (SELECT 1 FROM json_each(NEW.actions)
+             WHERE value NOT IN ('push', 'edit-pr', 'request-review'))
+BEGIN
+  SELECT RAISE(ABORT, 'a grant covers only push, edit-pr and request-review');
+END;
+
+CREATE TRIGGER grants_ended_once BEFORE UPDATE ON grants
+WHEN OLD.ended_at IS NOT NULL
+BEGIN
+  SELECT RAISE(ABORT, 'grant already ended');
+END;
 
 -- Owner approvals. One row per outward step. A row is used at most once.
 CREATE TABLE approvals (
@@ -92,6 +129,8 @@ CREATE TABLE approvals (
   decided_at TEXT,
   used_at TEXT,
   outcome TEXT NOT NULL DEFAULT '',
+  -- Set when the row was granted under a standing grant instead of a fresh owner answer.
+  grant_id INTEGER REFERENCES grants (id) ON DELETE RESTRICT,
   CHECK (used_at IS NULL OR decision = 'granted')
 );
 
@@ -107,6 +146,78 @@ CREATE TRIGGER approvals_used_once BEFORE UPDATE OF used_at ON approvals
 WHEN OLD.used_at IS NOT NULL
 BEGIN
   SELECT RAISE(ABORT, 'approval already used');
+END;
+-- A row granted under a standing grant must fit the grant exactly: the grant is open, for the
+-- same contribution, and lists the action; the head is a full SHA; and the command has the
+-- one allowed shape for that action (contribution-loop.md, step 12):
+--   push: a plain git push of one refspec to one remote that is not origin, ending in the
+--     contribution's branch (`<remote> <branch>` or `<remote> <sha>:refs/heads/<branch>`),
+--     with no force, delete, mirror, all, tags or + refspec.
+--   edit-pr: gh pr edit <PR number> --repo openclaw/openclaw with --body-file and a body hash, nothing else.
+--   request-review: gh pr comment <PR number> --repo openclaw/openclaw --body-file references/re-review.md, whose
+--     content is the one line "@clawsweeper re-review" (sha256 below).
+-- No shell operators in any of them.
+CREATE TRIGGER approvals_grant_scope BEFORE UPDATE OF decision, grant_id ON approvals
+WHEN NEW.grant_id IS NOT NULL AND NOT (
+  NEW.decision = 'granted'
+  AND length(NEW.head_sha) IN (40, 64) AND NEW.head_sha NOT GLOB '*[^0-9a-f]*'
+  AND NEW.exact_step NOT GLOB '*[;&|<>`$]*'
+  AND EXISTS (
+    SELECT 1 FROM grants AS g JOIN contributions AS k ON k.id = g.contribution_id
+    WHERE g.id = NEW.grant_id AND g.ended_at IS NULL
+      AND g.contribution_id IS NEW.contribution_id
+      AND EXISTS (SELECT 1 FROM json_each(g.actions) WHERE value = NEW.action)
+      AND CASE NEW.action
+        WHEN 'push' THEN
+          NEW.exact_step GLOB 'git *' AND ' ' || NEW.exact_step || ' ' GLOB '* push *'
+          AND (NEW.exact_step GLOB '* ' || k.branch OR NEW.exact_step GLOB '*:refs/heads/' || k.branch)
+          AND substr(NEW.exact_step, instr(NEW.exact_step, ' push ') + 6) GLOB '?* ?*'
+          AND substr(NEW.exact_step, instr(NEW.exact_step, ' push ') + 6) NOT GLOB '* * *'
+          AND substr(NEW.exact_step, instr(NEW.exact_step, ' push ') + 6) NOT GLOB 'origin *'
+          AND ' ' || NEW.exact_step || ' ' NOT GLOB '* -f *'
+          AND ' ' || NEW.exact_step || ' ' NOT GLOB '* -d *'
+          AND NEW.exact_step NOT GLOB '*--force*' AND NEW.exact_step NOT GLOB '*--delete*'
+          AND NEW.exact_step NOT GLOB '*--mirror*' AND NEW.exact_step NOT GLOB '*--all*'
+          AND NEW.exact_step NOT GLOB '*--tags*' AND NEW.exact_step NOT GLOB '*--prune*'
+          AND NEW.exact_step NOT GLOB '* +*' AND NEW.exact_step NOT GLOB '* :*'
+        WHEN 'edit-pr' THEN
+          NEW.exact_step GLOB 'gh pr edit *' AND NEW.exact_step GLOB '* --repo openclaw/openclaw*'
+          AND instr(' ' || NEW.exact_step || ' ', ' ' || replace(g.pr_url, rtrim(g.pr_url, '0123456789'), '') || ' ') > 0
+          AND NEW.exact_step GLOB '* --body-file *' AND length(NEW.body_sha256) = 64
+          AND NEW.exact_step NOT GLOB '*--title*' AND ' ' || NEW.exact_step || ' ' NOT GLOB '* -t *'
+          AND NEW.exact_step NOT GLOB '*--add-*' AND NEW.exact_step NOT GLOB '*--remove-*'
+          AND NEW.exact_step NOT GLOB '*--base*' AND ' ' || NEW.exact_step || ' ' NOT GLOB '* -B *'
+          AND NEW.exact_step NOT GLOB '*--milestone*'
+        WHEN 'request-review' THEN
+          NEW.exact_step GLOB 'gh pr comment *' AND NEW.exact_step GLOB '* --repo openclaw/openclaw*'
+          AND instr(' ' || NEW.exact_step || ' ', ' ' || replace(g.pr_url, rtrim(g.pr_url, '0123456789'), '') || ' ') > 0
+          AND ' ' || NEW.exact_step || ' ' GLOB '* --body-file references/re-review.md *'
+          AND NEW.body_sha256 = '27b98c8ea0dc9261503d813de11b061a3d4e238b14b8ffa5608d4d597d207443'
+        ELSE 0 END
+  )
+)
+BEGIN
+  SELECT RAISE(ABORT, 'not covered by the open standing grant: check the action, the full head SHA and the command shape');
+END;
+
+-- At most one re-review per head, and at most 5 in all, under one grant.
+CREATE TRIGGER approvals_grant_one_review_per_head BEFORE UPDATE OF decision, grant_id ON approvals
+WHEN NEW.grant_id IS NOT NULL AND NEW.action = 'request-review' AND (
+  EXISTS (SELECT 1 FROM approvals AS a
+          WHERE a.id <> NEW.id AND a.grant_id = NEW.grant_id AND a.action = 'request-review'
+            AND a.head_sha = NEW.head_sha AND a.decision = 'granted')
+  OR (SELECT count(*) FROM approvals AS a
+      WHERE a.id <> NEW.id AND a.grant_id = NEW.grant_id AND a.action = 'request-review'
+        AND a.decision = 'granted') >= 5
+)
+BEGIN
+  SELECT RAISE(ABORT, 'a re-review for this head was already granted under this grant, or the grant used all 5');
+END;
+
+CREATE TRIGGER approvals_grant_on_insert BEFORE INSERT ON approvals
+WHEN NEW.grant_id IS NOT NULL
+BEGIN
+  SELECT RAISE(ABORT, 'ask first, then grant under the standing grant with decide-approval');
 END;
 
 CREATE TABLE status_events (
@@ -134,6 +245,6 @@ BEGIN
   VALUES (NEW.id, NEW.updated_at, OLD.status, NEW.status, NEW.note);
 END;
 
-PRAGMA user_version = 2;
+PRAGMA user_version = 3;
 
 COMMIT;

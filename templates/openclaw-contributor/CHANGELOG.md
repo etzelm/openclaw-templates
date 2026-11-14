@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.4.2
+
+Fixes from the first real task with 0.4.0 (openclaw/openclaw#198802, PR #199042). Database schema version 3.
+
+- The loop no longer ends at PR open. New step 12, "After the PR opens": the agent watches hosted ClawSweeper and CI, fixes findings with the full proof loop (red, green, mutation check, gates, simplify, a signed commit, a local review round), and stops when the PR is labeled `status: 👀 ready for maintainer look` for the current head with required CI green. It pauses on any human comment, someone else's push or a step it may not take, and stops on a maintainer-decision label, scope growth, a closed PR, 4 hosted rounds without progress, or 7 days with no change. One report per hosted round.
+- Standing grant per PR. The owner grants once, per open PR, for plain pushes of signed commits, PR body edits and one `@clawsweeper re-review` per new head (templates/standing-grant.md). Each use is still its own approval row, granted under the grant, bound to the exact command, head and body hash. New steps `record-grant` and `end-grant`; `decide-approval` takes `grant_id`. The database checks each use against the grant: the action, a full head SHA, and the command shape (a plain push of one refspec ending in the PR's branch, to a remote other than origin, with no force, delete or `+` refspec; a body-only `gh pr edit` of that PR with `--repo openclaw/openclaw`; a `gh pr comment` of that PR with `--repo openclaw/openclaw` and the packaged one-line `references/re-review.md`). It refuses a second open grant, a use for another contribution, a second re-review for the same head, a sixth re-review, and any grant or use after the grant ended. `ask-approval` now refuses inline `--body`/`-b` and needs the body hash for `-F` too.
+- Schema version 3: the `grants` table, `approvals.grant_id`, and the evidence kind `hosted-review`. Packaged migration `migrate-v2-to-v3.sql` keeps every row and leaves pending requests pending. The tracker shows an open grant.
+- PR watcher. The Template grants the `automations` tool. After the PR opens, the agent adds one watcher on its own session: every 15 minutes within `watch_hours`, with the packaged read-only check `references/pr-watch.js` (one `gh pr view`), waking the agent when the PR's state, head, labels, comments (ClawSweeper edits in place too), reviews or finished checks change, and once a day while nothing changes. It is removed at the end. The target label is matched on its words (`status: 👀 ready for maintainer look`), and only when ClawSweeper's latest review covers the current head. The packaged check replaces hand-written scripts: the live run's script read `stdout`, which trigger-script exec does not return, so it could not see changes.
+- Fork CI waiting on maintainer workflow approval (`action_required`, and a gate check that reads FAIL) is its own CI class: record it, report it, wait. Never ping anyone, never rerun.
+- Commit identity and signing at setup. The owner sets a GitHub noreply author and ssh or gpg signing for the checkout only, before the first commit. Setup checks a test commit shows `G` and the noreply address. Before each push, every commit's author, committer and signature are checked. New settings `commit_email`, `signing`, `signing_note`.
+- A relay that names everything but the approval id, because none was asked yet, now counts: the agent asks the row with exactly those values and records the relay.
+- In exec mode `full` there is no exec prompt. The text says so, and the agent no longer promises one.
+- A local gate that fails the same way on the base is recorded as already failing on main and not fixed in the PR.
+- New optional `runner_prefix` setting for owners who run heavy work on another machine. Exec stays pinned.
+- `@clawsweeper re-review` is named as the one allowed bot command in public text.
+
 ## 0.4.1
 
 Catalog polish and two fixes from live use of 0.4.0. No database change.

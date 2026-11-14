@@ -1,11 +1,11 @@
--- Run right before the outward step. Fails unless the approval is granted, unused, for the same action and the same exact command, bound to the current head, and, when a body hash was approved, bound to the same body. Input: approval_id, action, exact_step (the command you are about to run), head_sha (current), body_sha256 (current hash of the body file, when there is one), now.
+-- Run right before the outward step. Fails unless the approval is granted (under a standing grant: one that has not ended), unused, for the same action and the same exact command, bound to the current head, and, when a body hash was approved, bound to the same body. Input: approval_id, action, exact_step (the command you are about to run), head_sha (current), body_sha256 (current hash of the body file, when there is one), now.
 -- Run from the workspace root:
 --   sqlite3 -bail -json <db_path> ".read references/sql/use-approval.sql"
 -- Input: write db-input.json with the write tool first, with "step": "use-approval".
 -- Issue, PR and page text goes only into db-input.json, never into the command line.
 .bail on
 PRAGMA foreign_keys = ON;
-CREATE TEMP TABLE schema_guard (v INTEGER CHECK (v = 2));
+CREATE TEMP TABLE schema_guard (v INTEGER CHECK (v = 3));
 INSERT INTO temp.schema_guard SELECT user_version FROM pragma_user_version;
 CREATE TEMP TABLE input (j TEXT NOT NULL CHECK (json_valid(j)));
 INSERT INTO temp.input VALUES (CAST(readfile('db-input.json') AS TEXT));
@@ -24,8 +24,9 @@ WHERE a.id = json_extract(i.j, '$.approval_id')
   AND a.exact_step = coalesce(json_extract(i.j, '$.exact_step'), '')
   AND a.decision = 'granted'
   AND a.used_at IS NULL
+  AND (a.grant_id IS NULL OR EXISTS (SELECT 1 FROM grants AS g WHERE g.id = a.grant_id AND g.ended_at IS NULL))
   AND a.body_sha256 = coalesce(json_extract(i.j, '$.body_sha256'), '')
-  AND (a.exact_step NOT GLOB '*--body-file*' OR a.body_sha256 <> '')
+  AND ((a.exact_step NOT GLOB '*--body-file*' AND ' ' || a.exact_step || ' ' NOT GLOB '* -F *') OR a.body_sha256 <> '')
   AND CASE WHEN a.action IN ('push', 'force-push', 'open-pr', 'edit-pr', 'ready-for-review')
              OR (a.contribution_id IS NOT NULL AND a.action NOT IN ('open-issue', 'create-fork'))
            THEN a.head_sha <> '' AND a.head_sha = coalesce(json_extract(i.j, '$.head_sha'), '')

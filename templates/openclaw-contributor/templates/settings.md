@@ -18,6 +18,15 @@ Edit the values after the colons. The agent reads this file at the start of ever
 - branch_prefix: fix/
   - New branches are named branch_prefix plus a short slug.
 
+## Commits
+
+- commit_email: <your GitHub noreply address, e.g. 12345+your-name@users.noreply.github.com>
+  - Author and committer of every commit in the checkout. Setup sets it for the checkout only, never globally. Before each push the agent checks that no commit carries another address.
+- signing: ssh
+  - ssh (default) or gpg: how commits in the checkout are signed. Setup gives you the commands and checks a test commit shows `G`.
+  - none only on purpose; setup records why in signing_note, and the agent notes unsigned commits in the evidence.
+- signing_note: <blank>
+
 ## Work
 
 - areas: <areas you want to work on, e.g. docs, cli, telegram channel>
@@ -49,6 +58,9 @@ Edit the values after the colons. The agent reads this file at the start of ever
   - Optional rating floor: `no-must-fix, rating B` also needs an overall rating of B or better (S, A, B, C, D, F). Ratings are review signals, not merge targets.
 - review_max_rounds: 3
   - Most local review rounds per contribution before the agent stops and asks you.
+- runner_prefix: <blank>
+  - Blank (default): installs, builds and tests run in the checkout on the Gateway host.
+  - Or a command prefix you trust that sends heavy work to another machine, for example a remote runner. The agent puts it in front of installs, builds and test suites, exactly as written. Exec stays pinned to the Gateway host.
 
 ## Pull requests
 
@@ -56,9 +68,11 @@ Edit the values after the colons. The agent reads this file at the start of ever
   - ready or draft. The repo asks for a ready PR once the required builds and focused proof pass.
   - Hosted ClawSweeper reviews a PR automatically once, when it opens ready or a draft is marked ready. The agent opens ready only after the local review loop met review_target at that head.
   - Either way, opening the PR is a separate OK from you.
+- watch_hours: 06:00-23:00
+  - After the PR opens, a watcher checks it every 15 minutes within these hours (in time_zone) and wakes the agent only when something changed. It is removed when the PR is ready for a maintainer look or stops.
 - approval_relay: <blank>
   - Blank (default): the agent takes your answer to an approval request only in its own conversation.
-  - Or the session key or agent id of another session that passes your answers on, if you answer there (for example `main` for any session of your main agent). A passed-on yes counts only when it names the approval id, the exact command, the head SHA and the body hash, and says where and when you said it. OpenClaw's exec prompt still asks you before the command runs.
+  - Or the session key or agent id of another session that passes your answers on, if you answer there (for example `main` for any session of your main agent). A passed-on yes counts only when it names the approval id, the exact command, the head SHA and the body hash, and says where and when you said it. In ask mode, OpenClaw's exec prompt still asks you before the command runs.
 
 ## Database
 
@@ -68,4 +82,4 @@ Edit the values after the colons. The agent reads this file at the start of ever
 ## Time
 
 - time_zone: <your IANA time zone, e.g. Europe/Berlin>
-  - Used only to show times in summaries. The database stores UTC.
+  - Used in summaries and for the watcher's hours. The database stores UTC.

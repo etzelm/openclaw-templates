@@ -10,7 +10,7 @@ These rules apply to everything that could become public: PR titles and bodies, 
 - No em dashes or en dashes. Use a period, a comma or a colon.
 - No process narration. Do not write how the work happened, who asked, or what a bot or agent said ("the bot asked me", "as requested", "I was told", "after several attempts").
 - No promises to do more later ("I will follow up", "I can also add").
-- No @-mentions of people or teams. Do not guess owners. The repo's forms, labels and CODEOWNERS route the work.
+- No @-mentions of people or teams. Do not guess owners. The repo's forms, labels and CODEOWNERS route the work. The one exception is the repo's own bot command `@clawsweeper re-review`, alone in its comment, under a `request-review` approval.
 - No questions to maintainers in comments. If maintainers must decide something, put it in the PR body in one or two short lines, such as "Maintainer decision: keep the old flag as an alias, or remove it."
 - No secrets, tokens, private paths, hostnames, personal data or unrelated log lines. Redact before quoting a log.
 - Keep long output in a collapsed `<details>` block or a link. Keep the summary visible.
@@ -24,5 +24,6 @@ Run these on the body file and the title, and fix every hit:
 - `grep -n '@[A-Za-z0-9]' <file>` finds mentions. Keep only code, emails in example text, or package scopes such as `@openclaw/...` that are not a mention.
 - `grep -n -i 'i will\|we will\|follow up\|as requested\|the bot\|asked me\|agent said\|co-authored-by\|generated with\|as an ai' <file>` finds narration and promises.
 - `grep -n -i 'token\|password\|secret\|/Users/\|/home/' <file>` finds possible leaks.
+- Before a push: `git -C <checkout> log --format='%G? %ae %ce' <upstream>/<base>..<head>`. Every commit must show `commit_email` from settings.md as author and committer, never a private address, and `G` when signing is set up.
 
 Then read the whole body once as a maintainer would. Cut any sentence that does not help them review.

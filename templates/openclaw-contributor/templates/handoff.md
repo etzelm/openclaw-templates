@@ -13,11 +13,19 @@
 - Gates: <each command and result>
 - Simplify: <what was removed, production and test line deltas>
 - Local review: <tool; each round with base, head, rating overall/proof/patch and must-fix count; remaining findings; or the gap>
-- Commit signature: <git log -1 --format='%G? %GS' result, or "unsigned, signing not configured">
+- Commits: <git log --format='%G? %ae %ce' result for each commit, or "unsigned, owner opted out">
 
 ## CI and review
 
 <Each failing check with its class and proof. Each review finding with what was done. "None" if none.>
+
+## After the PR opened
+
+- Hosted rounds: <each round: head, rating overall/proof/patch, must-fix count, what changed; or "none yet">
+- Status labels: <current ClawSweeper status label on the current head>
+- Required checks: <green, or each one not green with its class, e.g. waiting for maintainer workflow approval>
+- Standing grant: <grant id, actions, how it ended and why; or "none">
+- Watcher: <automation id, removed at <time>; or "none">
 
 ## Approvals used
 
