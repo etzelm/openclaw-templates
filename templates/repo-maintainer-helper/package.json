@@ -1,0 +1,11 @@
+{
+  "name": "@etzelm/repo-maintainer-helper",
+  "version": "0.1.0",
+  "description": "Triages new issues and PRs on the GitHub repos you list, finds likely duplicates, and suggests labels and replies in a daily digest. Nothing changes on GitHub until you OK the exact command.",
+  "author": "Anmol Bhardwaj",
+  "license": "MIT",
+  "type": "module",
+  "openclaw": {
+    "template": "CLAW.md"
+  }
+}

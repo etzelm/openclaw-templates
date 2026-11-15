@@ -1,0 +1,1230 @@
+[
+ {
+  "author": {
+   "id": "U_100",
+   "is_bot": false,
+   "login": "user-15",
+   "name": ""
+  },
+  "body": "Fixes #5000\n\nTested locally.",
+  "createdAt": "2026-10-28T19:26:30Z",
+  "isDraft": false,
+  "labels": [],
+  "number": 4999,
+  "state": "MERGED",
+  "title": "Fix token when linux is set",
+  "updatedAt": "2026-11-14T19:48:33Z",
+  "url": "https://github.com/example-org/example-repo/pull/4999"
+ },
+ {
+  "author": {
+   "id": "U_101",
+   "is_bot": false,
+   "login": "user-16",
+   "name": ""
+  },
+  "body": "Fixes #4998\n\nTested locally.",
+  "createdAt": "2026-11-14T16:08:04Z",
+  "isDraft": false,
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "bug",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4997,
+  "state": "CLOSED",
+  "title": "Fix linux when export is set",
+  "updatedAt": "2026-11-14T17:05:05Z",
+  "url": "https://github.com/example-org/example-repo/pull/4997"
+ },
+ {
+  "author": {
+   "id": "U_102",
+   "is_bot": false,
+   "login": "user-0",
+   "name": ""
+  },
+  "body": "Fixes #4996\n\nTested locally.",
+  "createdAt": "2026-11-09T23:21:42Z",
+  "isDraft": false,
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "status: 👀 needs review",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4995,
+  "state": "CLOSED",
+  "title": "Fix linux when linux is set",
+  "updatedAt": "2026-11-14T04:03:05Z",
+  "url": "https://github.com/example-org/example-repo/pull/4995"
+ },
+ {
+  "author": {
+   "id": "U_103",
+   "is_bot": false,
+   "login": "user-1",
+   "name": ""
+  },
+  "body": "Fixes #4994\n\nTested locally.",
+  "createdAt": "2026-11-14T03:36:19Z",
+  "isDraft": false,
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "status: 👀 needs review",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4993,
+  "state": "CLOSED",
+  "title": "Fix token when proxy is set",
+  "updatedAt": "2026-11-14T03:38:32Z",
+  "url": "https://github.com/example-org/example-repo/pull/4993"
+ },
+ {
+  "author": {
+   "id": "U_104",
+   "is_bot": false,
+   "login": "user-2",
+   "name": ""
+  },
+  "body": "Fixes #4992\n\nTested locally.",
+  "createdAt": "2026-11-12T03:17:32Z",
+  "isDraft": false,
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "bug",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "status: 👀 needs review",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4991,
+  "state": "CLOSED",
+  "title": "Fix crash when proxy is set",
+  "updatedAt": "2026-11-13T20:56:38Z",
+  "url": "https://github.com/example-org/example-repo/pull/4991"
+ },
+ {
+  "author": {
+   "id": "U_105",
+   "is_bot": false,
+   "login": "user-3",
+   "name": ""
+  },
+  "body": "Fixes #4990\n\nTested locally.",
+  "createdAt": "2026-11-06T19:32:28Z",
+  "isDraft": false,
+  "labels": [],
+  "number": 4989,
+  "state": "MERGED",
+  "title": "Fix crash when linux is set",
+  "updatedAt": "2026-11-13T16:07:41Z",
+  "url": "https://github.com/example-org/example-repo/pull/4989"
+ },
+ {
+  "author": {
+   "id": "U_106",
+   "is_bot": false,
+   "login": "user-4",
+   "name": ""
+  },
+  "body": "Fixes #4988\n\nTested locally.",
+  "createdAt": "2023-11-20T21:46:36Z",
+  "isDraft": false,
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4987,
+  "state": "MERGED",
+  "title": "Fix proxy when export is set",
+  "updatedAt": "2026-11-13T16:07:39Z",
+  "url": "https://github.com/example-org/example-repo/pull/4987"
+ },
+ {
+  "author": {
+   "id": "U_107",
+   "is_bot": false,
+   "login": "user-5",
+   "name": ""
+  },
+  "body": "Fixes #4986\n\nTested locally.",
+  "createdAt": "2026-11-13T05:05:01Z",
+  "isDraft": false,
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "bug",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4985,
+  "state": "CLOSED",
+  "title": "Fix token when export is set",
+  "updatedAt": "2026-11-13T16:07:15Z",
+  "url": "https://github.com/example-org/example-repo/pull/4985"
+ },
+ {
+  "author": {
+   "id": "U_108",
+   "is_bot": false,
+   "login": "user-6",
+   "name": ""
+  },
+  "body": "Fixes #4984\n\nTested locally.",
+  "createdAt": "2026-11-13T16:00:21Z",
+  "isDraft": true,
+  "labels": [],
+  "number": 4983,
+  "state": "OPEN",
+  "title": "Fix token when export is set",
+  "updatedAt": "2026-11-13T16:04:48Z",
+  "url": "https://github.com/example-org/example-repo/pull/4983"
+ },
+ {
+  "author": {
+   "id": "U_109",
+   "is_bot": true,
+   "login": "app/example-bot",
+   "name": ""
+  },
+  "body": "Fixes #4982\n\nTested locally.",
+  "createdAt": "2026-11-13T14:02:51Z",
+  "isDraft": false,
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4981,
+  "state": "OPEN",
+  "title": "Fix proxy when linux is set",
+  "updatedAt": "2026-11-13T14:29:44Z",
+  "url": "https://github.com/example-org/example-repo/pull/4981"
+ },
+ {
+  "author": {
+   "id": "U_110",
+   "is_bot": true,
+   "login": "app/example-bot",
+   "name": ""
+  },
+  "body": "Fixes #4980\n\nTested locally.",
+  "createdAt": "2026-11-13T14:03:16Z",
+  "isDraft": false,
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4979,
+  "state": "OPEN",
+  "title": "Fix crash when proxy is set",
+  "updatedAt": "2026-11-13T14:23:01Z",
+  "url": "https://github.com/example-org/example-repo/pull/4979"
+ },
+ {
+  "author": {
+   "id": "U_111",
+   "is_bot": false,
+   "login": "user-9",
+   "name": ""
+  },
+  "body": "Fixes #4978\n\nTested locally.",
+  "createdAt": "2026-11-03T21:20:00Z",
+  "isDraft": true,
+  "labels": [],
+  "number": 4977,
+  "state": "OPEN",
+  "title": "Fix proxy when linux is set",
+  "updatedAt": "2026-11-13T12:06:21Z",
+  "url": "https://github.com/example-org/example-repo/pull/4977"
+ },
+ {
+  "author": {
+   "id": "U_112",
+   "is_bot": false,
+   "login": "user-10",
+   "name": ""
+  },
+  "body": "Fixes #4976\n\nTested locally.",
+  "createdAt": "2026-11-03T21:18:21Z",
+  "isDraft": true,
+  "labels": [],
+  "number": 4975,
+  "state": "OPEN",
+  "title": "Fix proxy when linux is set",
+  "updatedAt": "2026-11-13T12:06:19Z",
+  "url": "https://github.com/example-org/example-repo/pull/4975"
+ },
+ {
+  "author": {
+   "id": "U_113",
+   "is_bot": false,
+   "login": "user-11",
+   "name": ""
+  },
+  "body": "Fixes #4974\n\nTested locally.",
+  "createdAt": "2026-11-03T21:16:35Z",
+  "isDraft": true,
+  "labels": [],
+  "number": 4973,
+  "state": "OPEN",
+  "title": "Fix export when linux is set",
+  "updatedAt": "2026-11-13T12:06:18Z",
+  "url": "https://github.com/example-org/example-repo/pull/4973"
+ },
+ {
+  "author": {
+   "id": "U_114",
+   "is_bot": false,
+   "login": "user-12",
+   "name": ""
+  },
+  "body": "Fixes #4972\n\nTested locally.",
+  "createdAt": "2026-11-03T21:14:11Z",
+  "isDraft": true,
+  "labels": [],
+  "number": 4971,
+  "state": "OPEN",
+  "title": "Fix proxy when proxy is set",
+  "updatedAt": "2026-11-13T12:06:16Z",
+  "url": "https://github.com/example-org/example-repo/pull/4971"
+ },
+ {
+  "author": {
+   "id": "U_115",
+   "is_bot": false,
+   "login": "user-13",
+   "name": ""
+  },
+  "body": "Fixes #4970\n\nTested locally.",
+  "createdAt": "2026-11-03T21:12:27Z",
+  "isDraft": true,
+  "labels": [],
+  "number": 4969,
+  "state": "OPEN",
+  "title": "Fix linux when linux is set",
+  "updatedAt": "2026-11-13T12:06:14Z",
+  "url": "https://github.com/example-org/example-repo/pull/4969"
+ },
+ {
+  "author": {
+   "id": "U_116",
+   "is_bot": false,
+   "login": "user-14",
+   "name": ""
+  },
+  "body": "Fixes #4968\n\nTested locally.",
+  "createdAt": "2026-11-03T21:10:55Z",
+  "isDraft": true,
+  "labels": [],
+  "number": 4967,
+  "state": "OPEN",
+  "title": "Fix token when proxy is set",
+  "updatedAt": "2026-11-13T12:06:12Z",
+  "url": "https://github.com/example-org/example-repo/pull/4967"
+ },
+ {
+  "author": {
+   "id": "U_117",
+   "is_bot": false,
+   "login": "user-15",
+   "name": ""
+  },
+  "body": "Fixes #4966\n\nTested locally.",
+  "createdAt": "2026-11-03T21:09:11Z",
+  "isDraft": true,
+  "labels": [],
+  "number": 4965,
+  "state": "OPEN",
+  "title": "Fix token when token is set",
+  "updatedAt": "2026-11-13T12:06:11Z",
+  "url": "https://github.com/example-org/example-repo/pull/4965"
+ },
+ {
+  "author": {
+   "id": "U_118",
+   "is_bot": false,
+   "login": "user-16",
+   "name": ""
+  },
+  "body": "Fixes #4964\n\nTested locally.",
+  "createdAt": "2026-11-03T21:06:57Z",
+  "isDraft": true,
+  "labels": [],
+  "number": 4963,
+  "state": "OPEN",
+  "title": "Fix crash when proxy is set",
+  "updatedAt": "2026-11-13T12:06:09Z",
+  "url": "https://github.com/example-org/example-repo/pull/4963"
+ },
+ {
+  "author": {
+   "id": "U_119",
+   "is_bot": false,
+   "login": "user-0",
+   "name": ""
+  },
+  "body": "Fixes #4962\n\nTested locally.",
+  "createdAt": "2026-11-12T22:22:06Z",
+  "isDraft": false,
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "bug",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4961,
+  "state": "CLOSED",
+  "title": "Fix token when crash is set",
+  "updatedAt": "2026-11-12T22:26:26Z",
+  "url": "https://github.com/example-org/example-repo/pull/4961"
+ },
+ {
+  "author": {
+   "id": "U_120",
+   "is_bot": false,
+   "login": "user-1",
+   "name": ""
+  },
+  "body": "Fixes #4960\n\nTested locally.",
+  "createdAt": "2026-06-06T05:24:39Z",
+  "isDraft": false,
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "bug",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4959,
+  "state": "CLOSED",
+  "title": "Fix proxy when token is set",
+  "updatedAt": "2026-11-12T18:38:55Z",
+  "url": "https://github.com/example-org/example-repo/pull/4959"
+ },
+ {
+  "author": {
+   "id": "U_121",
+   "is_bot": true,
+   "login": "app/example-bot",
+   "name": ""
+  },
+  "body": "Fixes #4958\n\nTested locally.",
+  "createdAt": "2026-11-12T14:03:45Z",
+  "isDraft": false,
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "status: 👀 needs review",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4957,
+  "state": "MERGED",
+  "title": "Fix crash when proxy is set",
+  "updatedAt": "2026-11-12T18:25:02Z",
+  "url": "https://github.com/example-org/example-repo/pull/4957"
+ },
+ {
+  "author": {
+   "id": "U_122",
+   "is_bot": false,
+   "login": "user-3",
+   "name": ""
+  },
+  "body": "Fixes #4956\n\nTested locally.",
+  "createdAt": "2026-11-12T17:25:58Z",
+  "isDraft": false,
+  "labels": [],
+  "number": 4955,
+  "state": "MERGED",
+  "title": "Fix proxy when retry is set",
+  "updatedAt": "2026-11-12T18:12:48Z",
+  "url": "https://github.com/example-org/example-repo/pull/4955"
+ },
+ {
+  "author": {
+   "id": "U_123",
+   "is_bot": true,
+   "login": "app/example-bot",
+   "name": ""
+  },
+  "body": "Fixes #4954\n\nTested locally.",
+  "createdAt": "2026-11-06T14:03:12Z",
+  "isDraft": false,
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "docs",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4953,
+  "state": "MERGED",
+  "title": "Fix export when proxy is set",
+  "updatedAt": "2026-11-12T18:04:41Z",
+  "url": "https://github.com/example-org/example-repo/pull/4953"
+ },
+ {
+  "author": {
+   "id": "U_124",
+   "is_bot": true,
+   "login": "app/example-bot",
+   "name": ""
+  },
+  "body": "Fixes #4952\n\nTested locally.",
+  "createdAt": "2026-11-10T14:03:20Z",
+  "isDraft": false,
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "bug",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4951,
+  "state": "MERGED",
+  "title": "Fix proxy when export is set",
+  "updatedAt": "2026-11-12T18:04:35Z",
+  "url": "https://github.com/example-org/example-repo/pull/4951"
+ },
+ {
+  "author": {
+   "id": "U_125",
+   "is_bot": true,
+   "login": "app/example-bot",
+   "name": ""
+  },
+  "body": "Fixes #4950\n\nTested locally.",
+  "createdAt": "2026-11-12T14:03:59Z",
+  "isDraft": false,
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "status: 👀 needs review",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4949,
+  "state": "MERGED",
+  "title": "Fix token when token is set",
+  "updatedAt": "2026-11-12T18:04:30Z",
+  "url": "https://github.com/example-org/example-repo/pull/4949"
+ },
+ {
+  "author": {
+   "id": "U_126",
+   "is_bot": false,
+   "login": "user-7",
+   "name": ""
+  },
+  "body": "Fixes #4948\n\nTested locally.",
+  "createdAt": "2026-11-12T03:16:21Z",
+  "isDraft": false,
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4947,
+  "state": "CLOSED",
+  "title": "Fix export when token is set",
+  "updatedAt": "2026-11-12T03:21:28Z",
+  "url": "https://github.com/example-org/example-repo/pull/4947"
+ },
+ {
+  "author": {
+   "id": "U_127",
+   "is_bot": false,
+   "login": "user-8",
+   "name": ""
+  },
+  "body": "Fixes #4946\n\nTested locally.",
+  "createdAt": "2026-11-12T03:15:27Z",
+  "isDraft": false,
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "bug",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4945,
+  "state": "CLOSED",
+  "title": "Fix export when crash is set",
+  "updatedAt": "2026-11-12T03:20:46Z",
+  "url": "https://github.com/example-org/example-repo/pull/4945"
+ },
+ {
+  "author": {
+   "id": "U_128",
+   "is_bot": false,
+   "login": "user-9",
+   "name": ""
+  },
+  "body": "Fixes #4944\n\nTested locally.",
+  "createdAt": "2026-11-12T03:12:41Z",
+  "isDraft": false,
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "docs",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4943,
+  "state": "CLOSED",
+  "title": "Fix token when crash is set",
+  "updatedAt": "2026-11-12T03:17:18Z",
+  "url": "https://github.com/example-org/example-repo/pull/4943"
+ },
+ {
+  "author": {
+   "id": "U_129",
+   "is_bot": false,
+   "login": "user-10",
+   "name": ""
+  },
+  "body": "Fixes #4942\n\nTested locally.",
+  "createdAt": "2026-11-12T02:20:00Z",
+  "isDraft": false,
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "status: 👀 needs review",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x2",
+    "name": "docs",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4941,
+  "state": "CLOSED",
+  "title": "Fix export when export is set",
+  "updatedAt": "2026-11-12T03:04:06Z",
+  "url": "https://github.com/example-org/example-repo/pull/4941"
+ },
+ {
+  "author": {
+   "id": "U_130",
+   "is_bot": true,
+   "login": "app/example-bot",
+   "name": ""
+  },
+  "body": "Fixes #4940\n\nTested locally.",
+  "createdAt": "2026-11-11T14:15:34Z",
+  "isDraft": false,
+  "labels": [],
+  "number": 4939,
+  "state": "MERGED",
+  "title": "Fix linux when proxy is set",
+  "updatedAt": "2026-11-11T14:26:42Z",
+  "url": "https://github.com/example-org/example-repo/pull/4939"
+ },
+ {
+  "author": {
+   "id": "U_131",
+   "is_bot": false,
+   "login": "user-12",
+   "name": ""
+  },
+  "body": "Fixes #4938\n\nTested locally.",
+  "createdAt": "2026-10-24T18:51:08Z",
+  "isDraft": false,
+  "labels": [],
+  "number": 4937,
+  "state": "MERGED",
+  "title": "Fix proxy when token is set",
+  "updatedAt": "2026-11-11T16:40:08Z",
+  "url": "https://github.com/example-org/example-repo/pull/4937"
+ },
+ {
+  "author": {
+   "id": "U_132",
+   "is_bot": false,
+   "login": "user-13",
+   "name": ""
+  },
+  "body": "Fixes #4936\n\nTested locally.",
+  "createdAt": "2026-11-09T20:57:10Z",
+  "isDraft": false,
+  "labels": [],
+  "number": 4935,
+  "state": "MERGED",
+  "title": "Fix export when proxy is set",
+  "updatedAt": "2026-11-10T17:21:51Z",
+  "url": "https://github.com/example-org/example-repo/pull/4935"
+ },
+ {
+  "author": {
+   "id": "U_133",
+   "is_bot": true,
+   "login": "app/example-bot",
+   "name": ""
+  },
+  "body": "Fixes #4934\n\nTested locally.",
+  "createdAt": "2026-11-10T09:42:00Z",
+  "isDraft": false,
+  "labels": [],
+  "number": 4933,
+  "state": "MERGED",
+  "title": "Fix crash when proxy is set",
+  "updatedAt": "2026-11-10T15:45:40Z",
+  "url": "https://github.com/example-org/example-repo/pull/4933"
+ },
+ {
+  "author": {
+   "id": "U_134",
+   "is_bot": false,
+   "login": "user-15",
+   "name": ""
+  },
+  "body": "Fixes #4932\n\nTested locally.",
+  "createdAt": "2026-10-27T17:35:19Z",
+  "isDraft": false,
+  "labels": [],
+  "number": 4931,
+  "state": "MERGED",
+  "title": "Fix proxy when proxy is set",
+  "updatedAt": "2026-11-10T15:29:05Z",
+  "url": "https://github.com/example-org/example-repo/pull/4931"
+ },
+ {
+  "author": {
+   "id": "U_135",
+   "is_bot": false,
+   "login": "user-16",
+   "name": ""
+  },
+  "body": "Fixes #4930\n\nTested locally.",
+  "createdAt": "2026-11-10T04:49:55Z",
+  "isDraft": false,
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "bug",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4929,
+  "state": "CLOSED",
+  "title": "Fix crash when export is set",
+  "updatedAt": "2026-11-10T05:11:20Z",
+  "url": "https://github.com/example-org/example-repo/pull/4929"
+ },
+ {
+  "author": {
+   "id": "U_136",
+   "is_bot": false,
+   "login": "user-0",
+   "name": ""
+  },
+  "body": "Fixes #4928\n\nTested locally.",
+  "createdAt": "2026-11-10T04:19:02Z",
+  "isDraft": false,
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4927,
+  "state": "CLOSED",
+  "title": "Fix linux when proxy is set",
+  "updatedAt": "2026-11-10T05:06:14Z",
+  "url": "https://github.com/example-org/example-repo/pull/4927"
+ },
+ {
+  "author": {
+   "id": "U_137",
+   "is_bot": false,
+   "login": "user-1",
+   "name": ""
+  },
+  "body": "Fixes #4926\n\nTested locally.",
+  "createdAt": "2026-11-10T03:25:05Z",
+  "isDraft": false,
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "docs",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "bug",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4925,
+  "state": "CLOSED",
+  "title": "Fix export when export is set",
+  "updatedAt": "2026-11-10T04:11:48Z",
+  "url": "https://github.com/example-org/example-repo/pull/4925"
+ },
+ {
+  "author": {
+   "id": "U_138",
+   "is_bot": false,
+   "login": "user-2",
+   "name": ""
+  },
+  "body": "Fixes #4924\n\nTested locally.",
+  "createdAt": "2026-11-10T03:00:54Z",
+  "isDraft": false,
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4923,
+  "state": "CLOSED",
+  "title": "Fix crash when crash is set",
+  "updatedAt": "2026-11-10T03:21:04Z",
+  "url": "https://github.com/example-org/example-repo/pull/4923"
+ },
+ {
+  "author": {
+   "id": "U_139",
+   "is_bot": false,
+   "login": "user-3",
+   "name": ""
+  },
+  "body": "Fixes #4922\n\nTested locally.",
+  "createdAt": "2026-11-09T22:45:16Z",
+  "isDraft": false,
+  "labels": [],
+  "number": 4921,
+  "state": "MERGED",
+  "title": "Fix proxy when proxy is set",
+  "updatedAt": "2026-11-09T22:59:54Z",
+  "url": "https://github.com/example-org/example-repo/pull/4921"
+ },
+ {
+  "author": {
+   "id": "U_140",
+   "is_bot": false,
+   "login": "user-4",
+   "name": ""
+  },
+  "body": "Fixes #4920\n\nTested locally.",
+  "createdAt": "2026-11-09T20:04:34Z",
+  "isDraft": false,
+  "labels": [],
+  "number": 4919,
+  "state": "MERGED",
+  "title": "Fix export when linux is set",
+  "updatedAt": "2026-11-09T22:42:56Z",
+  "url": "https://github.com/example-org/example-repo/pull/4919"
+ },
+ {
+  "author": {
+   "id": "U_141",
+   "is_bot": true,
+   "login": "app/example-bot",
+   "name": ""
+  },
+  "body": "Fixes #4918\n\nTested locally.",
+  "createdAt": "2026-11-06T14:03:11Z",
+  "isDraft": false,
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "status: 👀 needs review",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4917,
+  "state": "MERGED",
+  "title": "Fix linux when proxy is set",
+  "updatedAt": "2026-11-09T22:11:00Z",
+  "url": "https://github.com/example-org/example-repo/pull/4917"
+ },
+ {
+  "author": {
+   "id": "U_142",
+   "is_bot": true,
+   "login": "app/example-bot",
+   "name": ""
+  },
+  "body": "Fixes #4916\n\nTested locally.",
+  "createdAt": "2026-11-09T14:02:50Z",
+  "isDraft": false,
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "bug",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4915,
+  "state": "MERGED",
+  "title": "Fix crash when proxy is set",
+  "updatedAt": "2026-11-09T20:37:31Z",
+  "url": "https://github.com/example-org/example-repo/pull/4915"
+ },
+ {
+  "author": {
+   "id": "U_143",
+   "is_bot": false,
+   "login": "user-7",
+   "name": ""
+  },
+  "body": "Fixes #4914\n\nTested locally.",
+  "createdAt": "2026-11-09T07:42:22Z",
+  "isDraft": false,
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "docs",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4913,
+  "state": "CLOSED",
+  "title": "Fix token when crash is set",
+  "updatedAt": "2026-11-09T12:25:29Z",
+  "url": "https://github.com/example-org/example-repo/pull/4913"
+ },
+ {
+  "author": {
+   "id": "U_144",
+   "is_bot": false,
+   "login": "user-8",
+   "name": ""
+  },
+  "body": "Fixes #4912\n\nTested locally.",
+  "createdAt": "2026-11-09T12:16:12Z",
+  "isDraft": false,
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "status: 👀 needs review",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "bug",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4911,
+  "state": "CLOSED",
+  "title": "Fix proxy when crash is set",
+  "updatedAt": "2026-11-09T12:23:10Z",
+  "url": "https://github.com/example-org/example-repo/pull/4911"
+ },
+ {
+  "author": {
+   "id": "U_145",
+   "is_bot": false,
+   "login": "user-9",
+   "name": ""
+  },
+  "body": "Fixes #4910\n\nTested locally.",
+  "createdAt": "2023-11-04T07:30:25Z",
+  "isDraft": false,
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4909,
+  "state": "MERGED",
+  "title": "Fix linux when crash is set",
+  "updatedAt": "2026-11-07T18:38:18Z",
+  "url": "https://github.com/example-org/example-repo/pull/4909"
+ },
+ {
+  "author": {
+   "id": "U_146",
+   "is_bot": false,
+   "login": "user-10",
+   "name": ""
+  },
+  "body": "Fixes #4908\n\nTested locally.",
+  "createdAt": "2026-07-02T14:40:03Z",
+  "isDraft": true,
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4907,
+  "state": "OPEN",
+  "title": "Fix linux when login is set",
+  "updatedAt": "2026-11-07T07:35:07Z",
+  "url": "https://github.com/example-org/example-repo/pull/4907"
+ },
+ {
+  "author": {
+   "id": "U_147",
+   "is_bot": false,
+   "login": "user-11",
+   "name": ""
+  },
+  "body": "Fixes #4906\n\nTested locally.",
+  "createdAt": "2026-11-07T00:19:18Z",
+  "isDraft": false,
+  "labels": [],
+  "number": 4905,
+  "state": "MERGED",
+  "title": "Fix proxy when proxy is set",
+  "updatedAt": "2026-11-07T01:48:49Z",
+  "url": "https://github.com/example-org/example-repo/pull/4905"
+ },
+ {
+  "author": {
+   "id": "U_148",
+   "is_bot": false,
+   "login": "user-12",
+   "name": ""
+  },
+  "body": "Fixes #4904\n\nTested locally.",
+  "createdAt": "2026-11-06T20:08:16Z",
+  "isDraft": false,
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "docs",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "docs",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4903,
+  "state": "CLOSED",
+  "title": "Fix linux when crash is set",
+  "updatedAt": "2026-11-06T20:10:07Z",
+  "url": "https://github.com/example-org/example-repo/pull/4903"
+ },
+ {
+  "author": {
+   "id": "U_149",
+   "is_bot": false,
+   "login": "user-13",
+   "name": ""
+  },
+  "body": "Fixes #4902\n\nTested locally.",
+  "createdAt": "2026-07-06T09:38:35Z",
+  "isDraft": false,
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4901,
+  "state": "CLOSED",
+  "title": "Fix export when token is set",
+  "updatedAt": "2026-11-06T19:58:48Z",
+  "url": "https://github.com/example-org/example-repo/pull/4901"
+ }
+]

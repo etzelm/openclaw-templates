@@ -1,0 +1,2984 @@
+[
+ {
+  "author": {
+   "id": "U_0",
+   "is_bot": false,
+   "login": "user-0",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the linux command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-11T06:49:27Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "bug",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 5000,
+  "state": "OPEN",
+  "title": "Fix crash when token is set",
+  "updatedAt": "2026-11-15T05:49:37Z",
+  "url": "https://github.com/example-org/example-repo/issues/5000"
+ },
+ {
+  "author": {
+   "id": "U_1",
+   "is_bot": true,
+   "login": "app/example-bot",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the linux command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-07T13:17:45Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x2",
+    "name": "docs",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4998,
+  "state": "CLOSED",
+  "title": "Fix linux when linux is set",
+  "updatedAt": "2026-11-15T00:51:15Z",
+  "url": "https://github.com/example-org/example-repo/issues/4998"
+ },
+ {
+  "author": {
+   "id": "U_2",
+   "is_bot": false,
+   "login": "user-2",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the proxy command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-04-08T15:10:37Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "bug",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4996,
+  "state": "OPEN",
+  "title": "Fix crash when linux is set",
+  "updatedAt": "2026-11-14T23:30:18Z",
+  "url": "https://github.com/example-org/example-repo/issues/4996"
+ },
+ {
+  "author": {
+   "id": "U_3",
+   "is_bot": true,
+   "login": "app/example-bot",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the token command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-14T15:21:10Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "bug",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4994,
+  "state": "OPEN",
+  "title": "Fix proxy when export is set",
+  "updatedAt": "2026-11-14T15:21:18Z",
+  "url": "https://github.com/example-org/example-repo/issues/4994"
+ },
+ {
+  "author": {
+   "id": "U_4",
+   "is_bot": false,
+   "login": "user-4",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the linux command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-14T15:13:33Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "status: 👀 needs review",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "bug",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x2",
+    "name": "status: 👀 needs review",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4992,
+  "state": "OPEN",
+  "title": "Fix export when crash is set",
+  "updatedAt": "2026-11-14T15:20:57Z",
+  "url": "https://github.com/example-org/example-repo/issues/4992"
+ },
+ {
+  "author": {
+   "id": "U_5",
+   "is_bot": false,
+   "login": "user-5",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the token command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-13T16:21:52Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "status: 👀 needs review",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x2",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4990,
+  "state": "OPEN",
+  "title": "Fix token when crash is set",
+  "updatedAt": "2026-11-14T13:35:23Z",
+  "url": "https://github.com/example-org/example-repo/issues/4990"
+ },
+ {
+  "author": {
+   "id": "U_6",
+   "is_bot": false,
+   "login": "user-6",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the export command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-14T08:24:26Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "docs",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4988,
+  "state": "CLOSED",
+  "title": "Fix proxy when proxy is set",
+  "updatedAt": "2026-11-14T08:30:13Z",
+  "url": "https://github.com/example-org/example-repo/issues/4988"
+ },
+ {
+  "author": {
+   "id": "U_7",
+   "is_bot": false,
+   "login": "user-7",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the export command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2024-06-19T11:52:02Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "status: 👀 needs review",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "status: 👀 needs review",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x2",
+    "name": "status: 👀 needs review",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4986,
+  "state": "OPEN",
+  "title": "Fix proxy when proxy is set",
+  "updatedAt": "2026-11-14T08:14:22Z",
+  "url": "https://github.com/example-org/example-repo/issues/4986"
+ },
+ {
+  "author": {
+   "id": "U_8",
+   "is_bot": false,
+   "login": "user-8",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the token command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-14T05:50:35Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "status: 👀 needs review",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4984,
+  "state": "CLOSED",
+  "title": "Fix proxy when token is set",
+  "updatedAt": "2026-11-14T07:58:34Z",
+  "url": "https://github.com/example-org/example-repo/issues/4984"
+ },
+ {
+  "author": {
+   "id": "U_9",
+   "is_bot": false,
+   "login": "user-9",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the crash command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-09-06T18:09:12Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "bug",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x2",
+    "name": "docs",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4982,
+  "state": "OPEN",
+  "title": "Fix crash when token is set",
+  "updatedAt": "2026-11-14T03:06:44Z",
+  "url": "https://github.com/example-org/example-repo/issues/4982"
+ },
+ {
+  "author": {
+   "id": "U_10",
+   "is_bot": false,
+   "login": "user-10",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the crash command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-09-07T03:11:41Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "bug",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "docs",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x2",
+    "name": "docs",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4980,
+  "state": "OPEN",
+  "title": "Fix token when linux is set",
+  "updatedAt": "2026-11-14T03:06:43Z",
+  "url": "https://github.com/example-org/example-repo/issues/4980"
+ },
+ {
+  "author": {
+   "id": "U_11",
+   "is_bot": false,
+   "login": "user-11",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the token command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-09-07T13:25:30Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x2",
+    "name": "docs",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4978,
+  "state": "OPEN",
+  "title": "Fix linux when crash is set",
+  "updatedAt": "2026-11-14T03:06:42Z",
+  "url": "https://github.com/example-org/example-repo/issues/4978"
+ },
+ {
+  "author": {
+   "id": "U_12",
+   "is_bot": false,
+   "login": "user-12",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the crash command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-09-08T10:31:38Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "bug",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x2",
+    "name": "docs",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4976,
+  "state": "OPEN",
+  "title": "Add export option for crash",
+  "updatedAt": "2026-11-14T03:06:41Z",
+  "url": "https://github.com/example-org/example-repo/issues/4976"
+ },
+ {
+  "author": {
+   "id": "U_13",
+   "is_bot": false,
+   "login": "user-13",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the linux command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-09-08T12:40:54Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4974,
+  "state": "OPEN",
+  "title": "Fix proxy when proxy is set",
+  "updatedAt": "2026-11-14T03:06:40Z",
+  "url": "https://github.com/example-org/example-repo/issues/4974"
+ },
+ {
+  "author": {
+   "id": "U_14",
+   "is_bot": false,
+   "login": "user-14",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the linux command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-14T00:01:57Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "docs",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4972,
+  "state": "CLOSED",
+  "title": "Fix proxy when token is set",
+  "updatedAt": "2026-11-14T00:08:01Z",
+  "url": "https://github.com/example-org/example-repo/issues/4972"
+ },
+ {
+  "author": {
+   "id": "U_15",
+   "is_bot": false,
+   "login": "user-15",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the linux command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-10T19:26:59Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4970,
+  "state": "OPEN",
+  "title": "Fix crash when crash is set",
+  "updatedAt": "2026-11-13T21:40:18Z",
+  "url": "https://github.com/example-org/example-repo/issues/4970"
+ },
+ {
+  "author": {
+   "id": "U_16",
+   "is_bot": false,
+   "login": "user-16",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the linux command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-13T20:16:19Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "status: 👀 needs review",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "status: 👀 needs review",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x2",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4968,
+  "state": "OPEN",
+  "title": "Add crash option for token",
+  "updatedAt": "2026-11-13T20:25:56Z",
+  "url": "https://github.com/example-org/example-repo/issues/4968"
+ },
+ {
+  "author": {
+   "id": "U_17",
+   "is_bot": false,
+   "login": "user-0",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the linux command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-13T15:39:01Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4966,
+  "state": "CLOSED",
+  "title": "Fix linux when crash is set",
+  "updatedAt": "2026-11-13T15:44:38Z",
+  "url": "https://github.com/example-org/example-repo/issues/4966"
+ },
+ {
+  "author": {
+   "id": "U_18",
+   "is_bot": false,
+   "login": "user-1",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the token command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-13T15:37:39Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "docs",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4964,
+  "state": "CLOSED",
+  "title": "Fix linux when linux is set",
+  "updatedAt": "2026-11-13T15:43:28Z",
+  "url": "https://github.com/example-org/example-repo/issues/4964"
+ },
+ {
+  "author": {
+   "id": "U_19",
+   "is_bot": false,
+   "login": "user-2",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the proxy command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-10-26T04:50:39Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "docs",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "docs",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x2",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4962,
+  "state": "OPEN",
+  "title": "Fix export when linux is set",
+  "updatedAt": "2026-11-13T13:44:15Z",
+  "url": "https://github.com/example-org/example-repo/issues/4962"
+ },
+ {
+  "author": {
+   "id": "U_20",
+   "is_bot": false,
+   "login": "user-3",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the token command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2024-04-10T19:37:12Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x2",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4960,
+  "state": "OPEN",
+  "title": "Fix proxy when linux is set",
+  "updatedAt": "2026-11-13T13:11:24Z",
+  "url": "https://github.com/example-org/example-repo/issues/4960"
+ },
+ {
+  "author": {
+   "id": "U_21",
+   "is_bot": false,
+   "login": "user-4",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the linux command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-10-30T12:22:17Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "bug",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x2",
+    "name": "status: 👀 needs review",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4958,
+  "state": "OPEN",
+  "title": "Fix proxy when proxy is set",
+  "updatedAt": "2026-11-13T11:58:03Z",
+  "url": "https://github.com/example-org/example-repo/issues/4958"
+ },
+ {
+  "author": {
+   "id": "U_22",
+   "is_bot": false,
+   "login": "user-5",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the crash command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-13T10:09:49Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "bug",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4956,
+  "state": "OPEN",
+  "title": "Fix crash when export is set",
+  "updatedAt": "2026-11-13T10:10:00Z",
+  "url": "https://github.com/example-org/example-repo/issues/4956"
+ },
+ {
+  "author": {
+   "id": "U_23",
+   "is_bot": false,
+   "login": "user-6",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the token command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-09-09T20:05:47Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "docs",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x2",
+    "name": "bug",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4954,
+  "state": "OPEN",
+  "title": "Fix crash when token is set",
+  "updatedAt": "2026-11-13T03:07:08Z",
+  "url": "https://github.com/example-org/example-repo/issues/4954"
+ },
+ {
+  "author": {
+   "id": "U_24",
+   "is_bot": false,
+   "login": "user-7",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the crash command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-09-17T14:26:49Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "status: 👀 needs review",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x2",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4952,
+  "state": "OPEN",
+  "title": "Fix linux when export is set",
+  "updatedAt": "2026-11-13T03:07:05Z",
+  "url": "https://github.com/example-org/example-repo/issues/4952"
+ },
+ {
+  "author": {
+   "id": "U_25",
+   "is_bot": false,
+   "login": "user-8",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the export command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-09-23T11:35:10Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "docs",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "bug",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x2",
+    "name": "docs",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4950,
+  "state": "OPEN",
+  "title": "Fix crash when export is set",
+  "updatedAt": "2026-11-13T03:07:03Z",
+  "url": "https://github.com/example-org/example-repo/issues/4950"
+ },
+ {
+  "author": {
+   "id": "U_26",
+   "is_bot": false,
+   "login": "user-9",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the token command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-09-23T11:35:10Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "docs",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x2",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4948,
+  "state": "OPEN",
+  "title": "Fix export when token is set",
+  "updatedAt": "2026-11-13T03:07:01Z",
+  "url": "https://github.com/example-org/example-repo/issues/4948"
+ },
+ {
+  "author": {
+   "id": "U_27",
+   "is_bot": false,
+   "login": "user-10",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the proxy command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-09-23T11:35:10Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "docs",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "status: 👀 needs review",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x2",
+    "name": "status: 👀 needs review",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4946,
+  "state": "OPEN",
+  "title": "Fix export when export is set",
+  "updatedAt": "2026-11-13T03:07:00Z",
+  "url": "https://github.com/example-org/example-repo/issues/4946"
+ },
+ {
+  "author": {
+   "id": "U_28",
+   "is_bot": false,
+   "login": "user-11",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the proxy command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-09-28T00:07:05Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x2",
+    "name": "status: 👀 needs review",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4944,
+  "state": "OPEN",
+  "title": "Fix export when export is set",
+  "updatedAt": "2026-11-13T03:06:58Z",
+  "url": "https://github.com/example-org/example-repo/issues/4944"
+ },
+ {
+  "author": {
+   "id": "U_29",
+   "is_bot": true,
+   "login": "app/example-bot",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the export command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-10-01T09:50:59Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "status: 👀 needs review",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "status: 👀 needs review",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x2",
+    "name": "bug",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4942,
+  "state": "OPEN",
+  "title": "Fix proxy when export is set",
+  "updatedAt": "2026-11-13T03:06:57Z",
+  "url": "https://github.com/example-org/example-repo/issues/4942"
+ },
+ {
+  "author": {
+   "id": "U_30",
+   "is_bot": false,
+   "login": "user-13",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the crash command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-10-04T09:03:12Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "status: 👀 needs review",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x2",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4940,
+  "state": "OPEN",
+  "title": "Fix token when linux is set",
+  "updatedAt": "2026-11-13T03:06:56Z",
+  "url": "https://github.com/example-org/example-repo/issues/4940"
+ },
+ {
+  "author": {
+   "id": "U_31",
+   "is_bot": false,
+   "login": "user-14",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the proxy command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-10-07T11:43:48Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "docs",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x2",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4938,
+  "state": "OPEN",
+  "title": "Fix proxy when export is set",
+  "updatedAt": "2026-11-13T03:06:54Z",
+  "url": "https://github.com/example-org/example-repo/issues/4938"
+ },
+ {
+  "author": {
+   "id": "U_32",
+   "is_bot": false,
+   "login": "user-15",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the proxy command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-07-29T19:57:46Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "docs",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x2",
+    "name": "bug",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4936,
+  "state": "OPEN",
+  "title": "Fix linux when retry is set",
+  "updatedAt": "2026-11-13T00:22:50Z",
+  "url": "https://github.com/example-org/example-repo/issues/4936"
+ },
+ {
+  "author": {
+   "id": "U_33",
+   "is_bot": false,
+   "login": "user-16",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the linux command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-05-09T11:35:20Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "docs",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x2",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4934,
+  "state": "OPEN",
+  "title": "Fix export when linux is set",
+  "updatedAt": "2026-11-12T22:31:30Z",
+  "url": "https://github.com/example-org/example-repo/issues/4934"
+ },
+ {
+  "author": {
+   "id": "U_34",
+   "is_bot": false,
+   "login": "user-0",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the token command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-08-18T08:40:45Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "status: 👀 needs review",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4932,
+  "state": "OPEN",
+  "title": "Fix token when token is set",
+  "updatedAt": "2026-11-12T19:43:58Z",
+  "url": "https://github.com/example-org/example-repo/issues/4932"
+ },
+ {
+  "author": {
+   "id": "U_35",
+   "is_bot": false,
+   "login": "user-1",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the crash command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-10T22:51:55Z",
+  "labels": [],
+  "number": 4930,
+  "state": "CLOSED",
+  "title": "Fix export when proxy is set",
+  "updatedAt": "2026-11-12T19:42:47Z",
+  "url": "https://github.com/example-org/example-repo/issues/4930"
+ },
+ {
+  "author": {
+   "id": "U_36",
+   "is_bot": false,
+   "login": "user-2",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the crash command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-12T18:43:35Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "status: 👀 needs review",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4928,
+  "state": "CLOSED",
+  "title": "Fix proxy when proxy is set",
+  "updatedAt": "2026-11-12T18:49:27Z",
+  "url": "https://github.com/example-org/example-repo/issues/4928"
+ },
+ {
+  "author": {
+   "id": "U_37",
+   "is_bot": false,
+   "login": "user-3",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the linux command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-12T17:41:03Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "bug",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4926,
+  "state": "OPEN",
+  "title": "Fix proxy when crash is set",
+  "updatedAt": "2026-11-12T17:49:04Z",
+  "url": "https://github.com/example-org/example-repo/issues/4926"
+ },
+ {
+  "author": {
+   "id": "U_38",
+   "is_bot": false,
+   "login": "user-4",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the linux command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-10-28T14:50:09Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "docs",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "docs",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x2",
+    "name": "status: 👀 needs review",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4924,
+  "state": "OPEN",
+  "title": "Fix proxy when linux is set",
+  "updatedAt": "2026-11-12T15:29:01Z",
+  "url": "https://github.com/example-org/example-repo/issues/4924"
+ },
+ {
+  "author": {
+   "id": "U_39",
+   "is_bot": false,
+   "login": "user-5",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the token command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2021-04-21T23:21:18Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "bug",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x2",
+    "name": "docs",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4922,
+  "state": "OPEN",
+  "title": "Fix proxy when proxy is set",
+  "updatedAt": "2026-11-12T10:29:48Z",
+  "url": "https://github.com/example-org/example-repo/issues/4922"
+ },
+ {
+  "author": {
+   "id": "U_40",
+   "is_bot": false,
+   "login": "user-6",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the export command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-12T06:12:15Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "status: 👀 needs review",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4920,
+  "state": "CLOSED",
+  "title": "Fix linux when linux is set",
+  "updatedAt": "2026-11-12T06:18:57Z",
+  "url": "https://github.com/example-org/example-repo/issues/4920"
+ },
+ {
+  "author": {
+   "id": "U_41",
+   "is_bot": false,
+   "login": "user-7",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the proxy command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2025-07-08T04:44:15Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "status: 👀 needs review",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4918,
+  "state": "OPEN",
+  "title": "Fix crash when linux is set",
+  "updatedAt": "2026-11-12T05:12:33Z",
+  "url": "https://github.com/example-org/example-repo/issues/4918"
+ },
+ {
+  "author": {
+   "id": "U_42",
+   "is_bot": false,
+   "login": "user-8",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the export command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-12T04:36:20Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4916,
+  "state": "CLOSED",
+  "title": "Fix linux when linux is set",
+  "updatedAt": "2026-11-12T04:42:42Z",
+  "url": "https://github.com/example-org/example-repo/issues/4916"
+ },
+ {
+  "author": {
+   "id": "U_43",
+   "is_bot": false,
+   "login": "user-9",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the export command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-12T01:26:12Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4914,
+  "state": "CLOSED",
+  "title": "Fix proxy when proxy is set",
+  "updatedAt": "2026-11-12T01:33:24Z",
+  "url": "https://github.com/example-org/example-repo/issues/4914"
+ },
+ {
+  "author": {
+   "id": "U_44",
+   "is_bot": false,
+   "login": "user-10",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the token command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2021-02-10T01:48:29Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x2",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4912,
+  "state": "OPEN",
+  "title": "Fix crash when export is set",
+  "updatedAt": "2026-11-12T01:04:32Z",
+  "url": "https://github.com/example-org/example-repo/issues/4912"
+ },
+ {
+  "author": {
+   "id": "U_45",
+   "is_bot": false,
+   "login": "user-11",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the token command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-03T22:24:13Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x2",
+    "name": "status: 👀 needs review",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4910,
+  "state": "OPEN",
+  "title": "Fix token when crash is set",
+  "updatedAt": "2026-11-11T22:00:53Z",
+  "url": "https://github.com/example-org/example-repo/issues/4910"
+ },
+ {
+  "author": {
+   "id": "U_46",
+   "is_bot": false,
+   "login": "user-12",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the crash command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-11T18:30:34Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4908,
+  "state": "OPEN",
+  "title": "Fix export when token is set",
+  "updatedAt": "2026-11-11T18:38:47Z",
+  "url": "https://github.com/example-org/example-repo/issues/4908"
+ },
+ {
+  "author": {
+   "id": "U_47",
+   "is_bot": false,
+   "login": "user-13",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the crash command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-05-12T06:41:09Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "bug",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x2",
+    "name": "docs",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4906,
+  "state": "OPEN",
+  "title": "Fix token when export is set",
+  "updatedAt": "2026-11-11T16:57:28Z",
+  "url": "https://github.com/example-org/example-repo/issues/4906"
+ },
+ {
+  "author": {
+   "id": "U_48",
+   "is_bot": false,
+   "login": "user-14",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the linux command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-05T11:41:52Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "status: 👀 needs review",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "docs",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x2",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4904,
+  "state": "OPEN",
+  "title": "Fix token when linux is set",
+  "updatedAt": "2026-11-11T05:23:47Z",
+  "url": "https://github.com/example-org/example-repo/issues/4904"
+ },
+ {
+  "author": {
+   "id": "U_49",
+   "is_bot": false,
+   "login": "user-15",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the proxy command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-11T01:35:55Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4902,
+  "state": "CLOSED",
+  "title": "Fix linux when token is set",
+  "updatedAt": "2026-11-11T01:42:16Z",
+  "url": "https://github.com/example-org/example-repo/issues/4902"
+ },
+ {
+  "author": {
+   "id": "U_50",
+   "is_bot": false,
+   "login": "user-16",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the linux command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-11T01:15:58Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4900,
+  "state": "OPEN",
+  "title": "Fix linux when proxy is set",
+  "updatedAt": "2026-11-11T01:24:13Z",
+  "url": "https://github.com/example-org/example-repo/issues/4900"
+ },
+ {
+  "author": {
+   "id": "U_51",
+   "is_bot": false,
+   "login": "user-0",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the crash command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-10T23:09:53Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "bug",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4898,
+  "state": "CLOSED",
+  "title": "Fix proxy when crash is set",
+  "updatedAt": "2026-11-10T23:15:53Z",
+  "url": "https://github.com/example-org/example-repo/issues/4898"
+ },
+ {
+  "author": {
+   "id": "U_52",
+   "is_bot": false,
+   "login": "user-1",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the export command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-10T23:04:20Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "status: 👀 needs review",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4896,
+  "state": "OPEN",
+  "title": "Fix linux when export is set",
+  "updatedAt": "2026-11-10T23:12:10Z",
+  "url": "https://github.com/example-org/example-repo/issues/4896"
+ },
+ {
+  "author": {
+   "id": "U_53",
+   "is_bot": false,
+   "login": "user-2",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the export command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-10T21:43:27Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "docs",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4894,
+  "state": "CLOSED",
+  "title": "Fix proxy when export is set",
+  "updatedAt": "2026-11-10T21:49:39Z",
+  "url": "https://github.com/example-org/example-repo/issues/4894"
+ },
+ {
+  "author": {
+   "id": "U_54",
+   "is_bot": false,
+   "login": "user-3",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the crash command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-08-31T15:13:28Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "bug",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x2",
+    "name": "bug",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4892,
+  "state": "OPEN",
+  "title": "Fix proxy when crash is set",
+  "updatedAt": "2026-11-10T19:09:41Z",
+  "url": "https://github.com/example-org/example-repo/issues/4892"
+ },
+ {
+  "author": {
+   "id": "U_55",
+   "is_bot": false,
+   "login": "user-4",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the export command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-08-03T17:01:48Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "bug",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "bug",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x2",
+    "name": "docs",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4890,
+  "state": "CLOSED",
+  "title": "Fix crash when linux is set",
+  "updatedAt": "2026-11-10T15:45:38Z",
+  "url": "https://github.com/example-org/example-repo/issues/4890"
+ },
+ {
+  "author": {
+   "id": "U_56",
+   "is_bot": false,
+   "login": "user-5",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the linux command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-10-27T15:43:44Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "docs",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x2",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4888,
+  "state": "CLOSED",
+  "title": "Fix proxy when crash is set",
+  "updatedAt": "2026-11-10T15:29:04Z",
+  "url": "https://github.com/example-org/example-repo/issues/4888"
+ },
+ {
+  "author": {
+   "id": "U_57",
+   "is_bot": false,
+   "login": "user-6",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the proxy command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-09T10:20:02Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "status: 👀 needs review",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4886,
+  "state": "OPEN",
+  "title": "Fix linux when token is set",
+  "updatedAt": "2026-11-10T14:09:42Z",
+  "url": "https://github.com/example-org/example-repo/issues/4886"
+ },
+ {
+  "author": {
+   "id": "U_58",
+   "is_bot": false,
+   "login": "user-7",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the crash command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-05-30T16:05:40Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "bug",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4884,
+  "state": "OPEN",
+  "title": "Fix linux when proxy is set",
+  "updatedAt": "2026-11-10T12:42:12Z",
+  "url": "https://github.com/example-org/example-repo/issues/4884"
+ },
+ {
+  "author": {
+   "id": "U_59",
+   "is_bot": false,
+   "login": "user-8",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the linux command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-03T22:29:57Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "bug",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x2",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4882,
+  "state": "OPEN",
+  "title": "Fix token when crash is set",
+  "updatedAt": "2026-11-10T05:54:18Z",
+  "url": "https://github.com/example-org/example-repo/issues/4882"
+ },
+ {
+  "author": {
+   "id": "U_60",
+   "is_bot": false,
+   "login": "user-9",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the token command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-10T05:03:08Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "docs",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4880,
+  "state": "CLOSED",
+  "title": "Fix proxy when export is set",
+  "updatedAt": "2026-11-10T05:10:23Z",
+  "url": "https://github.com/example-org/example-repo/issues/4880"
+ },
+ {
+  "author": {
+   "id": "U_61",
+   "is_bot": false,
+   "login": "user-10",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the crash command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-07T13:11:21Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "status: 👀 needs review",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x2",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4878,
+  "state": "OPEN",
+  "title": "Fix crash when crash is set",
+  "updatedAt": "2026-11-10T05:02:26Z",
+  "url": "https://github.com/example-org/example-repo/issues/4878"
+ },
+ {
+  "author": {
+   "id": "U_62",
+   "is_bot": true,
+   "login": "app/example-bot",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the export command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-08T09:27:08Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4876,
+  "state": "CLOSED",
+  "title": "Fix linux when linux is set",
+  "updatedAt": "2026-11-09T22:53:05Z",
+  "url": "https://github.com/example-org/example-repo/issues/4876"
+ },
+ {
+  "author": {
+   "id": "U_63",
+   "is_bot": true,
+   "login": "app/example-bot",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the token command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-08-06T14:04:57Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4874,
+  "state": "OPEN",
+  "title": "Fix token when export is set",
+  "updatedAt": "2026-11-09T22:19:56Z",
+  "url": "https://github.com/example-org/example-repo/issues/4874"
+ },
+ {
+  "author": {
+   "id": "U_64",
+   "is_bot": true,
+   "login": "app/example-bot",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the linux command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-03T22:38:15Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4872,
+  "state": "CLOSED",
+  "title": "Fix crash when linux is set",
+  "updatedAt": "2026-11-09T20:30:42Z",
+  "url": "https://github.com/example-org/example-repo/issues/4872"
+ },
+ {
+  "author": {
+   "id": "U_65",
+   "is_bot": false,
+   "login": "user-14",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the export command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-08T03:39:46Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "status: 👀 needs review",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4870,
+  "state": "CLOSED",
+  "title": "Fix crash when token is set",
+  "updatedAt": "2026-11-09T20:30:41Z",
+  "url": "https://github.com/example-org/example-repo/issues/4870"
+ },
+ {
+  "author": {
+   "id": "U_66",
+   "is_bot": false,
+   "login": "user-15",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the linux command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-07T03:41:34Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "status: 👀 needs review",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "docs",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4868,
+  "state": "OPEN",
+  "title": "Fix proxy when linux is set",
+  "updatedAt": "2026-11-09T20:26:37Z",
+  "url": "https://github.com/example-org/example-repo/issues/4868"
+ },
+ {
+  "author": {
+   "id": "U_67",
+   "is_bot": false,
+   "login": "user-16",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the proxy command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-09T06:02:34Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "docs",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x2",
+    "name": "bug",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4866,
+  "state": "OPEN",
+  "title": "Add crash option for token",
+  "updatedAt": "2026-11-09T20:25:34Z",
+  "url": "https://github.com/example-org/example-repo/issues/4866"
+ },
+ {
+  "author": {
+   "id": "U_68",
+   "is_bot": false,
+   "login": "user-0",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the token command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-05T15:41:39Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "status: 👀 needs review",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x2",
+    "name": "docs",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4864,
+  "state": "OPEN",
+  "title": "Fix export when linux is set",
+  "updatedAt": "2026-11-09T20:06:31Z",
+  "url": "https://github.com/example-org/example-repo/issues/4864"
+ },
+ {
+  "author": {
+   "id": "U_69",
+   "is_bot": false,
+   "login": "user-1",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the export command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-04T13:19:24Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "docs",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x2",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4862,
+  "state": "OPEN",
+  "title": "Fix linux when linux is set",
+  "updatedAt": "2026-11-09T20:06:30Z",
+  "url": "https://github.com/example-org/example-repo/issues/4862"
+ },
+ {
+  "author": {
+   "id": "U_70",
+   "is_bot": false,
+   "login": "user-2",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the export command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-10-29T18:17:16Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "docs",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x2",
+    "name": "status: 👀 needs review",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4860,
+  "state": "OPEN",
+  "title": "Fix export when crash is set",
+  "updatedAt": "2026-11-09T20:06:29Z",
+  "url": "https://github.com/example-org/example-repo/issues/4860"
+ },
+ {
+  "author": {
+   "id": "U_71",
+   "is_bot": false,
+   "login": "user-3",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the crash command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-09T19:46:57Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "bug",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4858,
+  "state": "CLOSED",
+  "title": "Fix proxy when proxy is set",
+  "updatedAt": "2026-11-09T19:54:05Z",
+  "url": "https://github.com/example-org/example-repo/issues/4858"
+ },
+ {
+  "author": {
+   "id": "U_72",
+   "is_bot": false,
+   "login": "user-4",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the export command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-10-27T15:27:31Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "status: 👀 needs review",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4856,
+  "state": "OPEN",
+  "title": "Fix proxy when token is set",
+  "updatedAt": "2026-11-09T19:44:00Z",
+  "url": "https://github.com/example-org/example-repo/issues/4856"
+ },
+ {
+  "author": {
+   "id": "U_73",
+   "is_bot": false,
+   "login": "user-5",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the proxy command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-07T07:01:44Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "status: 👀 needs review",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "docs",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x2",
+    "name": "bug",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4854,
+  "state": "OPEN",
+  "title": "Fix crash when token is set",
+  "updatedAt": "2026-11-09T19:43:46Z",
+  "url": "https://github.com/example-org/example-repo/issues/4854"
+ },
+ {
+  "author": {
+   "id": "U_74",
+   "is_bot": false,
+   "login": "user-6",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the linux command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-07T13:14:19Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "bug",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "status: 👀 needs review",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x2",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4852,
+  "state": "OPEN",
+  "title": "Fix export when linux is set",
+  "updatedAt": "2026-11-09T19:43:45Z",
+  "url": "https://github.com/example-org/example-repo/issues/4852"
+ },
+ {
+  "author": {
+   "id": "U_75",
+   "is_bot": false,
+   "login": "user-7",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the proxy command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-05T13:24:34Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "bug",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x2",
+    "name": "bug",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4850,
+  "state": "OPEN",
+  "title": "Fix token when export is set",
+  "updatedAt": "2026-11-09T19:43:44Z",
+  "url": "https://github.com/example-org/example-repo/issues/4850"
+ },
+ {
+  "author": {
+   "id": "U_76",
+   "is_bot": false,
+   "login": "user-8",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the export command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-07T19:34:52Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "bug",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "docs",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x2",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4848,
+  "state": "OPEN",
+  "title": "Fix release when linux is set",
+  "updatedAt": "2026-11-09T19:43:41Z",
+  "url": "https://github.com/example-org/example-repo/issues/4848"
+ },
+ {
+  "author": {
+   "id": "U_77",
+   "is_bot": false,
+   "login": "user-9",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the proxy command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-05T03:56:24Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x2",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4846,
+  "state": "OPEN",
+  "title": "Fix export when proxy is set",
+  "updatedAt": "2026-11-09T19:43:39Z",
+  "url": "https://github.com/example-org/example-repo/issues/4846"
+ },
+ {
+  "author": {
+   "id": "U_78",
+   "is_bot": false,
+   "login": "user-10",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the proxy command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-07T13:55:52Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x2",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4844,
+  "state": "OPEN",
+  "title": "Fix proxy when export is set",
+  "updatedAt": "2026-11-09T19:43:39Z",
+  "url": "https://github.com/example-org/example-repo/issues/4844"
+ },
+ {
+  "author": {
+   "id": "U_79",
+   "is_bot": false,
+   "login": "user-11",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the linux command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-05T12:14:11Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "docs",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4842,
+  "state": "OPEN",
+  "title": "Fix linux when export is set",
+  "updatedAt": "2026-11-09T19:43:36Z",
+  "url": "https://github.com/example-org/example-repo/issues/4842"
+ },
+ {
+  "author": {
+   "id": "U_80",
+   "is_bot": false,
+   "login": "user-12",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the token command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-07T07:07:08Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "docs",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4840,
+  "state": "OPEN",
+  "title": "Fix crash when proxy is set",
+  "updatedAt": "2026-11-09T19:43:36Z",
+  "url": "https://github.com/example-org/example-repo/issues/4840"
+ },
+ {
+  "author": {
+   "id": "U_81",
+   "is_bot": false,
+   "login": "user-13",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the token command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-06T15:35:20Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "bug",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "docs",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4838,
+  "state": "OPEN",
+  "title": "Fix crash when token is set",
+  "updatedAt": "2026-11-09T19:43:33Z",
+  "url": "https://github.com/example-org/example-repo/issues/4838"
+ },
+ {
+  "author": {
+   "id": "U_82",
+   "is_bot": false,
+   "login": "user-14",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the crash command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-04T13:37:49Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "status: 👀 needs review",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4836,
+  "state": "OPEN",
+  "title": "Fix proxy when export is set",
+  "updatedAt": "2026-11-09T19:43:18Z",
+  "url": "https://github.com/example-org/example-repo/issues/4836"
+ },
+ {
+  "author": {
+   "id": "U_83",
+   "is_bot": false,
+   "login": "user-15",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the token command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-10-24T03:20:43Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "status: 👀 needs review",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "status: 👀 needs review",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x2",
+    "name": "bug",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4834,
+  "state": "OPEN",
+  "title": "Fix token when crash is set",
+  "updatedAt": "2026-11-09T18:47:41Z",
+  "url": "https://github.com/example-org/example-repo/issues/4834"
+ },
+ {
+  "author": {
+   "id": "U_84",
+   "is_bot": false,
+   "login": "user-16",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the crash command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-09T05:40:28Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4832,
+  "state": "CLOSED",
+  "title": "Fix linux when crash is set",
+  "updatedAt": "2026-11-09T09:17:00Z",
+  "url": "https://github.com/example-org/example-repo/issues/4832"
+ },
+ {
+  "author": {
+   "id": "U_85",
+   "is_bot": false,
+   "login": "user-0",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the export command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-08T03:18:07Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "bug",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4830,
+  "state": "CLOSED",
+  "title": "Fix proxy when proxy is set",
+  "updatedAt": "2026-11-08T03:24:29Z",
+  "url": "https://github.com/example-org/example-repo/issues/4830"
+ },
+ {
+  "author": {
+   "id": "U_86",
+   "is_bot": false,
+   "login": "user-1",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the token command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2020-12-17T06:30:15Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "bug",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "status: 👀 needs review",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4828,
+  "state": "CLOSED",
+  "title": "Fix crash when linux is set",
+  "updatedAt": "2026-11-07T21:08:47Z",
+  "url": "https://github.com/example-org/example-repo/issues/4828"
+ },
+ {
+  "author": {
+   "id": "U_87",
+   "is_bot": false,
+   "login": "user-2",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the token command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-06T18:44:31Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4826,
+  "state": "OPEN",
+  "title": "Fix export when crash is set",
+  "updatedAt": "2026-11-07T16:03:24Z",
+  "url": "https://github.com/example-org/example-repo/issues/4826"
+ },
+ {
+  "author": {
+   "id": "U_88",
+   "is_bot": false,
+   "login": "user-3",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the proxy command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-07-30T12:22:47Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "bug",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x2",
+    "name": "bug",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4824,
+  "state": "OPEN",
+  "title": "Fix export when proxy is set",
+  "updatedAt": "2026-11-07T09:11:12Z",
+  "url": "https://github.com/example-org/example-repo/issues/4824"
+ },
+ {
+  "author": {
+   "id": "U_89",
+   "is_bot": false,
+   "login": "user-4",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the proxy command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-07-01T20:23:46Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "status: 👀 needs review",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4822,
+  "state": "OPEN",
+  "title": "Fix export when token is set",
+  "updatedAt": "2026-11-07T07:30:08Z",
+  "url": "https://github.com/example-org/example-repo/issues/4822"
+ },
+ {
+  "author": {
+   "id": "U_90",
+   "is_bot": false,
+   "login": "user-5",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the token command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-07T05:10:43Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "help wanted",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4820,
+  "state": "CLOSED",
+  "title": "Fix proxy when token is set",
+  "updatedAt": "2026-11-07T05:17:28Z",
+  "url": "https://github.com/example-org/example-repo/issues/4820"
+ },
+ {
+  "author": {
+   "id": "U_91",
+   "is_bot": false,
+   "login": "user-6",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the proxy command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-07T05:04:24Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "bug",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4818,
+  "state": "CLOSED",
+  "title": "Fix crash when linux is set",
+  "updatedAt": "2026-11-07T05:10:24Z",
+  "url": "https://github.com/example-org/example-repo/issues/4818"
+ },
+ {
+  "author": {
+   "id": "U_92",
+   "is_bot": false,
+   "login": "user-7",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the proxy command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-07T05:01:09Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "bug",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4816,
+  "state": "CLOSED",
+  "title": "Fix token when proxy is set",
+  "updatedAt": "2026-11-07T05:07:26Z",
+  "url": "https://github.com/example-org/example-repo/issues/4816"
+ },
+ {
+  "author": {
+   "id": "U_93",
+   "is_bot": false,
+   "login": "user-8",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the token command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2020-08-13T20:55:59Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "docs",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x2",
+    "name": "bug",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4814,
+  "state": "OPEN",
+  "title": "Fix proxy when proxy is set",
+  "updatedAt": "2026-11-07T04:17:39Z",
+  "url": "https://github.com/example-org/example-repo/issues/4814"
+ },
+ {
+  "author": {
+   "id": "U_94",
+   "is_bot": false,
+   "login": "user-9",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the crash command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-09-01T08:19:52Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "docs",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "bug",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x2",
+    "name": "bug",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4812,
+  "state": "OPEN",
+  "title": "Fix crash when token is set",
+  "updatedAt": "2026-11-07T04:00:49Z",
+  "url": "https://github.com/example-org/example-repo/issues/4812"
+ },
+ {
+  "author": {
+   "id": "U_95",
+   "is_bot": false,
+   "login": "user-10",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the export command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2024-09-11T20:37:44Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "status: 👀 needs review",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "bug",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x2",
+    "name": "docs",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4810,
+  "state": "OPEN",
+  "title": "Fix linux when proxy is set",
+  "updatedAt": "2026-11-07T01:58:15Z",
+  "url": "https://github.com/example-org/example-repo/issues/4810"
+ },
+ {
+  "author": {
+   "id": "U_96",
+   "is_bot": false,
+   "login": "user-11",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the proxy command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-07T01:15:37Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4808,
+  "state": "CLOSED",
+  "title": "Fix crash when token is set",
+  "updatedAt": "2026-11-07T01:20:58Z",
+  "url": "https://github.com/example-org/example-repo/issues/4808"
+ },
+ {
+  "author": {
+   "id": "U_97",
+   "is_bot": false,
+   "login": "user-12",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the proxy command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2020-10-14T12:23:02Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "docs",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "docs",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x2",
+    "name": "needs-triage",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4806,
+  "state": "OPEN",
+  "title": "Fix export when token is set",
+  "updatedAt": "2026-11-07T01:16:45Z",
+  "url": "https://github.com/example-org/example-repo/issues/4806"
+ },
+ {
+  "author": {
+   "id": "U_98",
+   "is_bot": false,
+   "login": "user-13",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the proxy command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-11-07T00:24:54Z",
+  "labels": [],
+  "number": 4804,
+  "state": "CLOSED",
+  "title": "Fix export when docs is set",
+  "updatedAt": "2026-11-07T00:43:03Z",
+  "url": "https://github.com/example-org/example-repo/issues/4804"
+ },
+ {
+  "author": {
+   "id": "U_99",
+   "is_bot": false,
+   "login": "user-14",
+   "name": ""
+  },
+  "body": "Steps:\n1. run the crash command\n2. see the error\n\nExpected it to work.",
+  "createdAt": "2026-03-01T12:20:00Z",
+  "labels": [
+   {
+    "id": "LA_x0",
+    "name": "docs",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x1",
+    "name": "docs",
+    "description": "",
+    "color": "ededed"
+   },
+   {
+    "id": "LA_x2",
+    "name": "status: 👀 needs review",
+    "description": "",
+    "color": "ededed"
+   }
+  ],
+  "number": 4802,
+  "state": "OPEN",
+  "title": "Fix proxy when export is set",
+  "updatedAt": "2026-11-06T23:53:23Z",
+  "url": "https://github.com/example-org/example-repo/issues/4802"
+ }
+]

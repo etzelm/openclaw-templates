@@ -17,6 +17,7 @@ Every released version is a commit on `main`, tagged `<template>@<version>`, for
 |----------|---------|---------|--------|
 | OpenClaw contributor | `@etzelm/openclaw-contributor` | [ClawHub page](https://clawhub.ai/plugins/%40etzelm%2Fopenclaw-contributor) | `templates/openclaw-contributor/` |
 | Job Application Coordinator | `@etzelm/job-application-coordinator` | [ClawHub page](https://clawhub.ai/plugins/%40etzelm%2Fjob-application-coordinator) | `templates/job-application-coordinator/` |
+| Repo Maintainer Helper | `@etzelm/repo-maintainer-helper` | Not published yet | `templates/repo-maintainer-helper/` |
 
 Each Template has its own `README.md` and `CHANGELOG.md` with the details.
 
@@ -53,6 +54,14 @@ Run the database tests from the repo root. Each test takes the package folder:
 zsh templates/openclaw-contributor/tests/occ-approval-sha.test.sh templates/openclaw-contributor
 zsh templates/openclaw-contributor/tests/occ-v2.test.sh templates/openclaw-contributor
 zsh templates/job-application-coordinator/tests/jac-v3-steps.test.sh templates/job-application-coordinator
+```
+
+Repo Maintainer Helper has its own tests. They need Node 22 or newer and sqlite3 with FTS5 (the stock macOS sqlite3 has it):
+
+```sh
+zsh templates/repo-maintainer-helper/tests/steps.test.sh templates/repo-maintainer-helper
+zsh templates/repo-maintainer-helper/tests/approvals.test.sh templates/repo-maintainer-helper
+node templates/repo-maintainer-helper/tests/fetch.test.mjs templates/repo-maintainer-helper
 ```
 
 The migration tests also take an older package folder. Get one from a tag:
