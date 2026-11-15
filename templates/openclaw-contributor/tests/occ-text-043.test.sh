@@ -73,7 +73,8 @@ has "stale baseline symptom named" references/contribution-loop.md 'The stale ba
 has "relays come from an interactive turn" references/contribution-loop.md 'Relays come from an interactive turn'
 has "upstream issue named" references/contribution-loop.md 'openclaw/openclaw#199278'
 # Version
-has "package is 0.4.3" package.json '"version": "0.4.3"'
+# 0.4.4: the version pin accepts later 0.4.x releases, which keep every rule above.
+if grep -qE '"version": "0\.4\.([3-9]|[1-9][0-9])"' "$P/package.json"; then PASSES=$((PASSES + 1)); echo "PASS package is 0.4.3 or a later 0.4.x"; else FAILS=$((FAILS + 1)); echo "FAIL package is 0.4.3 or a later 0.4.x"; fi
 has "changelog has 0.4.3 with an upgrade note" CHANGELOG.md 'Upgrade from 0.4.2:'
 
 echo "passed=$PASSES failed=$FAILS"

@@ -1,0 +1,127 @@
+<style>
+.w{font-family:var(--font-body);color:var(--text);font-size:13px}
+.bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.ck{color:#d4a72c;font-size:12px}
+.err{color:#e5534b;font-size:12px}
+button{font:inherit;font-size:12px;padding:3px 10px;border:1px solid var(--border);border-radius:4px;background:var(--card);color:var(--text);cursor:pointer}
+button:disabled{opacity:.45;cursor:default}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-weight:600;font-size:12px;color:var(--muted);padding:4px 6px;border-bottom:1px solid var(--border)}
+td{padding:5px 6px;border-bottom:1px solid var(--border);vertical-align:top}
+tr.sec td{font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.04em;padding-top:12px;border-bottom:none}
+tr.closed td{opacity:.75}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+.t{max-width:420px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sc{white-space:nowrap;font-size:14px}
+.c{text-align:center;white-space:nowrap}
+.mono{font-family:var(--font-mono)}
+.p{font-size:11px;padding:0 5px;border-radius:3px;border:1px solid var(--border);color:var(--muted)}
+.p1{color:#e5534b;border-color:#e5534b}
+.up{white-space:nowrap;color:var(--muted);font-size:12px}
+textarea{width:100%;height:70px;font-family:var(--font-mono);font-size:11px;background:var(--card);color:var(--text);border:1px solid var(--border);display:none;margin-bottom:8px}
+</style>
+<div class="w">
+ <div class="bar">
+  <span class="ck" id="ck">loading…</span>
+  <button id="list" title="Bulleted list: link, summary, rating, priority. Selected PRs, or all open PRs when none are selected.">Copy list</button>
+  <button id="copy" disabled>Copy selected (0)</button>
+  <button id="clear" disabled>Clear</button>
+  <button id="refresh" title="Run the refresh automation now. Read only: it fetches GitHub and rebuilds this widget.">Refresh</button>
+  <span class="err" id="err"></span>
+ </div>
+ <textarea id="ta" readonly></textarea>
+ <table>
+  <thead><tr><th></th><th>Scores</th><th>PR</th><th class="c">Priority</th><th>Title</th><th class="c">Merge</th><th class="c">CI</th><th>Status</th><th>Updated</th></tr></thead>
+  <tbody id="tb"></tbody>
+ </table>
+</div>
+
+<script>
+(function(){
+// Data is built by references/pr-dashboard/build.mjs on the Gateway host (gh GraphQL, read only).
+// The browser never calls GitHub and this widget never writes anywhere. Its only host call is cron.trigger.
+const DATA=/*DATA*/null;
+const JOB='__JOBID__';
+const $=id=>document.getElementById(id);
+const sel=new Set();
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const firstEmoji=s=>{const m=String(s).match(/\p{Extended_Pictographic}/u);return m?m[0]:''};
+const lbl=(r,pfx)=>(r.labels||[]).filter(n=>n.toLowerCase().startsWith(pfx));
+function scores(r){
+ const g=lbl(r,'rating:')[0], pr=lbl(r,'proof:');let out='',tip=[];
+ if(g){out+=firstEmoji(g)||'•';tip.push(g)}
+ pr.forEach(p=>{const e=p==='proof: sufficient'?'✔︎':firstEmoji(p);if(e){out+=e;tip.push(p)}});
+ return '<span class="sc" title="'+esc(tip.join('\n'))+'">'+(out||'<span style="color:var(--muted)">–</span>')+'</span>';
+}
+function status(r){
+ const s=lbl(r,'status:').map(n=>n.replace(/^status:\s*/i,'')), k=lbl(r,'risk:').map(n=>n.replace(/^risk:\s*/i,'risk: '));
+ return esc([...s,...k].join(' · ')||'–');
+}
+function prio(r){const p=(r.labels||[]).find(n=>/^P\d$/.test(n));return p?'<span class="p '+(p==='P1'||p==='P0'?'p1':'')+'">'+p+'</span>':'<span style="color:var(--muted)">–</span>'}
+function mergeIcon(ms){
+ return ({clean:['✅','mergeable, clean'],unstable:['🟡','mergeable, checks not green'],blocked:['🟡','blocked: review/approval required'],has_hooks:['✅','mergeable'],behind:['🟡','behind base'],dirty:['❌','merge conflict'],draft:['📝','draft']})[ms]||['⚪','unknown (GitHub still computing)'];
+}
+function ciCell(ci){
+ if(!ci)return '<span title="no data">⚪</span>';
+ if(ci.fail)return '<span title="'+ci.fail+' failing of '+ci.total+'">❌ '+ci.fail+'</span>';
+ if(ci.pend)return '<span title="'+ci.pend+' pending of '+ci.total+'">⏳</span>';
+ if(!ci.total)return '<span title="no checks">–</span>';
+ return '<span title="'+ci.total+' checks passed">✅</span>';
+}
+const fmtD=iso=>new Date(iso).toLocaleDateString(undefined,{day:'2-digit',month:'short'});
+const fmtT=iso=>new Date(iso).toLocaleString(undefined,{month:'short',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+function render(){
+ const tb=$('tb');let h='';
+ if(!DATA){tb.innerHTML='<tr><td colspan="9" class="muted">No data yet. The agent builds it on its next refresh.</td></tr>';return}
+ const open=DATA.rows.filter(r=>r.state==='OPEN'), done=DATA.rows.filter(r=>r.state!=='OPEN');
+ const row=(r,isOpen)=>{
+  let m,ci;
+  if(isOpen){const mi=mergeIcon(r.ms);m='<span title="'+esc(mi[1])+'">'+mi[0]+'</span>';ci=ciCell(r.ci)}
+  else{m=r.merged?'<span title="merged">🟣</span>':'<span title="closed unmerged">⛔</span>';ci=''}
+  return '<tr class="'+(isOpen?'':'closed')+'"><td><input type="checkbox" data-u="'+esc(r.url)+'"'+(sel.has(r.url)?' checked':'')+'></td>'+
+   '<td>'+scores(r)+'</td><td class="mono"><a href="'+esc(r.url)+'" target="_blank" rel="noopener noreferrer">'+(r.repo&&r.repo!=='openclaw'?esc(r.repo):'')+'#'+r.n+'</a></td>'+
+   '<td class="c">'+prio(r)+'</td><td class="t" title="'+esc(r.title)+'">'+esc(r.title)+'</td><td class="c">'+m+'</td><td class="c">'+ci+'</td>'+
+   '<td>'+(isOpen?status(r):'')+'</td><td class="up">'+fmtD(r.updated)+'</td></tr>';
+ };
+ h+='<tr class="sec"><td colspan="9">OPEN ('+open.length+')</td></tr>';open.forEach(r=>h+=row(r,true));
+ h+='<tr class="sec"><td colspan="9">MERGED / CLOSED, LAST '+DATA.days+' DAYS ('+done.length+')</td></tr>';done.forEach(r=>h+=row(r,false));
+ tb.innerHTML=h;
+ tb.querySelectorAll('input[type=checkbox]').forEach(cb=>cb.onchange=()=>{cb.checked?sel.add(cb.dataset.u):sel.delete(cb.dataset.u);syncBtns()});
+ syncBtns();
+ $('ck').textContent=DATA?'data from '+fmtT(DATA.fetchedAt)+' · refreshed every 15 min in watch hours':'';
+}
+const RANK={diamond:0,platinum:1,gold:2,silver:3,bronze:4};
+function rating(r){
+ const g=lbl(r,'rating:')[0];if(!g)return null;
+ const s=g.replace(/^rating:\s*/i,'').trim(), e=firstEmoji(s), name=s.replace(e,'').trim();
+ return {text:(e?e+' ':'')+name.charAt(0).toUpperCase()+name.slice(1), rank:RANK[name.split(/\s+/)[0].toLowerCase()]??9};
+}
+function pval(r){const p=(r.labels||[]).find(n=>/^P\d$/.test(n));return p||null}
+function listText(){
+ const pick=DATA.rows.filter(r=>sel.size?sel.has(r.url):r.state==='OPEN');
+ pick.sort((a,b)=>{const pa=pval(a)||'P9',pb=pval(b)||'P9';if(pa!==pb)return pa<pb?-1:1;
+  const ra=(rating(a)||{rank:9}).rank,rb=(rating(b)||{rank:9}).rank;if(ra!==rb)return ra-rb;return b.n-a.n});
+ return pick.map(r=>['• <'+r.url+'>',r.short,(rating(r)||{}).text,pval(r)].filter(Boolean).join(' - ')).join('\n');
+}
+async function copyText(txt,btn,label){
+ try{await navigator.clipboard.writeText(txt);btn.textContent='Copied ✓';setTimeout(()=>{btn.textContent=label;syncBtns()},1200)}
+ catch(e){const ta=$('ta');ta.value=txt;ta.style.display='block';ta.select();try{document.execCommand('copy')}catch(_){}}
+}
+$('list').onclick=()=>{if(DATA)copyText(listText(),$('list'),'Copy list')};
+function syncBtns(){$('list').textContent=sel.size?'Copy list ('+sel.size+')':'Copy list';$('copy').textContent='Copy selected ('+sel.size+')';$('copy').disabled=!sel.size;$('clear').disabled=!sel.size}
+$('refresh').onclick=async()=>{
+ $('err').textContent='';
+ try{
+  if(!window.openclaw||!openclaw.cron||!openclaw.cron.trigger)throw new Error('refresh needs the pinned dashboard widget');
+  if(!JOB)throw new Error('no refresh automation yet: finish the dashboard setup');
+  $('refresh').disabled=true;await openclaw.cron.trigger(JOB);
+  $('ck').textContent='refresh requested · widget reloads if anything changed';
+ }catch(e){$('err').textContent=e.message||String(e)}
+ setTimeout(()=>{$('refresh').disabled=false},30000);
+};
+$('clear').onclick=()=>{sel.clear();$('ta').style.display='none';render()};
+$('copy').onclick=()=>copyText([...sel].join('\n'),$('copy'),'Copy selected');
+render();
+})();
+</script>

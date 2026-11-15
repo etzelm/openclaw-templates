@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.4.4
+
+PR tracking dashboard. No database change (still schema version 3).
+
+- New read-only PR dashboard, pinned on the agent's own dashboard. It lists the owner's open PRs in `dashboard_org` and the ones closed in the last 14 days, with ClawSweeper rating and proof labels, priority, merge state, CI counts, status and risk labels, a one-line summary and the last update. Copy list and Copy selected buttons, and a Refresh button.
+- New references/pr-dashboard/: `build.mjs` (plain Node, no packages), `template.html`, `prs.graphql`, `ci.graphql` and `refresh-trigger.js`. The builder makes two read-only gh GraphQL calls, tries each up to 3 times (GitHub's search answers 502 or 504 at times), stays inside the 30 second budget of an automation check, and prints `CHANGED`, `UNCHANGED` or `ERROR <reason>` on its last line. It writes `dashboard/data.json` and `dashboard/widget.html` in the workspace. Missing optional fields get defaults instead of failing the build.
+- Setup, and re-running it, does three steps in order: build, pin with `show_widget` (name `openclaw-prs`, the same name updates in place), and one refresh automation (declarationKey `pr-dashboard-refresh`, found by listing first, updated in place, never added twice). Every 15 minutes within `watch_hours` its check runs the builder; `UNCHANGED` starts no model turn, `CHANGED` wakes the agent to pin the new table, and an `ERROR` wakes it once per distinct error. The check reads the trigger exec result's `aggregated` text.
+- The widget is read only: no GitHub writes, no network origins, links open through the Control UI. Its one host capability is `cron.trigger` for its own refresh automation.
+- `dashboard/short.json` is agent-maintained: the agent adds a one-line plain summary when a PR it opened is verified, and the refresh turn adds missing ones for open PRs. Rows without one show the cleaned title.
+- New settings: `dashboard` (on by default), `dashboard_note`, `dashboard_author` (blank: the gh login) and `dashboard_org` (default `openclaw`). The Template now grants `show_widget`.
+
+Upgrade from 0.4.3: replace the packaged files (README, "Upgrade in place"), skip the database migration, add the four settings lines, add `show_widget` to the agent's tools, then ask the agent to set up the PR dashboard. Open grants and PR watchers stay as they are.
+
 ## 0.4.3
 
 Fixes from live use of 0.4.2 on three PRs. No database change (still schema version 3).

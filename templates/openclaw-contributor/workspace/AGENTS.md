@@ -4,7 +4,7 @@
 
 Read or confirm:
 
-- settings.md: upstream repo, database path, checkout folder, remotes, base branch, areas of interest, gate command override, PR mode, local review choice, review target and round cap
+- settings.md: upstream repo, database path, checkout folder, remotes, base branch, areas of interest, gate command override, PR mode, local review choice, review target and round cap, and the PR dashboard keys
 - the database at db_path: candidates considered, contributions, evidence, owner approvals and status history, read through the packaged SQL steps
 - The repo's rule files at current upstream main: CONTRIBUTING.md, root AGENTS.md, the nearest AGENTS.md for each path you touch, `.github/pull_request_template.md`, `.github/ISSUE_TEMPLATE/`, and `docs/reference/pull-request-review-flow.md`
 
@@ -12,7 +12,7 @@ The repo rules decide how the work is done and what a PR needs. The owner gates 
 
 ## Included capability boundaries
 
-- The profile is `minimal` plus read, write, edit, apply_patch, exec, process, web_fetch, session_status and automations. The `gateway` tool is denied. It grants no publishing tool, no messaging tool, no secrets tool and no MCP server. Public steps happen only through `git` and `gh` under exec, and only after an owner approval recorded in the database.
+- The profile is `minimal` plus read, write, edit, apply_patch, exec, process, web_fetch, session_status, automations and show_widget (only for the PR dashboard). The `gateway` tool is denied. It grants no publishing tool, no messaging tool, no secrets tool and no MCP server. Public steps happen only through `git` and `gh` under exec, and only after an owner approval recorded in the database.
 - File tools are limited to this workspace, so the checkout lives here, in the folder settings.md names. It takes several GB, and `openclaw backup create` includes workspaces unless `--no-include-workspace` is passed. workspaceOnly does not sandbox exec. Setup sets this agent's exec mode to `ask` with nothing allowlisted and makes references/ read-only, so OpenClaw asks the owner before every command it has not approved with "Always allow here", on top of the approval rules in this Template. sqlite3 can start other programs through dot-commands, which is why it is not allowlisted and why SOUL.md forbids them.
 - The database is one SQLite file at `db_path` (default `~/openclaw-contributor.db`), outside the workspace. exec on the Gateway host refuses `sqlite3` on databases inside the OpenClaw state folder, where a default Add puts this workspace; a database in the home folder works with a default Add.
 - git and gh use the owner's existing login. The agent never handles tokens.
@@ -20,12 +20,45 @@ The repo rules decide how the work is done and what a PR needs. The owner gates 
 - One plain command per exec call: no `;`, `&&`, `||` or `|`. OpenClaw cannot bind an approval to a chained command and refuses it.
 - Long commands (installs, test suites, builds) run in the background with process and write their output to a log under `evidence/<slug>/`. Poll the log. Do not pull whole logs into the conversation.
 - Local ClawSweeper, when chosen, is a source checkout at `clawsweeper/` in this workspace and runs on the owner's Codex login, or on ClawSweeper's OpenClaw runner with the model in `clawsweeper_model`. Only its local review modes and its diagnostics check run; never its apply, posting or merge commands. Each round sends the change to the model service and uses the owner's quota.
-- Automations: only one watcher per open PR, on this agent's own session, with the packaged read-only check in references/pr-watch.js, every 15 minutes within `watch_hours`. It wakes the agent only when the PR changed. The agent removes it when the PR is ready for a maintainer look, at a stop condition, or when the owner says so. The owner starts each task.
+- Automations: only one watcher per open PR, on this agent's own session, with the packaged read-only check in references/pr-watch.js, every 15 minutes within `watch_hours`. It wakes the agent only when the PR changed. The agent removes it when the PR is ready for a maintainer look, at a stop condition, or when the owner says so. The owner starts each task. When `dashboard` is on, there is also exactly one PR dashboard refresh automation (below). No other automations.
 - Commits use `commit_email` and the signing setup configured for the checkout. The agent never changes git config except through references/setup-worktree.sh for a new worktree, and checks author, committer and signature before each push. It never uses `git stash`: the stash list is shared by every worktree.
 - Follow references/contribution-loop.md for the exact phases, the database steps, the approval protocol and the stop rules.
 
 Use context the user already supplied. Ask only for missing information that
 blocks safe or useful progress; otherwise state assumptions and begin.
+
+## PR dashboard
+
+A read-only table of the owner's PRs in `dashboard_org` (open, and closed in the last 14 days), pinned on this agent's dashboard. Skip this section when `dashboard` in settings.md is `off`.
+
+- The builder is `references/pr-dashboard/build.mjs` (plain Node, no packages). It makes two read-only GitHub GraphQL calls with gh, tries each one up to 3 times (GitHub's search sometimes answers 502 or 504), and writes `dashboard/data.json` and `dashboard/widget.html`. It reads `dashboard_author` and `dashboard_org` from settings.md, `dashboard/short.json` and `dashboard/jobid.txt`. Its last output line is `CHANGED ...`, `UNCHANGED ...`, or `ERROR <reason>` with exit code 1. Never edit the files under references/, and never write widget code by hand.
+- `dashboard/short.json` maps a PR URL to a one-line plain summary: 3 to 7 words, a noun phrase, no type prefix (for example "Faster PostgreSQL export hashing"). Rows without one show the PR title without its `fix(...):` prefix. When a PR you opened is verified on GitHub (step 11), add its line, keep every other line as it is, and run the builder once.
+
+### Set it up (setup, and safe to repeat)
+
+Do these three steps in order. Re-running them updates the same widget and the same automation; they never make a second one.
+
+1. Build. Run `node <workspace>/references/pr-dashboard/build.mjs` (one plain command, `<workspace>` is the absolute path `pwd` prints). The last line must start with `CHANGED` or `UNCHANGED`. On `ERROR`, tell the owner the line and skip steps 2 and 3. The rest of setup goes on.
+2. Pin. Read `dashboard/widget.html` in full. Call `show_widget` with `name` `openclaw-prs`, `title` `OpenClaw PRs`, `pin` true, `size` `xl`, and `widget_code` set to the exact, complete file, byte for byte. If `dashboard/jobid.txt` exists, also pass `capabilities` `{"tools": ["cron.trigger:<the id in jobid.txt>"]}`; otherwise pass no capabilities. Never add `netOrigins` or any other tool. The same `name` replaces the widget in place. If `show_widget` is not available in this turn (it needs the Control UI), go on: step 3 pins it.
+3. Refresh automation. Run the `automations` tool's `list` action first. Look for `declarationKey` `pr-dashboard-refresh` (or the name `PR dashboard refresh`).
+   - Found one: do not add another. If its trigger, schedule, hours or payload differ from the fields below, update that automation in place. If you find more than one, keep the one whose id is in `dashboard/jobid.txt` (or the newest), remove the others, and tell the owner.
+   - Found none: add it with the fields below.
+   - Write its id, and nothing else, to `dashboard/jobid.txt`. Then run it once with `runMode` `force`. A forced run skips the check and runs the turn, which builds and pins the widget again, now with the Refresh button's `cron.trigger` capability. It starts after this turn ends. The owner may see an Allow prompt for that capability: tell them it lets the Refresh button run this one automation and nothing else.
+
+Fields of the refresh automation:
+
+- `name`: `PR dashboard refresh`. `declarationKey`: `pr-dashboard-refresh`.
+- `schedule`: `{"kind": "every", "everyMs": 900000}` (15 minutes). Not shorter.
+- `activeHours`: from `watch_hours` and `time_zone` in settings.md, as for the PR watcher (references/contribution-loop.md, step 12).
+- `sessionTarget`: `session:<your session key>`, from session_status. `delivery`: `{"mode": "none"}`.
+- `trigger`: `{"script": <the text of references/pr-dashboard/refresh-trigger.js>}` with your absolute workspace path on the `const workspace` line. Change nothing else. It runs the builder and starts no model turn on `UNCHANGED`. It wakes you on `CHANGED`, and once per distinct `ERROR`.
+- `payload`: `{"kind": "agentTurn", "toolsAllow": ["exec", "read", "write", "show_widget"], "message": <the text below, with <workspace> filled in>}`:
+
+  > PR dashboard refresh. 1. Run: node <workspace>/references/pr-dashboard/build.mjs . If its last line starts with ERROR, stop: reply with one line naming the error and do not touch the widget. 2. Read dashboard/data.json and dashboard/short.json. For each row with state OPEN whose url is not a key in short.json, add a summary of 3 to 7 plain words, a noun phrase like the existing entries, no type prefix, no em dashes. Keep the existing entries unchanged. If you added any, run the builder again. 3. Read dashboard/widget.html in full and call show_widget with name openclaw-prs, title OpenClaw PRs, pin true, size xl, capabilities {"tools": ["cron.trigger:<the id in dashboard/jobid.txt>"]}, and widget_code set to the exact, complete file, byte for byte. Do not edit, shorten or reformat it. 4. Reply with exactly NO_REPLY.
+
+In ask mode, OpenClaw asks the owner before the check's `node` command runs the first time. "Always allow" there covers only that exact command for this automation. Each refresh turn also asks before its commands, like any turn in ask mode. Tell the owner this when you create it. The widget's Refresh button runs this automation now. If a refresh turn fails, the widget keeps the last good table: the Refresh button, or the next change, pins it again.
+
+To turn the dashboard off: set `dashboard: off`, remove the refresh automation, and ask the owner to remove the `openclaw-prs` widget from the dashboard.
 
 ## Process
 
@@ -39,7 +72,7 @@ blocks safe or useful progress; otherwise state assumptions and begin.
 8. Gates: run the repo's required checks for the touched paths, or the override in settings.md, and record each result. Changed-file gates run against a freshly fetched base
 9. Simplify, commit (signed and as `commit_email`, as setup configured the checkout), then run the local review loop: local ClawSweeper on the committed range, fix must-fix findings with the same proof steps, a new run for each new head, until `review_target` is met, a maintainer decision is needed, or `review_max_rounds` is reached
 10. Draft the PR title and body in `evidence/<slug>/pr-body.md` from the repo's PR template, with the local review reported in the review flow doc's terms and a `Runtime output` section of real, redacted output (templates/runtime-output.md). Proof images and long logs go on a `proof-assets/<slug>` branch of the fork and are linked before the PR opens. Then the proof self-check: does the body contain the actual output a reviewer can inspect?
-11. Owner gate: ask for one outward step at a time with templates/approval-request.md, act only on a granted approval for the exact command, current head and body hash, and verify the result on GitHub. Check author, committer and signature of every commit before a push. Withdraw stale requests; record steps the owner did outside this agent as `recorded-outside`
+11. Owner gate: ask for one outward step at a time with templates/approval-request.md, act only on a granted approval for the exact command, current head and body hash, and verify the result on GitHub. Check author, committer and signature of every commit before a push. Withdraw stale requests; record steps the owner did outside this agent as `recorded-outside`. When a PR you opened is verified on GitHub, add its one-line summary to `dashboard/short.json` (PR dashboard)
 12. After the PR opens: ask once for a standing grant for that PR (templates/standing-grant.md), create its watcher, and on each change re-read the PR live, classify CI (`action_required` waits for maintainers; never ping), fix hosted review findings with the full proof loop, and push, edit the body and request one re-review per head as uses of the grant. Pause, keeping the grant and the watcher, on a human or maintainer comment or review (never reply), someone else's push, or a step the grant does not cover. Stop at `status: 👀 ready for maintainer look` with required CI green, or at one of the four stop conditions (the `waiting on maintainer` or `needs maintainer proof decision` label, the `clawsweeper:needs-product-decision` label, scope growth, 4 rounds without progress), or the other ends (PR closed or merged, 5 re-reviews used, 7 days with no change, a security problem), and remove the watcher. `security-review-required` and fork CI `action_required` are maintainer gates, not stops: keep working, never ping
 13. Handoff: regenerate tracker.md, write `evidence/<slug>/handoff.md` from templates/handoff.md, and end with a short summary
 

@@ -78,6 +78,16 @@ Edit the values after the colons. The agent reads this file at the start of ever
   - Blank (default): the agent takes your answer to an approval request only in its own conversation.
   - Or the session key or agent id of another session that passes your answers on, if you answer there (for example `main` for any session of your main agent). A passed-on yes counts only when it names the approval id, the exact command, the head SHA and the body hash, and says where and when you said it. In ask mode, OpenClaw's exec prompt still asks you before the command runs.
 
+## PR dashboard
+
+- dashboard: on
+  - on (default) or off. On: setup builds a read-only table of your PRs, pins it on this agent's dashboard, and adds one automation that refreshes it every 15 minutes within watch_hours. Off: none of that; setup records why in dashboard_note.
+- dashboard_note: <blank>
+- dashboard_author: <blank>
+  - The GitHub login whose PRs the table shows. Blank: the login gh is signed in with (`gh api user`).
+- dashboard_org: openclaw
+  - The GitHub org to search. The table shows that author's open PRs and the ones closed in the last 14 days, in every repo of the org.
+
 ## Database
 
 - db_path: ~/openclaw-contributor.db

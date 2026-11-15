@@ -1,13 +1,13 @@
 #!/bin/zsh
-# Release gates for the OpenClaw contributor Template 0.4.3. Run on a build machine with an OpenClaw main build.
+# Release gates for the OpenClaw contributor Template 0.4.4. Run on a build machine with an OpenClaw main build.
 # Usage: gates-occ.sh <package dir> <out dir> [tests dir]
 # Leak grep: generic patterns here; add your own names, hosts and emails one per line in the file named by
 # OCC_LEAK_PATTERNS (kept outside this repo). Two public names (claude-cli, ANTHROPIC_API_KEY) are allowed.
-# Needs $OCC_WORK/oc (OpenClaw main build) and $OCC_WORK/clawhub (npm clawhub); OCC_WORK defaults to ~/work/occ-v043.
+# Needs $OCC_WORK/oc (OpenClaw main build) and $OCC_WORK/clawhub (npm clawhub); OCC_WORK defaults to ~/work/occ-v044.
 set -u -o pipefail
 P="${1:?package dir}"; OUT="${2:?out}"; T="${3:-}"
 mkdir -p "$OUT"; P="${P:A}"; OUT="${OUT:A}"
-W="${OCC_WORK:-$HOME/work/occ-v043}"
+W="${OCC_WORK:-$HOME/work/occ-v044}"
 OC=(node "$W/oc/openclaw.mjs")
 CH=("$W/clawhub/node_modules/.bin/clawhub")
 mkdir -p "$OUT"
@@ -52,5 +52,10 @@ if [[ -n "$T" ]]; then
 fi
 # The packaged watcher must parse as an async script body (top-level await and return).
 node -e "const s=require('fs').readFileSync('$P/references/pr-watch.js','utf8'); new (Object.getPrototypeOf(async function(){}).constructor)('exec','trigger',s)" > "$OUT/pr-watch-parse.log" 2>&1; gate "pr-watch.js parses as a trigger script" $?
+# The dashboard check must parse as a trigger script too, and the builder must be valid Node with no packages.
+node -e "const s=require('fs').readFileSync('$P/references/pr-dashboard/refresh-trigger.js','utf8'); new (Object.getPrototypeOf(async function(){}).constructor)('exec','trigger',s)" > "$OUT/refresh-trigger-parse.log" 2>&1; gate "refresh-trigger.js parses as a trigger script" $?
+node --check "$P/references/pr-dashboard/build.mjs" > "$OUT/build-check.log" 2>&1 && ! grep -qE "^import .* from \"[^n.]" "$P/references/pr-dashboard/build.mjs"; gate "build.mjs is valid Node and imports only node: modules" $?
+grep -qx "package/references/pr-dashboard/build.mjs" "$OUT/files.txt" && grep -qx "package/references/pr-dashboard/template.html" "$OUT/files.txt" && grep -qx "package/references/pr-dashboard/refresh-trigger.js" "$OUT/files.txt"; gate "artifact contains the PR dashboard files" $?
+! grep -qE "\.py$" "$OUT/files.txt"; gate "artifact has no Python" $?
 echo "gates failed=$FAIL"
 exit $FAIL

@@ -1,0 +1,9 @@
+query($open:String!,$closed:String!){
+  rateLimit{cost remaining}
+  open: search(query:$open,type:ISSUE,first:60){nodes{...P}}
+  closed: search(query:$closed,type:ISSUE,first:60){nodes{...P}}
+}
+fragment P on PullRequest{
+  number title url state merged updatedAt isDraft mergeStateStatus
+  labels(first:30){nodes{name}}
+}
