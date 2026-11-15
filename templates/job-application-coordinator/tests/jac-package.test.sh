@@ -112,7 +112,7 @@ check "SOUL forbids writing site-notes.md" 'grep -q "site-notes.md" "$CLAW" && g
 check "sources template accepts feeds" 'grep -qi "feed" "$PKG/templates/sources.md"'
 check "sources template uses only example hosts" '! grep -oE "https?://[^ )>]+" "$PKG/templates/sources.md" | grep -vE "^https?://([a-z0-9-]+\.)*example\.(com|org|net)(/|$)" | grep -q .'
 # Setup and Add docs that match what OpenClaw does today.
-check "README: second Add workaround (stop, mcp unset, start, add again)" 'grep -qF "openclaw mcp unset $SRV" "$PKG/README.md" && grep -q "mcp_server_collision" "$PKG/README.md" && grep -qi "stop the Gateway" "$PKG/README.md"'
+check "README: second Add workaround (stop, mcp unset, start, add again)" 'grep -qF "openclaw mcp unset $SRV" "$PKG/README.md" && grep -q "mcp_server_collision" "$PKG/README.md" && grep -qF "openclaw gateway stop" "$PKG/README.md" && grep -qF "openclaw gateway start" "$PKG/README.md"'
 check "README: no claim that a kept agent has no setup file" '! grep -q "the new agent has no setup file, no schedule" "$PKG/README.md"'
 check "README: partial Add says how to check the agent" 'grep -qF "openclaw automations list --agent" "$PKG/README.md" && grep -qF "openclaw mcp list" "$PKG/README.md"'
 check "BOOTSTRAP: upgrade copies the old settings.md as old-settings.md" 'grep -qF "old-settings.md" "$PKG/BOOTSTRAP.md"'

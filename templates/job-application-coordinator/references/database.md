@@ -69,7 +69,7 @@ The owner changes a status by asking the agent in chat, for example "mark the ba
 The owner can also run one line in a terminal, with `<db_path>` taken from settings.md. Use the application id from the agent or from the database:
 
 ```sh
-sqlite3 "<db_path>" "UPDATE applications SET status = 'interviewing', note = 'set by owner', updated_at = datetime('now') WHERE id = 12;"
+sqlite3 "<db_path>" "UPDATE applications SET status = 'interviewing', note = 'set by owner', updated_at = strftime('%Y-%m-%dT%H:%M:%SZ','now') WHERE id = 12;"
 ```
 
 The status must be one of the values in "Tracker format" in references/apply-mechanics.md. The database logs the change in status_events. tracker.md shows it after the next run.
