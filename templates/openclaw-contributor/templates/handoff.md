@@ -9,7 +9,9 @@
 
 - Red on base: <command, exit code, log path>
 - Green on head: <command, exit code, log path>
-- Mutation check: <test red again with the fix reverted: command, log path>
+- Mutation check: <test red again with the fix reverted by git apply -R: command, log path>
+- Runtime output: <command, base SHA and head SHA, log paths, the lines that show cause and effect, where it is in the PR body or the proof-assets link; or the gap and what would close it>
+- Proof self-check: <proof-check.md answer: does the body contain the actual output a reviewer can inspect?>
 - Gates: <each command and result>
 - Simplify: <what was removed, production and test line deltas>
 - Local review: <tool; each round with base, head, rating overall/proof/patch and must-fix count; remaining findings; or the gap>
@@ -33,7 +35,7 @@
 
 ## Waiting on
 
-<The next decision, who makes it (owner or maintainers), and what it needs.>
+<The next decision, who makes it (owner or maintainers), and what it needs. A relay of the owner's answer comes from an interactive turn of the relay session, not a scheduled run (contribution-loop.md step 11).>
 
 ## Papercuts noticed
 

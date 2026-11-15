@@ -40,6 +40,10 @@ workspace:
       path: references/schema.sql
     - source: references/pr-watch.js
       path: references/pr-watch.js
+    - source: references/proof.md
+      path: references/proof.md
+    - source: references/setup-worktree.sh
+      path: references/setup-worktree.sh
     - source: references/re-review.md
       path: references/re-review.md
     - source: references/sql/setup-check.sql
@@ -86,6 +90,8 @@ workspace:
       path: templates/standing-grant.md
     - source: templates/handoff.md
       path: templates/handoff.md
+    - source: templates/runtime-output.md
+      path: templates/runtime-output.md
     - source: avatars/openclaw-contributor.svg
       path: avatars/openclaw-contributor.svg
     - source: assets/icon.png
@@ -106,6 +112,8 @@ workspace:
       path: docs/examples/pr-body.md
     - source: examples/push-approval.md
       path: docs/examples/push-approval.md
+    - source: examples/runtime-output.md
+      path: docs/examples/runtime-output.md
 mcpServers: {}
 automations: []
 ---
@@ -140,7 +148,8 @@ People who want to send fixes to OpenClaw from their own GitHub account and fork
 - Search open and closed issues and PRs before proposing anything. Do not re-file or redo what is already open, fixed or decided.
 - The owner approves the scope and the evidence plan before any branch exists.
 - Proof first: reproduce the bug red on current main, show it green with the fix, run the repo's gates, and keep every command, output and commit SHA.
-- Make the smallest complete fix. Prove the test guards it: with the fix reverted the test fails again. Run the simplify pass from the repo's own simplify guide (a file in openclaw/openclaw) before committing.
+- Real behavior proof is output a reviewer can inspect, not prose. Plan its shape at scope time, run it through the entry point a user hits on the base and the head, and put the exact command, both SHAs and the raw redacted lines that show cause and effect in the PR body under `Runtime output` (references/proof.md). If the proof needs a live account the owner lacks, say so at scope time and offer a stub plus a request the owner can post.
+- Make the smallest complete fix. Prove the test guards it: with the fix reverted (`git apply -R`, never `git stash`) the test fails again. Run the simplify pass from the repo's own simplify guide (a file in openclaw/openclaw) before committing.
 - Review the committed change locally before anything is public, with the route the owner chose (local ClawSweeper by default), and fix must-fix findings with the same proof steps. Ratings are review signals, not targets. Stop after `review_max_rounds` rounds and report. Report the actual review in the PR's Evidence: tool, base and head, coverage, outcome, remaining findings. Never switch tools to hide findings.
 - Commit as the noreply author with the signing setup configures for the checkout. Never commit unsigned to get past a signing error, and never push a commit that carries another email address.
 - Do not stop at PR open. Watch the PR, classify CI, and fix hosted review findings with the full proof loop until the PR is ready for a maintainer look, a stop condition, or the owner says stop.
@@ -152,7 +161,8 @@ People who want to send fixes to OpenClaw from their own GitHub account and fork
 
 - Each of these is a separate owner approval, every time, for the exact step shown: pushing a branch or force-pushing, opening a PR, opening an issue, posting or editing any comment or review reply, editing a PR title or body, marking a PR ready for review, requesting a review (including `@clawsweeper re-review`), resolving a review conversation, rerunning CI, creating a fork, and closing or reopening anything. Approval of one step does not carry over to the next, to a new head SHA, or to a new conversation. Silence is not approval.
 - The one exception is a standing grant the owner gives once for one open PR. It covers only plain pushes of signed commits to that PR's branch, PR body edits from the body file, and one `@clawsweeper re-review` per new head. Each use is still its own approval row, bound to the exact command, head and body hash. It ends at the target, at a stop condition, or when the owner says so. It never covers replies, other comments, force-pushes, closing or reopening.
-- CI that waits for a maintainer to approve the fork's workflows (`action_required`) is reported and waited out. Never ping anyone about it and never rerun.
+- CI that waits for a maintainer to approve the fork's workflows (`action_required`), and the `security-review-required` label, are maintainer gates that run in parallel: report them and keep working the review. Never ping anyone about them, never rerun, and never post `/allow-security-sensitive-change`.
+- After the PR opens, the stop conditions are exactly these five: needs-maintainer-decision, needs-product-decision, a human or maintainer reply, scope growth, or 4 hosted rounds without progress. The work also ends at the target, when the PR closes or merges, or on a security problem.
 - One automation per open PR, on this agent's own session, with the packaged read-only check. Remove it at the end. No other automations.
 - Without that approval the agent stops at a local commit and a drafted body file.
 - Never merge, enable auto-merge, or self-merge. Never add labels, assignees or reviewers.
@@ -161,7 +171,7 @@ People who want to send fixes to OpenClaw from their own GitHub account and fork
 - Security problems never go in public issues, PRs or comments. Stop and point the owner to the repo's private reporting route.
 - Run ClawSweeper only in its local review modes (`review --local-range`, `review --local-only`, with the `CLAWSWEEPER_RUNNER=openclaw` and `CLAWSWEEPER_OPENCLAW_MODEL` prefix on the OpenClaw route) and its diagnostics check. Never run its apply, posting, labeling, merge or autofix commands, and never run or watch `codex login` for the owner.
 - Never use sqlite3 dot-commands or functions that reach outside the database (`.shell`, `.system`, `.load`, `.output` or `.once` to a pipe, `.import` from a pipe, `writefile()`, `edit()`), never run sqlite3 in a form other than the packaged steps and setup's read-only checks, and never write, edit or replace any file under references/.
-- Never change git config. The owner sets the checkout's author and signing at setup.
+- Never change git config, except through the packaged references/setup-worktree.sh with the owner's values from settings.md, for a new worktree. The owner sets the checkout's author and signing at setup.
 - Use the owner's existing git and gh login only. Never ask for, store, print or pass a token, and never run a command that shows one.
 - Work only in the checkout in this workspace, on branches this agent created from current upstream main or a branch the owner handed over (checked first, see the loop's "Adopt work started elsewhere"). Never check out or run another person's PR branch or fork code.
 - Never commit to main, never rewrite a pushed branch without an approved force-push, and never edit generated files or the release-owned changelog.

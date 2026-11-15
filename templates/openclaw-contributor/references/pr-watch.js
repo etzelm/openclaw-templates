@@ -1,11 +1,17 @@
 // Read-only watcher check for one open PR, used as an automation's trigger.script.
-// The agent copies this text unchanged except for the PR number on the `const pr` line.
+// The agent copies this text unchanged except for two lines: the PR number on the `const pr`
+// line and the time it adds the watcher, in ISO 8601 UTC, on the `const addedAt` line.
 // It runs one plain gh read and never writes. It wakes the agent when the PR changed:
-// state, head, labels, ClawSweeper comments (also when edited in place), comments or
-// reviews by people or other bots, or a finished check result. It also wakes the agent
-// once a day while nothing changes, so the 7-day stop can run. The first check only saves.
+// state, head, labels, ClawSweeper comments and people's comments (also when edited in
+// place), comments or reviews by other bots, reviews, or a finished check result. It also wakes the agent
+// once a day while nothing changes, so the 7-day stop can run.
+// First check: it saves what it sees as the baseline and always fires once, because a
+// label or a ClawSweeper comment edited in place carries no usable time in this read.
+// Its message names what is newer than addedAt (comments, reviews, finished checks).
+// With addedAt left empty the first check only saves (the 0.4.2 behavior).
 const repo = "openclaw/openclaw";
 const pr = 0;
+const addedAt = "";
 const DAY = 24 * 60 * 60 * 1000;
 const r = await exec({
   command:
@@ -17,8 +23,8 @@ if (!r || r.status !== "completed" || r.exitCode !== 0) {
 }
 const v = JSON.parse(r.aggregated);
 const login = (c) => (c.author && c.author.login) || "";
-const isClawSweeper = (c) => /^clawsweeper/i.test(login(c));
-const isBot = (c) => /\[bot\]$|^app\/|^(github-actions|barnacle)/i.test(login(c));
+const isClawSweeper = (c) => /^clawsweeper(\[bot\])?$/i.test(login(c));
+const isBot = (c) => /\[bot\]$|^app\/|^(github-actions|barnacle)$/i.test(login(c));
 const hash = (text) => {
   let h = 5381;
   for (let i = 0; i < text.length; i++) h = ((h * 33) ^ text.charCodeAt(i)) >>> 0;
@@ -36,7 +42,7 @@ const observed = {
   head: v.headRefOid,
   labels: (v.labels || []).map((l) => l.name).sort(),
   clawsweeper: [sweeper.length, hash(sweeper.map((c) => c.createdAt + "\n" + (c.body || "")).join("\n"))],
-  people: [people.length, people.length ? people[people.length - 1].createdAt : ""],
+  people: [people.length, people.length ? people[people.length - 1].createdAt : "", hash(people.map((c) => c.createdAt + "\n" + (c.body || "")).join("\n"))],
   bots: [bots.length, bots.length ? bots[bots.length - 1].createdAt : ""],
   reviews: [reviews.length, reviews.length ? reviews[reviews.length - 1].submittedAt || "" : ""],
   checks: (v.statusCheckRollup || [])
@@ -49,7 +55,32 @@ const observed = {
 const now = Date.now();
 const prev = trigger.state;
 if (!prev || !prev.observed) {
-  return { fire: false, state: { observed, since: now, nudged: now } };
+  const UTC = /^\d{4}-\d\d-\d\dT\d\d:\d\d(:\d\d(\.\d+)?)?Z$/;
+  if (addedAt && (!UTC.test(addedAt) || isNaN(Date.parse(addedAt)))) {
+    throw new Error("PR " + pr + " watcher: addedAt is not an ISO 8601 UTC time ending in Z: " + addedAt);
+  }
+  const start = addedAt ? Date.parse(addedAt) : NaN;
+  const newer = (t) => !!t && Date.parse(t) > start;
+  const since = [];
+  if (!isNaN(start)) {
+    if (sweeper.some((c) => newer(c.createdAt))) since.push("ClawSweeper comment");
+    if (people.some((c) => newer(c.createdAt))) since.push("comment by a person or an unknown account");
+    if (bots.some((c) => newer(c.createdAt))) since.push("bot comment");
+    if (reviews.some((c) => newer(c.submittedAt))) since.push("review");
+    if ((v.statusCheckRollup || []).some((c) => newer(c.completedAt))) since.push("finished check");
+    if (v.state !== "OPEN") since.push("state " + v.state);
+  }
+  const state = { observed, since: now, nudged: now };
+  if (isNaN(start)) return { fire: false, state };
+  return {
+    fire: true,
+    message:
+      "PR " + pr + " watcher baseline saved (added at " + addedAt + "). Newer than the add: " +
+      (since.length ? since.join(", ") : "no dated comment, review or check") +
+      ". Labels and in-place edits are not dated: re-read the PR live before acting (contribution-loop.md, step 12). Observed: " +
+      JSON.stringify(observed).slice(0, 3000),
+    state,
+  };
 }
 if (JSON.stringify(observed) !== JSON.stringify(prev.observed)) {
   return {

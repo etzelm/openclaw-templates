@@ -21,7 +21,7 @@ The repo rules decide how the work is done and what a PR needs. The owner gates 
 - Long commands (installs, test suites, builds) run in the background with process and write their output to a log under `evidence/<slug>/`. Poll the log. Do not pull whole logs into the conversation.
 - Local ClawSweeper, when chosen, is a source checkout at `clawsweeper/` in this workspace and runs on the owner's Codex login, or on ClawSweeper's OpenClaw runner with the model in `clawsweeper_model`. Only its local review modes and its diagnostics check run; never its apply, posting or merge commands. Each round sends the change to the model service and uses the owner's quota.
 - Automations: only one watcher per open PR, on this agent's own session, with the packaged read-only check in references/pr-watch.js, every 15 minutes within `watch_hours`. It wakes the agent only when the PR changed. The agent removes it when the PR is ready for a maintainer look, at a stop condition, or when the owner says so. The owner starts each task.
-- Commits use `commit_email` and the signing setup configured for the checkout. The agent never changes git config, and checks author, committer and signature before each push.
+- Commits use `commit_email` and the signing setup configured for the checkout. The agent never changes git config except through references/setup-worktree.sh for a new worktree, and checks author, committer and signature before each push. It never uses `git stash`: the stash list is shared by every worktree.
 - Follow references/contribution-loop.md for the exact phases, the database steps, the approval protocol and the stop rules.
 
 Use context the user already supplied. Ask only for missing information that
@@ -31,16 +31,16 @@ blocks safe or useful progress; otherwise state assumptions and begin.
 
 1. Start: get the time with session_status, read settings.md, check the database, fetch upstream, and re-read the repo's rule files from upstream main
 2. Intake: take the issue or bug the owner names, or find up to `max_candidates` open candidates in the owner's areas and let the owner pick. Work handed over from another session is checked and adopted, not redone. Agent-authored work gets an issue first, as CONTRIBUTING.md asks
-3. Duplicate and decision check: search open and closed issues and PRs, record what you found, and stop on any earlier fix, open PR or maintainer decision
-4. Scope proposal: write `evidence/<slug>/scope.md` from templates/scope-proposal.md with the problem, the smallest fix, the proof plan and the gates, and wait for the owner's OK
+3. Duplicate and decision check: search open and closed issues and PRs, merged PRs included, record what you found, and stop on any earlier fix (also one merged without a closing keyword), open PR or maintainer decision
+4. Scope proposal: write `evidence/<slug>/scope.md` from templates/scope-proposal.md with the problem, the smallest fix, the proof plan with its runtime output shape (references/proof.md) and any live account it needs, and the gates, and wait for the owner's OK
 5. Branch from current upstream main in the checkout, and record the base SHA
-6. Red: reproduce the bug end to end on the base and commit nothing until a failing test or repro shows the reported failure
-7. Green: make the smallest complete fix, run the red proof again to green, revert the fix once to see the test fail again (mutation check), and run the tests of every consumer of what changed
-8. Gates: run the repo's required checks for the touched paths, or the override in settings.md, and record each result
+6. Red: reproduce the bug end to end on the base and commit nothing until a failing test or repro shows the reported failure; capture the base runtime run while the checkout is exactly the base
+7. Green: make the smallest complete fix, run the red proof again to green, revert the fix once with `git apply -R` to see the test fail again (mutation check; never `git stash`), run the tests of every consumer of what changed, and rehearse the runtime proof (the base run is captured in step 6 at the clean base, the head run after the last commit in step 9)
+8. Gates: run the repo's required checks for the touched paths, or the override in settings.md, and record each result. Changed-file gates run against a freshly fetched base
 9. Simplify, commit (signed and as `commit_email`, as setup configured the checkout), then run the local review loop: local ClawSweeper on the committed range, fix must-fix findings with the same proof steps, a new run for each new head, until `review_target` is met, a maintainer decision is needed, or `review_max_rounds` is reached
-10. Draft the PR title and body in `evidence/<slug>/pr-body.md` from the repo's PR template, with the local review reported in the review flow doc's terms. Proof images go on a `proof-assets/<slug>` branch of the fork and are linked before the PR opens
+10. Draft the PR title and body in `evidence/<slug>/pr-body.md` from the repo's PR template, with the local review reported in the review flow doc's terms and a `Runtime output` section of real, redacted output (templates/runtime-output.md). Proof images and long logs go on a `proof-assets/<slug>` branch of the fork and are linked before the PR opens. Then the proof self-check: does the body contain the actual output a reviewer can inspect?
 11. Owner gate: ask for one outward step at a time with templates/approval-request.md, act only on a granted approval for the exact command, current head and body hash, and verify the result on GitHub. Check author, committer and signature of every commit before a push. Withdraw stale requests; record steps the owner did outside this agent as `recorded-outside`
-12. After the PR opens: ask once for a standing grant for that PR (templates/standing-grant.md), create its watcher, and on each change re-read the PR live, classify CI (`action_required` waits for maintainers; never ping), fix hosted review findings with the full proof loop, and push, edit the body and request one re-review per head as uses of the grant. Pause on any human comment or a step the grant does not cover. Stop at `status: 👀 ready for maintainer look` with required CI green, or at a stop condition, and remove the watcher
+12. After the PR opens: ask once for a standing grant for that PR (templates/standing-grant.md), create its watcher, and on each change re-read the PR live, classify CI (`action_required` waits for maintainers; never ping), fix hosted review findings with the full proof loop, and push, edit the body and request one re-review per head as uses of the grant. Pause on someone else's push or a step the grant does not cover. Stop at `status: 👀 ready for maintainer look` with required CI green, or at one of the five stop conditions (needs-maintainer-decision, needs-product-decision, a human or maintainer reply, scope growth, 4 rounds without progress), and remove the watcher. `security-review-required` and fork CI `action_required` are maintainer gates, not stops: keep working, never ping
 13. Handoff: regenerate tracker.md, write `evidence/<slug>/handoff.md` from templates/handoff.md, and end with a short summary
 
 ## Example setting
@@ -52,7 +52,7 @@ blocks safe or useful progress; otherwise state assumptions and begin.
 ## Standard deliverables
 
 - A local branch from current upstream main with one focused commit or a short series
-- `evidence/<slug>/`: scope.md, red, green and mutation logs, gate logs, the simplify note, one ClawSweeper log per review round, pr-body.md, approval requests, the standing grant request and handoff.md
+- `evidence/<slug>/`: scope.md, red, green and mutation logs, runtime output logs for the base and head, proof-check.md, gate logs, the simplify note, one ClawSweeper log per review round, pr-body.md, approval requests, the standing grant request and handoff.md
 - Database rows for every candidate, contribution, evidence item, approval and status change
 - tracker.md regenerated from the database
 - A short status summary that names the next owner decision
@@ -62,7 +62,7 @@ blocks safe or useful progress; otherwise state assumptions and begin.
 - The candidate has a recorded decision, and a stop rule ended the work or a contribution row exists
 - Red on the base, green on the head, the mutation check and every gate result are recorded with commands, exit codes and commit SHAs, or the gap is named
 - Each local review round is recorded with base, head, ratings and remaining findings, and the last round covers the current head, or the gap is named
-- The PR body file follows the current repo template and passes the checks in references/upstream-text.md
+- The PR body file follows the current repo template, passes the checks in references/upstream-text.md, and carries inspectable runtime output (command, base and head SHAs, raw redacted lines) or names the gap the owner accepted at scope time
 - Every outward step has a granted, used approval row for the head it touched (granted by the owner or under the PR's standing grant), or a `recorded-outside` row when the owner did it, and its result was verified on GitHub
 - After the PR opened: each hosted round is recorded, the PR reached `status: 👀 ready for maintainer look` with required CI green or a stop condition is named, the grant is ended and the watcher is removed
 - tracker.md was regenerated and the handoff names the next decision and who makes it

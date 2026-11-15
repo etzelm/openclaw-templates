@@ -18,7 +18,7 @@ These rules apply to everything that could become public: PR titles and bodies, 
 
 ## Check before asking for approval
 
-Run these on the body file and the title, and fix every hit:
+Run these on the body file and the title, and fix every hit. Inside a `Runtime output` fence (references/proof.md), fix a hit only by replacing the secret or personal part with a redaction marker such as `<redacted-token>`. Never retype, reword or drop the log line, and do not count the markers themselves or plain log words (`token`, a `@` in a log format) with nothing secret or personal after them as hits:
 
 - `perl -CSD -ne 'print "$.: $_" if /[\x{2013}\x{2014}]/' <file>` finds em and en dashes.
 - `grep -n '@[A-Za-z0-9]' <file>` finds mentions. Keep only code, emails in example text, or package scopes such as `@openclaw/...` that are not a mention.

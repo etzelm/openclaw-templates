@@ -125,8 +125,8 @@ If the owner already has a checkout somewhere else, explain that this agent's fi
 
 Do this right after "Checkout", before any commit. Commits made with the owner's global git config can carry a private email address and go out unsigned; once pushed, that address is public. This step sets the author and signing for the checkout only. The agent never changes git config itself: the owner runs the commands.
 
-1. Propose `commit_email`, the owner's GitHub noreply address. Read it with `gh api user --jq .id` and `gh api user --jq .login`; the address is `<id>+<login>@users.noreply.github.com`. GitHub shows it under Settings, Emails, "Keep my email addresses private". Record the owner's choice in settings.md.
-2. Ask how commits are signed (`signing`): ssh (default) or gpg. Ask also for the name to put on commits.
+1. Propose `commit_email`, the owner's GitHub noreply address. Read it with `gh api user --jq .id` and `gh api user --jq .login`; the address is `<id>+<login>@users.noreply.github.com`. GitHub shows it under Settings, Emails, "Keep my email addresses private". Record it in settings.md. It must be a GitHub noreply address: references/setup-worktree.sh refuses any other, and a private address on a public commit cannot be taken back.
+2. Ask how commits are signed (`signing`): ssh (default) or gpg. Ask also for the name to put on commits and the signing key (the absolute path of the ssh public key, or the gpg key id). Record them in settings.md as `commit_name` and `signing_key`: the loop uses them when it makes a new worktree.
 3. Show the block for their choice with the real values, and ask them to run it in a terminal on the Gateway host. `<repo>` is `<workspace>/<checkout_dir>`. These are settings of this one checkout: they apply to every worktree of it and to nothing else on the machine.
 
    ssh:
@@ -163,7 +163,13 @@ Do this right after "Checkout", before any commit. Commits made with the owner's
 
 If the owner does not want signing, record `signing: none` and their reason and the date in `signing_note`. The author check still applies: `commit_email` is required either way.
 
-A checkout that is a worktree of a repository outside this workspace (see the loop's "Adopt work started elsewhere") shares that repository's config with the owner's other work. Never set the identity there with the block above. Use the same lines with `config --worktree` in that one worktree, after `git -C "<repo>" config extensions.worktreeConfig true`, and run the check in it. A worktree config covers only that worktree: repeat it for each new one.
+A checkout that is a worktree of a repository outside this workspace (see the loop's "Adopt work started elsewhere") shares that repository's config with the owner's other work. Never set the identity there with the block above. Use the packaged script instead. It makes the worktree (or adopts one with `--existing`), sets the identity and signing with `config --worktree` in that worktree only, and checks a signed test commit, in one command:
+
+```sh
+sh references/setup-worktree.sh --repo "<repo>" --worktree "<workspace>/wt-<slug>" --start <ref> --branch <branch> --name "<commit_name>" --email <commit_email> --signing ssh --key "<signing_key>"
+```
+
+It prints `setup-worktree ok: ...` with `G` and the noreply address twice, or the failing line. A worktree config covers only that worktree: run it for each new one. The agent runs this itself when its runtime allows. Some runtimes refuse it because it runs `git config`; then the agent sends the exact command, and the owner, or the session in `approval_relay` (for example a main agent), runs it in a terminal on the Gateway host.
 
 ## Local ClawSweeper
 
@@ -222,7 +228,9 @@ The first real review happens in the loop, on a committed change. If a step fail
 
 ## Upgrade from an earlier version
 
-Templates have no update command. 0.4.0 changed the database to schema version 2 (approval body hash, `withdrawn` and `recorded-outside`). 0.4.2 changes it to version 3 (standing grants, the `hosted-review` evidence kind). Every row is kept, and pending requests stay pending.
+Templates have no update command. 0.4.0 changed the database to schema version 2 (approval body hash, `withdrawn` and `recorded-outside`). 0.4.2 changes it to version 3 (standing grants, the `hosted-review` evidence kind). Every row is kept, and pending requests stay pending. 0.4.3 keeps version 3.
+
+- From 0.4.2 (version 3): no database step. Ask the owner to copy their old `settings.md` into this workspace and add `commit_name` and `signing_key` from `templates/settings.md`. Then do "Exec host and approvals" for this agent id. Open grants and PR watchers of the old agent belong to its session: the owner ends them there, or keeps the old agent for those PRs.
 
 - From 0.4.0 or 0.4.1 (version 2): the owner backs up and upgrades the database in a terminal, with the real paths, and pastes the output:
 
@@ -231,7 +239,7 @@ Templates have no update command. 0.4.0 changed the database to schema version 2
    sqlite3 -bail "<db_path>" ".read '<workspace>/references/sql/migrate-v2-to-v3.sql'"
    ```
 
-   It must print `migrate ok, schema version 3, ...`. It refuses a database that is not version 2 and changes nothing on any error. Then ask the owner to copy their old `settings.md` into this workspace and add the lines new in 0.4.2 from `templates/settings.md`: `commit_email`, `signing`, `signing_note`, `runner_prefix`, `watch_hours`. Ask the "Approval relay" question if `approval_relay` is blank. Then do "Exec host and approvals" for this agent id, and "Commit identity and signing" for the existing checkout.
+   It must print `migrate ok, schema version 3, ...`. It refuses a database that is not version 2 and changes nothing on any error. Then ask the owner to copy their old `settings.md` into this workspace and add the lines new in 0.4.2 and 0.4.3 from `templates/settings.md`: `commit_email`, `signing`, `signing_note`, `commit_name`, `signing_key`, `runner_prefix`, `watch_hours`. Ask the "Approval relay" question if `approval_relay` is blank. Then do "Exec host and approvals" for this agent id, and "Commit identity and signing" for the existing checkout.
 
 1. Database (0.3.x and older, version 1). The owner runs these in a terminal, with the real paths, and pastes the output. The first line is their backup:
 
@@ -241,7 +249,7 @@ Templates have no update command. 0.4.0 changed the database to schema version 2
    ```
 
    It must print `migrate ok, schema version 2`. Then run `migrate-v2-to-v3.sql` the same way (above); it must print `migrate ok, schema version 3, ...`. Each refuses a database at the wrong version and changes nothing on any error. A request still pending becomes `withdrawn`: ask it again. A body-file approval granted before the upgrade has no body hash and cannot be used: ask again.
-2. From 0.3.x or 0.2.x: the database already sits at `db_path` outside the workspace. Ask the owner to copy their old `settings.md` into this workspace, then add the lines that are new since their version from `templates/settings.md` (0.4.2 adds `commit_email`, `signing`, `signing_note`, `runner_prefix` and `watch_hours`; 0.4.0 added `approval_relay`; 0.3.0 added `clawsweeper_runner`, `clawsweeper_model`, `local_review_note`, `review_target`, `review_max_rounds`). From 0.2.x, also ask the "Local review" questions again, set `upstream_remote: origin` and `fork_remote: fork` for a fresh clone ("Checkout"), and do "Local ClawSweeper".
+2. From 0.3.x or 0.2.x: the database already sits at `db_path` outside the workspace. Ask the owner to copy their old `settings.md` into this workspace, then add the lines that are new since their version from `templates/settings.md` (0.4.3 adds `commit_name` and `signing_key`; 0.4.2 added `commit_email`, `signing`, `signing_note`, `runner_prefix` and `watch_hours`; 0.4.0 added `approval_relay`; 0.3.0 added `clawsweeper_runner`, `clawsweeper_model`, `local_review_note`, `review_target`, `review_max_rounds`). From 0.2.x, also ask the "Local review" questions again, set `upstream_remote: origin` and `fork_remote: fork` for a fresh clone ("Checkout"), and do "Local ClawSweeper".
 3. From 0.1.x: before step 1, ask the owner to copy the old agent's `contributions.db` (in the old workspace) to `db_path` and keep the original. Copy `settings.md` too and add the new lines (`db_path` and the lines above). Approvals asked without a head SHA can no longer be used for push, force-push, open-pr, edit-pr or ready-for-review. The old checkout can stay, but this agent's file tools reach only its own workspace: clone a fresh one here ("Checkout").
 
 To keep an existing 0.3.x agent instead of adding a new one, follow docs/README.md, "Upgrade in place".

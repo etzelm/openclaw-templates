@@ -1,4 +1,4 @@
-<!-- Example from a real 0.2.0 run on an isolated test host (no GitHub login, no GitHub writes). The agent stopped here, at its first owner gate. -->
+<!-- Example from a real 0.2.0 run on an isolated test host (no GitHub login, no GitHub writes). The agent stopped here, at its first owner gate. It predates 0.4.3: a proposal today fills the "Runtime output" slots in templates/scope-proposal.md (state folder, port, start, stub, trigger, leftover check, cleanup) instead of one "End to end" line. -->
 
 # Scope proposal: exec-allowlist-tilde-docs
 
