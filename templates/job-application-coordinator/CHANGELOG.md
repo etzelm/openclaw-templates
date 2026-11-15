@@ -4,6 +4,7 @@
 
 - The Chrome DevTools MCP server is now named `chrome-devtools-jobs`, so the catalog and `openclaw mcp list` say what it is. 0.3.1 called it `jac-chrome`. It is not plain `chrome-devtools` on purpose: many owners already have a server by that name with their own setup, and Add refuses a same-name server with a different setup (`mcp_server_collision`). The tool names follow (`chrome-devtools-jobs__list_pages` and so on), and so does the suggested Chrome profile folder.
 - Upgrade from 0.3.1: no database change. The 0.3.1 agent keeps `jac-chrome`; once you have moved to the new agent and deleted the old one, run `openclaw mcp unset jac-chrome`. Keep your `jac-chrome-profile` Chrome folder if you made one. BOOTSTRAP's upgrade question now includes 0.3.1.
+- Fix: with the Chrome DevTools driver, a confirm-mode run no longer loses the browser while it waits for your Submit click. Each wait asked for up to 120 seconds, OpenClaw stops an MCP call after 60, and after three timeouts it restarted the server, so the run ended with "not connected" and the next posting was never reached. Waits are now at most 45 seconds per call, chained.
 
 ## 0.3.1
 
