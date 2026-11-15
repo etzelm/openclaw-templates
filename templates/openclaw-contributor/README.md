@@ -63,7 +63,7 @@ How it works:
 - Settings (settings.md, "PR dashboard"): `dashboard` on or off, `dashboard_author` (blank: the login gh is signed in with), `dashboard_org` (default `openclaw`), `dashboard_refresh_button` (default off).
 - Setup does it in a Control UI turn, where `show_widget` is available. From a chat channel, the agent asks you to repeat "Set up the PR dashboard" in the Control UI.
 - The refresh check needs a workspace path with no spaces or shell characters (the default `~/.openclaw/workspace-<agent-id>` is fine).
-- In ask mode, the refresh check's `node` command asks you on its first run; "Always allow" covers that one command for that automation. Each refresh turn asks before its own commands too.
+- In ask mode, the refresh check's `node` command asks you on its first run; "Always allow" covers that one command for that automation. Each refresh turn asks before its own commands too, and its `--mark-pinned <digest>` command asks every time the table changes, because the digest differs. If a turn fails, the next check tries again.
 - Running setup again in the same session updates the same widget and automation; it never adds a second one. A widget belongs to the session that pinned it: run from another session, setup moves the automation there and asks you to remove the old widget. To turn it off, set `dashboard: off` and ask the agent; it removes the automation, and you remove the widget from the dashboard.
 - Optional owner config: dashboard widgets load from OpenClaw's widget sandbox origin. On a Gateway you reach remotely, if the widget frame does not load, see `mcp.apps.sandboxOrigin` in OpenClaw's docs (docs/cli/mcp/apps.md). Setup never sets it. Links do not need it.
 

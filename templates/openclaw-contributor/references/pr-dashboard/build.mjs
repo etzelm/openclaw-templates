@@ -35,7 +35,7 @@ const JOB = /^[A-Za-z0-9_-]{1,128}$/;
 const BUDGET_MS = 25000;
 const started = Date.now();
 
-// JSON text in json.dumps' default layout (ASCII only, ", " and ": "): a stable text for the digest and data.json.
+// A fixed ASCII JSON layout (", " and ": " separators) for the digest and data.json.
 export function pyDumps(v, sortKeys = false) {
   if (v === null || v === undefined) return "null";
   if (typeof v === "boolean") return v ? "true" : "false";
