@@ -24,7 +24,7 @@ Tell the owner, in a few lines, before any question:
 
 ## Questions
 
-- **Upgrade** (first): did the owner use an earlier version of this Template (0.1.x or 0.2.x)? If yes, do "Upgrade from an earlier version" below before "Database". Until the owner has answered this, run no database command and create no database.
+- **Upgrade** (first): did the owner use an earlier version of this Template (0.1.x, 0.2.x or 0.3.1)? If yes, do "Upgrade from an earlier version" below before "Database". Until the owner has answered this, run no database command and create no database.
 - **Time zone** (`time_zone`): required, text, IANA time zone.
 - **Target titles** (`titles`): required, text, up to 300 characters.
 - **Deal-breakers** (`deal_breakers`): required, multiline text, up to 1000 characters.
@@ -117,11 +117,12 @@ The owner commands, the upgrade notes and the personal data notes stay available
 
 ## Upgrade from an earlier version
 
-Templates have no update command: this version is a new agent. 0.1.x is the only earlier line that was published; 0.2.x and 0.3.0 existed only as source. The old agent's files stay in its own workspace.
+Templates have no update command: this version is a new agent. 0.1.2 and 0.3.1 were published; 0.2.x and 0.3.0 existed only as source. The old agent's files stay in its own workspace.
 
 1. Ask the owner to stop the old agent's schedule first, so two agents never apply at once: `openclaw automations list --all`, then `openclaw automations disable <old-job-id>`.
 2. Ask the owner to copy, in a terminal, from the old workspace: `answers.md`, `profile.md`, `resume.md` and `sources.md` into this workspace. Then the database:
    - From 0.2.x: the database already lives at the old agent's `db_path`. If this agent's `db_path` is the same file, ask the owner only to make their own copy first: `cp "<db_path>" "<db_path>.v2-backup"`. Otherwise ask them to copy it to this `db_path` and keep the original.
+   - From 0.3.1: the database is already at schema version 3, so there is nothing to migrate. If this agent's `db_path` is the same file, ask the owner only to make their own copy first: `cp "<db_path>" "<db_path>.v3-backup"`. Otherwise ask them to copy it to this `db_path` and keep the original. Skip step 3.
    - From 0.1.x: copy the old workspace's `applications.db` to two places: `db_path`, and `db_path` plus `.v1-backup` as their own copy.
 3. Migrate, from the workspace root:
    - From 0.1.x: `sqlite3 -bail "<db_path>" ".read references/sql/migrate-v1-to-v2.sql"`. It must print `migrate ok, schema version 2`. Then continue with the next line.
@@ -129,17 +130,19 @@ Templates have no update command: this version is a new agent. 0.1.x is the only
    Each step refuses a database of any other version. After this, the old 0.2.x agent's steps refuse the database too, which is expected: it must stay disabled. Continue with the self-test in "Database".
 4. Re-read the copied files: 0.3.x adds `browser_driver` to settings.md, and "Pre-filter", "Preferences" and "Score" to profile.md. Create settings.md fresh from the template and carry the owner's old values over. Add the new profile.md sections from templates/profile.md and ask the owner to fill them; keep everything else as they wrote it.
 
+5. From 0.3.1: the Chrome DevTools server is now named `chrome-devtools-jobs`. 0.3.1 added it as `jac-chrome`, which the old agent keeps using, so both stay in OpenClaw's config for now. Once the owner has moved to this agent and deleted the old one (`openclaw agents delete <old-agent-id>`), ask them to remove the old server: `openclaw mcp unset jac-chrome`. The dedicated Chrome profile folder they made for 0.3.1 (`jac-chrome-profile`) keeps their job-site logins; they can keep starting Chrome with it, and use that folder in place of the new name in "Browser setup".
+
 ## Browser setup (Chrome DevTools driver, optional)
 
-Only if the owner chose the Chrome DevTools driver. Add put a shared MCP server named `jac-chrome` in OpenClaw's config. The Gateway starts it with npx (pinned to chrome-devtools-mcp 1.12.0) and it connects only to a Chrome listening on port 9333 of the Gateway host. Script running is turned off in it, and this agent may use only the page tools the Template lists.
+Only if the owner chose the Chrome DevTools driver. Add put a shared MCP server named `chrome-devtools-jobs` in OpenClaw's config. The Gateway starts it with npx (pinned to chrome-devtools-mcp 1.12.0) and it connects only to a Chrome listening on port 9333 of the Gateway host. Script running is turned off in it, and this agent may use only the page tools the Template lists.
 
 1. Tell the owner why the profile must be dedicated: anything that can reach port 9333 on that machine can control this Chrome, so it must hold only job-site logins, never mail, banking or their personal browsing. They start it only when runs are due, and close it after.
 2. Ask them to start it, on the Gateway host, with a new profile folder used for nothing else. Show the line for their system, with the folder they pick:
-   - macOS: `"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --user-data-dir="$HOME/jac-chrome-profile" --remote-debugging-port=9333`
-   - Linux: `google-chrome --user-data-dir="$HOME/jac-chrome-profile" --remote-debugging-port=9333`
+   - macOS: `"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --user-data-dir="$HOME/chrome-devtools-jobs-profile" --remote-debugging-port=9333`
+   - Linux: `google-chrome --user-data-dir="$HOME/chrome-devtools-jobs-profile" --remote-debugging-port=9333`
    In that window they sign in only to the job sites in sources.md that need it, never on your behalf and never with you watching a password.
 3. Resume copy, once: this server can upload only files in `~/job-application-coordinator-files` of the user that runs the Gateway. Ask the owner to run, on the Gateway host as that user, with the path to their resume file: `mkdir -p ~/job-application-coordinator-files && cp "<resume file>" ~/job-application-coordinator-files/resume.pdf && echo ~/job-application-coordinator-files/resume.pdf` (use `resume.docx` for a DOCX file). Ask them to paste the full path it prints and write that path into profile.md, "Resume copy for the devtools-mcp driver". Tell them the folder must hold only the resume and nothing else, and that it stays across restarts; they copy again only when they change their resume.
-4. Test it yourself: call `jac-chrome__list_pages`. It must list the open tabs of that window. If the tool is missing, ask the owner to run `openclaw mcp doctor jac-chrome` and paste the output (the `--probe` form only works while the Gateway is stopped, so do not ask for it). If it cannot connect, Chrome is not running with port 9333. Do not try any other way.
+4. Test it yourself: call `chrome-devtools-jobs__list_pages`. It must list the open tabs of that window. If the tool is missing, ask the owner to run `openclaw mcp doctor chrome-devtools-jobs` and paste the output (the `--probe` form only works while the Gateway is stopped, so do not ask for it). If it cannot connect, Chrome is not running with port 9333. Do not try any other way.
 5. Only after a working test, and only on the owner's yes, set `browser_driver: devtools-mcp` in settings.md. The setup dry run then uses this driver.
 
 ## Personal data

@@ -38,7 +38,20 @@ done
 check "schema.sql sets version 3" 'grep -q "PRAGMA user_version = 3;" "$PKG/references/schema.sql"'
 
 # Chrome DevTools MCP: pinned, JS evaluation off, minimal tool set.
-check "mcpServers declares jac-chrome" '[[ "$FM" == *"jac-chrome:"* ]]'
+# The catalog lists the server by its name only, so the name says Chrome DevTools. Plain
+# "chrome-devtools" is what many owners already have, and Add refuses a same-name server.
+SRV=chrome-devtools-jobs
+check "mcpServers declares $SRV" '[[ "$FM" == *"
+  $SRV:"* ]]'
+check "server name starts with chrome-devtools" '[[ "$SRV" == chrome-devtools* ]]'
+check "server is not named plain chrome-devtools" '[[ "$FM" != *"
+  chrome-devtools:"* ]]'
+check "CLAW.md has no jac-chrome name left" '[[ "$(cat "$CLAW")" != *jac-chrome* ]]'
+OLD="$(grep -rnI "jac-chrome" "$PKG" --exclude CHANGELOG.md | grep -v "mcp unset jac-chrome" | grep -v "jac-chrome-profile" | grep -vi "0\.3\.1" | head -3)"
+check "jac-chrome appears only in the 0.3.1 upgrade notes and the changelog" '[[ -z "$OLD" ]]' "$OLD"
+check "README tells 0.3.1 owners to remove the old server" 'grep -qF "openclaw mcp unset jac-chrome" "$PKG/README.md"'
+check "BOOTSTRAP tells 0.3.1 owners to remove the old server" 'grep -qF "openclaw mcp unset jac-chrome" "$PKG/BOOTSTRAP.md"'
+check "BOOTSTRAP names the server for the doctor check" 'grep -qF "openclaw mcp doctor $SRV" "$PKG/BOOTSTRAP.md"'
 check "server is pinned to chrome-devtools-mcp@1.12.0" '[[ "$FM" == *"chrome-devtools-mcp@1.12.0"* ]]'
 for flag in --no-javascript-evaluation --no-file-navigations --no-usage-statistics --no-performance-crux --redact-network-headers "--browserUrl=http://127.0.0.1:9333"; do
   check "server flag $flag" '[[ "$FM" == *"- $flag"* ]]'
@@ -53,20 +66,20 @@ check "server has exactly one --workspace arg" '(( ${#WSLINES} == 1 ))' "${#WSLI
 check "--workspace is the dedicated resume folder" '[[ "$FM" == *"      - $WSARG"* ]]'
 check "server sets no TMPDIR and no env" '[[ "$FM" != *TMPDIR* ]] && ! print -r -- "$FM" | grep -qE "^    env:"'
 INCLUDE=(${(f)"$(print -r -- "$FM" | awk '/^ *include:/ {f=1; next} f && /^ *- / {sub(/^ *- */, ""); print; next} f {exit}')"})
-ALSO=(${(f)"$(print -r -- "$FM" | grep -oE 'jac-chrome__[a-z_]+' | sort -u)"})
+ALSO=(${(f)"$(print -r -- "$FM" | grep -oE "${SRV}__[a-z_]+" | sort -u)"})
 DENY=(${(f)"$(print -r -- "$FM" | awk '/^    deny:/ {f=1; next} f && /^      - / {sub(/^ *- */, ""); print; next} f {exit}')"})
 check "toolFilter include is not empty" '(( ${#INCLUDE} >= 10 ))' "${#INCLUDE}"
 RISKY=(evaluate_script lighthouse_audit performance_start_trace performance_stop_trace performance_analyze_insight emulate resize_page click_at drag install_extension uninstall_extension list_extensions reload_extension trigger_extension_action list_webmcp_tools execute_webmcp_tool install_pwa uninstall_pwa launch_pwa get_os_app_state take_heapsnapshot screencast_start screencast_stop open_devtools get_devtools_comments resolve_devtools_comment reveal_in_devtools get_console_message list_console_messages get_css_styles get_tab_id)
 for t in $RISKY; do
   check "include leaves out $t" '(( ${INCLUDE[(Ie)$t]} == 0 ))'
-  check "agent denies jac-chrome__$t" '(( ${DENY[(Ie)jac-chrome__$t]} > 0 ))'
+  check "agent denies ${SRV}__$t" '(( ${DENY[(Ie)${SRV}__$t]} > 0 ))'
 done
 for t in $INCLUDE; do
-  check "include $t is also allowed for the agent" '[[ "$FM" == *"      - jac-chrome__$t"* ]]'
+  check "include $t is also allowed for the agent" '[[ "$FM" == *"      - ${SRV}__$t"* ]]'
 done
-ALLOWED=(${(f)"$(print -r -- "$FM" | awk '/^    alsoAllow:/ {f=1; next} f && /^      - / {sub(/^ *- */, ""); print; next} f {exit}' | grep '^jac-chrome__' | sed 's/^jac-chrome__//')"})
+ALLOWED=(${(f)"$(print -r -- "$FM" | awk '/^    alsoAllow:/ {f=1; next} f && /^      - / {sub(/^ *- */, ""); print; next} f {exit}' | grep "^${SRV}__" | sed "s/^${SRV}__//")"})
 for t in $ALLOWED; do
-  check "allowed jac-chrome__$t is in the server include" '(( ${INCLUDE[(Ie)$t]} > 0 ))'
+  check "allowed ${SRV}__$t is in the server include" '(( ${INCLUDE[(Ie)$t]} > 0 ))'
 done
 check "browser tool stays allowed (fallback driver)" '[[ "$FM" == *"      - browser"* ]]'
 check "settings.md has browser_driver" 'grep -q "^- browser_driver: browser$" "$PKG/templates/settings.md"'

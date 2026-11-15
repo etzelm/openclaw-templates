@@ -54,7 +54,7 @@ openclaw templates add @etzelm/job-application-coordinator
 
 Check first that your model answers: send any agent a short message. Add ends with a short greeting from the new agent, so it needs a working model.
 
-If Add prints "The agent was already made available and was kept", that greeting failed and the install is incomplete: the new agent has no setup file, no schedule and no `jac-chrome` server. Do not continue in it. Fix the model, remove the half-made agent with `openclaw agents delete <agent-id>` (`openclaw agents list` shows the id), and add again.
+If Add prints "The agent was already made available and was kept", that greeting failed and the install is incomplete: the new agent has no setup file, no schedule and no `chrome-devtools-jobs` server. Do not continue in it. Fix the model, remove the half-made agent with `openclaw agents delete <agent-id>` (`openclaw agents list` shows the id), and add again.
 
 Or use Add on the Template's page under Pages, Templates. No `--workspace` is needed: the database lives at `db_path` (default `~/job-application-coordinator.db`), outside the OpenClaw state folder, so a default Add works from the CLI and the Control UI.
 
@@ -86,11 +86,12 @@ site-notes.md in the workspace is yours. Write what you know about each of your 
 ## Browser drivers
 
 - `browser` (default): OpenClaw's own browser tool. The default `openclaw` profile is a dedicated browser with none of your personal logins.
-- `devtools-mcp`: the `jac-chrome` MCP server this Template adds, Chrome DevTools MCP pinned to 1.12.0 and started by the Gateway with npx. It attaches to a dedicated Chrome you start on the Gateway host with its own profile folder and `--remote-debugging-port=9333`, holding only your job-site logins. Script running is turned off in the server, and the agent may use only the page tools listed in CLAW.md; `evaluate_script`, extension, emulation, performance and console tools are denied. Setup walks you through it and switches only after a working test.
+- `devtools-mcp`: the `chrome-devtools-jobs` MCP server this Template adds, Chrome DevTools MCP pinned to 1.12.0 and started by the Gateway with npx. It attaches to a dedicated Chrome you start on the Gateway host with its own profile folder and `--remote-debugging-port=9333`, holding only your job-site logins. Script running is turned off in the server, and the agent may use only the page tools listed in CLAW.md; `evaluate_script`, extension, emulation, performance and console tools are denied. Setup walks you through it and switches only after a working test.
+  - Its name is `chrome-devtools-jobs`, not plain `chrome-devtools`, so it does not collide with a Chrome DevTools server you may already have: OpenClaw refuses to add a server whose name is taken by a different setup.
   - Anything on that machine that can reach port 9333 can control that Chrome. Keep it to job sites and close it when runs are done.
-  - The server is shared OpenClaw config. Its tool filter applies to every agent; to keep other agents off it entirely, deny `jac-chrome__*` in their tool policy.
+  - The server is shared OpenClaw config. Its tool filter applies to every agent; to keep other agents off it entirely, deny `chrome-devtools-jobs__*` in their tool policy.
   - It can upload files only from `~/job-application-coordinator-files` (of the user that runs the Gateway) and the system temp folder. Setup has you copy your resume there once, and it stays across restarts: `mkdir -p ~/job-application-coordinator-files && cp "<resume file>" ~/job-application-coordinator-files/resume.pdf`. Keep only your resume in that folder. Copy again only when your resume changes.
-  - Check the server's config: `openclaw mcp doctor jac-chrome`. The `--probe` form connects to the server too, but OpenClaw only runs it while the Gateway is stopped.
+  - Check the server's config: `openclaw mcp doctor chrome-devtools-jobs`. The `--probe` form connects to the server too, but OpenClaw only runs it while the Gateway is stopped.
 
 ## What it never does
 
@@ -129,6 +130,8 @@ Not yet tested live: a real job site, a CAPTCHA hold, an owner actually clicking
 
 Templates have no update command. Add this version as a new agent, disable the old agent's automation, and follow "Upgrade from an earlier version" in BOOTSTRAP.md (setup asks first): copy your answer files over, keep a backup of the database, and the agent runs the packaged migrations (`references/sql/migrate-v1-to-v2.sql` for 0.1.x, then `references/sql/migrate-v2-to-v3.sql`). After that the old 0.2.x agent can no longer use the database, so keep it disabled.
 
+From 0.3.1: the database needs no migration. The Chrome DevTools server is now named `chrome-devtools-jobs`; 0.3.1 called it `jac-chrome`, a name that said nothing in the catalog. Your 0.3.1 agent keeps using `jac-chrome`, and the new agent adds `chrome-devtools-jobs` next to it. When you have moved to the new agent and deleted the old one, remove the old server with `openclaw mcp unset jac-chrome`. Keep your `jac-chrome-profile` Chrome folder if you made one: it holds your job-site logins, and you can keep starting Chrome with it.
+
 ## Package contents
 
 - `CLAW.md`: manifest and the agent's SOUL.md.
@@ -138,8 +141,8 @@ Templates have no update command. Add this version as a new agent, disable the o
 - `references/apply-loop.md`, `references/apply-mechanics.md`, `references/database.md`: run rules.
 - `references/schema.sql` and `references/sql/*.sql`: the database and its packaged steps.
 - `templates/*.md`: the files setup creates. `site-notes.md` also lands in the workspace at Add, for you to fill.
-- Tools: OpenClaw profile `minimal` plus `read`, `write`, `edit`, `browser`, `message`, `session_status`, `exec` and 18 named `jac-chrome__*` page tools, with workspace-only file access. The `gateway` tool that `minimal` includes is denied, and so are `jac-chrome__evaluate_script` and the other script, debugging, extension, emulation and console tools.
-- MCP server: `jac-chrome`, `npx --yes chrome-devtools-mcp@1.12.0` with `--browserUrl=http://127.0.0.1:9333 --no-javascript-evaluation --no-file-navigations --no-usage-statistics --no-performance-crux --redact-network-headers` and the performance and emulation tools off, plus a tool filter that keeps only the 18 page tools. No plugins or skills.
+- Tools: OpenClaw profile `minimal` plus `read`, `write`, `edit`, `browser`, `message`, `session_status`, `exec` and 18 named `chrome-devtools-jobs__*` page tools, with workspace-only file access. The `gateway` tool that `minimal` includes is denied, and so are `chrome-devtools-jobs__evaluate_script` and the other script, debugging, extension, emulation and console tools.
+- MCP server: `chrome-devtools-jobs`, `npx --yes chrome-devtools-mcp@1.12.0` with `--browserUrl=http://127.0.0.1:9333 --no-javascript-evaluation --no-file-navigations --no-usage-statistics --no-performance-crux --redact-network-headers` and the performance and emulation tools off, plus a tool filter that keeps only the 18 page tools. No plugins or skills.
 - Automation: `daily-apply-run`, weekdays 09:00 UTC, installed paused.
 
 MIT licensed. See [CHANGELOG.md](CHANGELOG.md).
