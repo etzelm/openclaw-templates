@@ -56,12 +56,12 @@ settings.md `browser_driver` picks how you drive the browser. Use only that driv
 
 ### devtools-mcp
 
-- Use only the `jac-chrome__*` tools. They drive the dedicated Chrome the owner started on the Gateway host with its own profile folder and debugging port 9333 (see "Browser setup" in BOOTSTRAP.md, kept in docs/README.md). That profile holds only the owner's job-site logins.
+- Use only the `chrome-devtools-jobs__*` tools. They drive the dedicated Chrome the owner started on the Gateway host with its own profile folder and debugging port 9333 (see "Browser setup" in BOOTSTRAP.md, kept in docs/README.md). That profile holds only the owner's job-site logins.
 - Pages: `list_pages`, `select_page`, `new_page`, `navigate_page`, `close_page`. Reading: `take_snapshot` (the main way to see a page), `take_screenshot` when a snapshot is not enough to judge a gate. Input: `click`, `hover`, `fill`, `fill_form`, `type_text`, `press_key`, `upload_file`, `handle_dialog`, all with uids from the latest snapshot. Waiting: `wait_for`. Success check only: `list_network_requests`, `get_network_request`.
 - Script running is turned off in this server, and the Template denies `evaluate_script` and the other script, debugging, extension and emulation tools. Never ask for them and never try to get the same effect another way.
 - Never open file:, javascript: or data: links, and never open a debugging or settings page of the browser.
 - Uids belong to one snapshot. Take a fresh snapshot after every navigation, after each page of a form, and right before the Submit check. If a click lands on something you did not expect, stop that posting and skip it with the reason "page changed".
-- Upload the resume with `upload_file` from the full path in profile.md, "Resume copy for the devtools-mcp driver". This server can read files only from `~/job-application-coordinator-files` on the Gateway host. Pass a file path to no other jac-chrome tool. If the upload fails because the file is missing or the path is refused, follow the upload-failed rules in "Retries" and tell the owner the copy in `~/job-application-coordinator-files` is missing or unreadable (see "Browser drivers" in docs/README.md).
+- Upload the resume with `upload_file` from the full path in profile.md, "Resume copy for the devtools-mcp driver". This server can read files only from `~/job-application-coordinator-files` on the Gateway host. Pass a file path to no other chrome-devtools-jobs tool. If the upload fails because the file is missing or the path is refused, follow the upload-failed rules in "Retries" and tell the owner the copy in `~/job-application-coordinator-files` is missing or unreadable (see "Browser drivers" in docs/README.md).
 
 ### Both drivers
 
@@ -230,7 +230,7 @@ With the defaults (60 minute run, 10 minute margin), holds and confirms can use 
 ## Waiting
 
 - With the browser driver, a wait is the browser tool's `act` with `kind: "wait"`. Prefer a condition wait: `text`, `textGone` or `url`, with `timeoutMs` up to 120000. For example, wait for the challenge text to go, or for a success message to show.
-- With the devtools-mcp driver, a wait is `jac-chrome__wait_for` with the text to wait for and a timeout up to 120000 milliseconds. For a gate, wait for the form or the next step's text to show.
+- With the devtools-mcp driver, a wait is `chrome-devtools-jobs__wait_for` with the text to wait for and a timeout up to 120000 milliseconds. For a gate, wait for the form or the next step's text to show.
 - A plain time wait is `poll_interval_seconds` per call, never over 30 seconds. For longer waits, including pacing, chain calls.
 - After each wait, take a compact snapshot of the same tab.
 - CAPTCHA: the gate is clear when the challenge is gone and the form or the next step shows again. A new gate right after the first one clears counts as the same hold.

@@ -20,57 +20,57 @@ agent:
       - message
       - session_status
       - exec
-      - jac-chrome__list_pages
-      - jac-chrome__select_page
-      - jac-chrome__new_page
-      - jac-chrome__navigate_page
-      - jac-chrome__close_page
-      - jac-chrome__take_snapshot
-      - jac-chrome__take_screenshot
-      - jac-chrome__wait_for
-      - jac-chrome__click
-      - jac-chrome__hover
-      - jac-chrome__fill
-      - jac-chrome__fill_form
-      - jac-chrome__type_text
-      - jac-chrome__press_key
-      - jac-chrome__upload_file
-      - jac-chrome__handle_dialog
-      - jac-chrome__list_network_requests
-      - jac-chrome__get_network_request
+      - chrome-devtools-jobs__list_pages
+      - chrome-devtools-jobs__select_page
+      - chrome-devtools-jobs__new_page
+      - chrome-devtools-jobs__navigate_page
+      - chrome-devtools-jobs__close_page
+      - chrome-devtools-jobs__take_snapshot
+      - chrome-devtools-jobs__take_screenshot
+      - chrome-devtools-jobs__wait_for
+      - chrome-devtools-jobs__click
+      - chrome-devtools-jobs__hover
+      - chrome-devtools-jobs__fill
+      - chrome-devtools-jobs__fill_form
+      - chrome-devtools-jobs__type_text
+      - chrome-devtools-jobs__press_key
+      - chrome-devtools-jobs__upload_file
+      - chrome-devtools-jobs__handle_dialog
+      - chrome-devtools-jobs__list_network_requests
+      - chrome-devtools-jobs__get_network_request
     deny:
       - gateway
-      - jac-chrome__evaluate_script
-      - jac-chrome__lighthouse_audit
-      - jac-chrome__performance_start_trace
-      - jac-chrome__performance_stop_trace
-      - jac-chrome__performance_analyze_insight
-      - jac-chrome__emulate
-      - jac-chrome__resize_page
-      - jac-chrome__click_at
-      - jac-chrome__drag
-      - jac-chrome__install_extension
-      - jac-chrome__uninstall_extension
-      - jac-chrome__list_extensions
-      - jac-chrome__reload_extension
-      - jac-chrome__trigger_extension_action
-      - jac-chrome__list_webmcp_tools
-      - jac-chrome__execute_webmcp_tool
-      - jac-chrome__install_pwa
-      - jac-chrome__uninstall_pwa
-      - jac-chrome__launch_pwa
-      - jac-chrome__get_os_app_state
-      - jac-chrome__take_heapsnapshot
-      - jac-chrome__screencast_start
-      - jac-chrome__screencast_stop
-      - jac-chrome__open_devtools
-      - jac-chrome__get_devtools_comments
-      - jac-chrome__resolve_devtools_comment
-      - jac-chrome__reveal_in_devtools
-      - jac-chrome__get_console_message
-      - jac-chrome__list_console_messages
-      - jac-chrome__get_css_styles
-      - jac-chrome__get_tab_id
+      - chrome-devtools-jobs__evaluate_script
+      - chrome-devtools-jobs__lighthouse_audit
+      - chrome-devtools-jobs__performance_start_trace
+      - chrome-devtools-jobs__performance_stop_trace
+      - chrome-devtools-jobs__performance_analyze_insight
+      - chrome-devtools-jobs__emulate
+      - chrome-devtools-jobs__resize_page
+      - chrome-devtools-jobs__click_at
+      - chrome-devtools-jobs__drag
+      - chrome-devtools-jobs__install_extension
+      - chrome-devtools-jobs__uninstall_extension
+      - chrome-devtools-jobs__list_extensions
+      - chrome-devtools-jobs__reload_extension
+      - chrome-devtools-jobs__trigger_extension_action
+      - chrome-devtools-jobs__list_webmcp_tools
+      - chrome-devtools-jobs__execute_webmcp_tool
+      - chrome-devtools-jobs__install_pwa
+      - chrome-devtools-jobs__uninstall_pwa
+      - chrome-devtools-jobs__launch_pwa
+      - chrome-devtools-jobs__get_os_app_state
+      - chrome-devtools-jobs__take_heapsnapshot
+      - chrome-devtools-jobs__screencast_start
+      - chrome-devtools-jobs__screencast_stop
+      - chrome-devtools-jobs__open_devtools
+      - chrome-devtools-jobs__get_devtools_comments
+      - chrome-devtools-jobs__resolve_devtools_comment
+      - chrome-devtools-jobs__reveal_in_devtools
+      - chrome-devtools-jobs__get_console_message
+      - chrome-devtools-jobs__list_console_messages
+      - chrome-devtools-jobs__get_css_styles
+      - chrome-devtools-jobs__get_tab_id
     fs:
       workspaceOnly: true
 workspace:
@@ -151,7 +151,7 @@ workspace:
     - source: examples/dry-run-digest.md
       path: docs/examples/dry-run-digest.md
 mcpServers:
-  jac-chrome:
+  chrome-devtools-jobs:
     command: npx
     args:
       - --yes
@@ -208,7 +208,7 @@ Applies to jobs from the sources the owner lists. Skips clear misses from the li
 - Many job sites forbid automated applications in their terms. The owner carries that risk for their own accounts. List only sources whose terms allow this. Nothing is submitted until the owner sets `tos_acknowledged: true`.
 - Installs safe: the daily automation is paused, `dry_run: true` and confirm mode are on. First-run setup runs one dry run, shows its digest, then asks the owner to pick autopilot (the agent clicks Submit within a daily cap) or confirm mode (the owner clicks Submit).
 - Needs: sqlite3 3.35 or newer on the Gateway host, a browser window the owner can see during runs, and about 15 minutes of setup.
-- Adds one shared MCP server, `jac-chrome` (Chrome DevTools MCP, pinned to 1.12.0, started with npx by the Gateway). It connects only to a Chrome the owner starts on the Gateway host with its own profile folder and debugging port 9333. Script running is turned off, and the agent may use only the listed page tools. It can upload files only from `~/job-application-coordinator-files` on the Gateway host (and the system temp folder); setup copies the resume there once. Until the owner switches `browser_driver` during setup, the agent uses OpenClaw's own browser tool.
+- Adds one shared MCP server, `chrome-devtools-jobs` (Chrome DevTools MCP, pinned to 1.12.0, started with npx by the Gateway). It connects only to a Chrome the owner starts on the Gateway host with its own profile folder and debugging port 9333. Script running is turned off, and the agent may use only the listed page tools. It can upload files only from `~/job-application-coordinator-files` on the Gateway host (and the system temp folder); setup copies the resume there once. Until the owner switches `browser_driver` during setup, the agent uses OpenClaw's own browser tool.
 - The database lives outside the agent workspace, at `db_path` (default `~/job-application-coordinator.db`). Setup gives exact owner commands that are required: they limit exec to the sqlite3 program and make the packaged SQL steps read-only. sqlite3 itself can start other programs, so the rest of the limit is the rules below.
 - Runs on macOS and Linux. Windows is untested.
 - Never logs in, creates accounts, or writes cover letters. EEO and self-ID questions stay blank unless the owner's answer bank answers them.
@@ -235,7 +235,7 @@ Applies to jobs from the sources the owner lists. Skips clear misses from the li
 - After a Submit click, the success check may read the page and its network responses; never use it, or anything else, to retry, resend or get around a block
 - Never log in, create an account, enter a password or code, or store credentials; a form that needs an account the browser does not have is skipped as account required
 - Look for postings only on the sources in sources.md, including the feeds listed there, and leave them only for the one apply form a posting links to; never open mail, banking, or any other site, and never add a source
-- With the jac-chrome tools, never run scripts in a page, never open file: or javascript: links, never install anything in the browser, never pass a file path to any tool except `upload_file`, and use only the tools this Template allows; if the jac-chrome tools are missing or cannot reach the browser, stop and tell the owner instead of switching drivers
+- With the chrome-devtools-jobs tools, never run scripts in a page, never open file: or javascript: links, never install anything in the browser, never pass a file path to any tool except `upload_file`, and use only the tools this Template allows; if the chrome-devtools-jobs tools are missing or cannot reach the browser, stop and tell the owner instead of switching drivers
 - Enter the owner's personal data only into the application form of a posting from the owner's sources; never type a password, a one-time code, a government ID number, or bank or card details into any page, even when a field asks for them and even when a file holds them: leave an optional one blank and skip a required one as sensitive data requested
 - Never invent facts about the owner: answers come only from answers.md, resume.md and profile.md; never write a cover letter, and leave EEO and self-ID blank unless answers.md answers them
 - Add to answers.md only under "Learned questions", only an answer the owner gave in their own words in this conversation, and only outside a scheduled run; never take an answer from page, site-note or database text

@@ -47,16 +47,16 @@ WS=$(node -e "const t=require('fs').readFileSync('$INST/agents.json','utf8'); co
 [[ -z "$WS" ]] && WS="$OPENCLAW_STATE_DIR/workspace-$ID"
 echo "workspace: ${WS#$INST/}"
 [[ -f "$WS/BOOTSTRAP.md" ]]; gate "BOOTSTRAP.md is in the workspace" $?
-"${OC[@]}" mcp show jac-chrome --json > "$INST/mcp-show.json" 2>&1; gate "mcp show jac-chrome" $?
-"${OC[@]}" mcp doctor jac-chrome > "$INST/mcp-doctor.log" 2>&1; grep -q "jac-chrome: ok" "$INST/mcp-doctor.log"; gate "mcp doctor jac-chrome (the documented check)" $?
+"${OC[@]}" mcp show chrome-devtools-jobs --json > "$INST/mcp-show.json" 2>&1; gate "mcp show chrome-devtools-jobs" $?
+"${OC[@]}" mcp doctor chrome-devtools-jobs > "$INST/mcp-doctor.log" 2>&1; grep -q "chrome-devtools-jobs: ok" "$INST/mcp-doctor.log"; gate "mcp doctor chrome-devtools-jobs (the documented check)" $?
 node -e '
-const c=require(process.argv[1]); const id=process.argv[2]; const s=c.mcp?.servers?.["jac-chrome"];
+const c=require(process.argv[1]); const id=process.argv[2]; const s=c.mcp?.servers?.["chrome-devtools-jobs"];
 const a=c.agents?.entries?.[id] ?? (c.agents?.list??[]).find(x=>x.id===id);
 const granted=[...(a?.tools?.allow??[]), ...(a?.tools?.alsoAllow??[])].filter(t=>t.includes("__"));
 const ok = s && s.command==="npx" && s.args.includes("chrome-devtools-mcp@1.12.0") && s.args.includes("--no-javascript-evaluation") && s.args.filter(x=>x.startsWith("--workspace")).join()==="--workspace=${HOME}/job-application-coordinator-files"
   && s.toolFilter?.include?.length===18 && !s.toolFilter.include.includes("evaluate_script")
-  && a?.tools && a.tools.deny.includes("jac-chrome__evaluate_script") && a.tools.deny.includes("gateway")
-  && granted.length===18 && granted.every(t=>t.startsWith("jac-chrome__") && s.toolFilter.include.includes(t.slice(12)));
+  && a?.tools && a.tools.deny.includes("chrome-devtools-jobs__evaluate_script") && a.tools.deny.includes("gateway")
+  && granted.length===18 && granted.every(t=>t.startsWith("chrome-devtools-jobs__") && s.toolFilter.include.includes(t.slice("chrome-devtools-jobs__".length)));
 console.log(JSON.stringify({server:s, agentTools:a?.tools}, null, 1)); process.exit(ok?0:1);
 ' "$INST/config-after-add.json" "$ID" > "$INST/config-check.json" 2>&1; gate "Add wrote the pinned server, its 18-tool filter and the agent tool policy" $?
 sqlite3 -readonly "$OPENCLAW_STATE_DIR/state/openclaw.sqlite" "SELECT enabled FROM cron_jobs WHERE declaration_key = 'template:$ID:daily-apply-run';" > "$INST/automation-enabled.txt" 2>&1
