@@ -56,17 +56,18 @@ The scope proposal (templates/scope-proposal.md, "Proof plan") names the proof s
 - The entry point a user hits, and the command or steps you will run on the base and on the head.
 - Which lines in the output will show the cause and the effect. If no shipped entry point or log line shows the behavior, say so now: the PR will need a harness or a stub, and the gap is named in the body.
 - Where the output goes: inline in the body when it fits, or a proof branch when it is long (below).
-- What the run needs: an isolated Gateway, a test config, a channel account, a provider key, a paid model.
+- What the run needs: an isolated Gateway, a test config, a channel account, a provider key, a paid model. Every account on that list must be in `proof_accounts` in settings.md.
 - The exact commands, the state folder and the port ("Run it safely"). These are the only runtime commands the scope approval covers.
 
 ### When the proof needs an account the owner does not have
 
-Some behavior shows only with a live account: a channel login, a provider with a paid plan, a phone number, an OAuth app. Check this at scope time, not after the PR opens. Ask the owner whether they have it. If they do not, say so in the scope proposal and offer both:
+Some behavior shows only with a live account: a channel login, a provider with a paid plan, a phone number, an OAuth app, a paired device. Then do not pick the issue. Check it when you pick candidates (contribution-loop.md, "Proof accounts"), against `proof_accounts` in settings.md, and record the issue `out-of-scope` with a `proof account:` reason.
 
-- A stub: a local fake of the service at the boundary the product calls (a fake HTTP server, a fixture provider, a stub chat model), run through the real entry point, with its output captured the same way. Name it as a stub in the body.
-- A request: one or two lines the owner can post on the issue, after their OK, asking someone with that account to run a given command and paste the output. You never post it yourself; it is an owner-gated comment like any other.
+- Do not plan a stub at the boundary as the proof. A stub in place of the account the behavior depends on does not show the real behavior, and the PR stays at "needs proof".
+- Do not plan on someone else collecting the proof, and do not draft a request for it.
+- A stub is still fine for a service you control in the run, such as a local fake provider or a fixture server, when the real behavior is fully shown without the missing account. Name it as a stub in the body.
 
-Then the body says plainly which part is a stub and which part needs a live account. A gap named at scope time is a decision the owner made. A gap found after the PR opens is another hosted round.
+If a missing account only shows up after the PR is open, stop spending on proof for that PR: no more proof runs, body edits or re-reviews for it. Report to the owner which account the proof needs and that they do not have it, and wait. Do not ask anyone outside to collect the proof. The owner decides what happens to the PR. If they get the account later, they add it to `proof_accounts`.
 
 ## Package it
 
@@ -96,13 +97,13 @@ Before asking for the first `push` (step 11), and again before each `edit-pr` un
 2. Does each block name its command and SHA, and does the head block's SHA equal `git -C <checkout> rev-parse HEAD` now? If not, run the head run again ("When it runs, and at which SHA").
 3. Do the cause and the effect both appear in the output, so a reader can link them without trusting your summary?
 4. Is everything redacted, and does every link resolve at its pinned SHA?
-5. If a part has no runtime output, does the body name the gap, why, and what would close it (a stub, a live account, a maintainer run)?
+5. If a part has no runtime output, does the body name the gap and why? A gap that only a live account the owner lacks could close means the issue should not have been picked: stop and report to the owner ("When the proof needs an account the owner does not have").
 
 If the answer to 1 is no and a runtime proof exists in `evidence/<slug>/`, package it now. If no runtime proof exists and one is possible, go back and run it. Record the check with `add-evidence`, kind `other`, result `pass` or `fail`, and the note `proof self-check: <one line>`. Do not ask for the push with a `fail` unless the owner already accepted the named gap at scope time.
 
 ## After "needs proof"
 
-A hosted review with `status: 📣 needs proof`, or a `Proof guidance:` or "Add real behavior proof" item, is your turn. Read exactly what it says is missing; it usually names the events it wants to see linked. Run or re-run the proof so the output shows those events, package it as above, edit the body under the standing grant, and request one re-review for the head. Do not argue with the rating in a comment, and do not reword the body to move it without adding output.
+A hosted review with `status: 📣 needs proof`, or a `Proof guidance:` or "Add real behavior proof" item, is your turn, unless the proof needs an account the owner does not have: then see "When the proof needs an account the owner does not have" above. Read exactly what it says is missing; it usually names the events it wants to see linked. Run or re-run the proof so the output shows those events, package it as above, edit the body under the standing grant, and request one re-review for the head. Do not argue with the rating in a comment, and do not reword the body to move it without adding output.
 
 Two limits of the standing grant apply here. A `proof-assets` push is not covered: pause and ask the owner for it (step 11). And the grant allows one re-review per head: if only the body changed and the head did not, and a re-review for that head was already used, the next one needs a fresh owner answer, so get the proof right before the first re-review on a head.
 

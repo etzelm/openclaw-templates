@@ -1,6 +1,6 @@
 {
   "name": "@etzelm/openclaw-contributor",
-  "version": "0.4.3",
+  "version": "0.4.4",
   "description": "Turns one OpenClaw issue you pick into a proven, reviewed fix and a PR, then works the PR until it is ready for a maintainer. Nothing goes public until you OK it.",
   "author": "Mitchell Etzel",
   "license": "MIT",

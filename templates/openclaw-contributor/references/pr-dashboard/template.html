@@ -1,0 +1,226 @@
+<style>
+.w{font-family:var(--font-body);color:var(--text);font-size:13px}
+.bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.ck{color:#d4a72c;font-size:12px}
+.err{color:#e5534b;font-size:12px}
+button{font:inherit;font-size:12px;padding:3px 10px;border:1px solid var(--border);border-radius:4px;background:var(--card);color:var(--text);cursor:pointer}
+button:disabled{opacity:.45;cursor:default}
+button.f{padding:1px 8px;border-radius:10px}
+button.f.on{border-color:var(--accent);color:var(--accent)}
+.cnts{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+table{width:100%;border-collapse:collapse}
+th[data-k]{cursor:pointer;user-select:none}th[data-k]:hover{color:var(--text)}th .ar{font-size:10px;margin-left:3px}
+th{text-align:left;font-weight:600;font-size:12px;color:var(--muted);padding:4px 6px;border-bottom:1px solid var(--border)}
+td{padding:5px 6px;border-bottom:1px solid var(--border);vertical-align:top}
+tr.sec td{font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.04em;padding-top:12px;border-bottom:none}
+tr.closed td{opacity:.75}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+.t{max-width:420px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sc{white-space:nowrap;font-size:14px}
+.c{text-align:center;white-space:nowrap}
+.ci{white-space:nowrap;font-size:12px}
+.nx{white-space:nowrap;font-size:12px}
+.mono{font-family:var(--font-mono)}
+.p{font-size:11px;padding:0 5px;border-radius:3px;border:1px solid var(--border);color:var(--muted)}
+.p1{color:#e5534b;border-color:#e5534b}
+.up{white-space:nowrap;color:var(--muted);font-size:12px}
+textarea{width:100%;height:70px;font-family:var(--font-mono);font-size:11px;background:var(--card);color:var(--text);border:1px solid var(--border);display:none;margin-bottom:8px}
+.muted{color:var(--muted)}
+</style>
+<div class="w">
+ <div class="bar">
+  <span class="ck" id="ck">loading…</span>
+  <button id="list" title="Bulleted list: link, summary, rating, priority. Selected PRs, or all open PRs when none are selected.">Copy list</button>
+  <button id="copy" disabled>Copy selected (0)</button>
+  <button id="clear" disabled>Clear</button>
+  <button id="refresh" title="Run the refresh automation now. Read only: it fetches GitHub and rebuilds this widget.">Refresh</button>
+  <span class="err" id="err"></span>
+ </div>
+ <div class="cnts" id="cnts"></div>
+ <textarea id="ta" readonly></textarea>
+ <table>
+  <thead><tr id="hd"><th></th><th data-k="next">Next</th><th data-k="score">Scores</th><th data-k="pr">PR</th><th class="c" data-k="prio">Priority</th><th data-k="title">Title</th><th class="c" data-k="merge">Merge</th><th data-k="ci">CI</th><th data-k="status">Status</th><th data-k="updated">Updated</th></tr></thead>
+  <tbody id="tb"></tbody>
+ </table>
+</div>
+<script type="application/json" id="d">__DATA__</script>
+
+<script>
+(function(){
+// Data is built by references/pr-dashboard/build.mjs on the Gateway host (gh GraphQL, read only).
+// The browser never calls GitHub and this widget never writes anywhere. Its only host call is cron.trigger.
+// The JSON above is checked against a CRC32 that build.mjs computed, so a damaged paste is visible.
+const JOB='__JOBID__';
+const CRC=Number('__CRC__');
+const $=id=>document.getElementById(id);
+function crc32(s){let c,r=~0;const b=new TextEncoder().encode(s);
+ for(let i=0;i<b.length;i++){c=(r^b[i])&255;for(let k=0;k<8;k++)c=c&1?(c>>>1)^0xEDB88320:c>>>1;r=(r>>>8)^c}
+ return (~r)>>>0}
+const plainTitle=t=>{t=String(t).replace(/^[a-z]+(\([^)]*\))?!?:\s*/i,'').trim();return t.charAt(0).toUpperCase()+t.slice(1)};
+const STATE={O:'OPEN',M:'MERGED',C:'CLOSED'};
+let DATA=null, dataErr='', ORG='openclaw';
+(function(){
+ const raw=$('d').textContent;
+ if(raw.charAt(0)!=='{')return;                       // template not built yet
+ if(crc32(raw)!==CRC)dataErr='data damaged in transit (checksum mismatch), '+(JOB?'press Refresh':'ask the agent to pin the dashboard again');
+ try{
+  const d=JSON.parse(raw);
+  // Expand the compact keys written by build.mjs.
+  if(typeof d.o==='string'&&/^[A-Za-z0-9-]+$/.test(d.o))ORG=d.o;
+  DATA={days:d.d, fetchedAt:d.at, rows:d.rows.map(x=>{const repo=x.r||ORG;return {
+   n:x.n, title:x.t, state:STATE[x.s]||x.s, merged:x.s==='M', updated:x.u, labels:x.l||[], ms:x.m||'unknown',
+   ci:x.c||null, short:x.h||plainTitle(x.t), repo, url:x.url||('https://github.com/'+ORG+'/'+repo+'/pull/'+x.n)}})};
+ }catch(e){DATA=null;dataErr='data damaged in transit (unreadable), '+(JOB?'press Refresh':'ask the agent to pin the dashboard again')}
+})();
+const sel=new Set(); let flt=null;
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const firstEmoji=s=>{const m=String(s).match(/\p{Extended_Pictographic}/u);return m?m[0]:''};
+const lbl=(r,pfx)=>(r.labels||[]).filter(n=>n.toLowerCase().startsWith(pfx));
+function scores(r){
+ const g=lbl(r,'rating:')[0], pr=lbl(r,'proof:');let out='',tip=[];
+ if(g){out+=firstEmoji(g)||'•';tip.push(g)}
+ pr.forEach(p=>{const e=p==='proof: sufficient'?'✔︎':firstEmoji(p);if(e){out+=e;tip.push(p)}});
+ return '<span class="sc" title="'+esc(tip.join('\n'))+'">'+(out||'<span style="color:var(--muted)">–</span>')+'</span>';
+}
+function status(r){
+ const s=lbl(r,'status:').map(n=>n.replace(/^status:\s*/i,'')), k=lbl(r,'merge-risk:').map(n=>n.replace(/^merge-risk:\s*/i,'risk: '));
+ return esc([...s,...k].join(' · ')||'–');
+}
+function prio(r){const p=(r.labels||[]).find(n=>/^P\d$/.test(n));return p?'<span class="p '+(p==='P1'||p==='P0'?'p1':'')+'">'+p+'</span>':'<span style="color:var(--muted)">–</span>'}
+function mergeIcon(ms){
+ return ({clean:['✅','mergeable, clean'],unstable:['🟡','mergeable, checks not green'],blocked:['🟡','blocked: review/approval required'],has_hooks:['✅','mergeable'],behind:['🟡','behind base'],dirty:['❌','merge conflict'],draft:['📝','draft']})[ms]||['⚪','unknown (GitHub still computing)'];
+}
+// CI: one short word plus a tooltip with the gate description and all counts.
+// rank orders the sort: real failures, then what the gate waits for, then running, passed, none.
+function ciInfo(ci){
+ if(!ci)return {rank:9,cell:'⚪',tip:'no data'};
+ const n=k=>ci[k]||0, parts=[];
+ [['ok','passed'],['f','failed'],['p','pending'],['sk','skipped'],['cx','cancelled'],['o','other']].forEach(([k,w])=>{if(n(k))parts.push(n(k)+' '+w)});
+ const tip=(ci.g?'Gate: '+(ci.gd||ci.g.toLowerCase())+'\n':'')+(parts.join(', ')||'no checks');
+ const gd=String(ci.gd||'').toLowerCase();
+ if(n('f'))return {rank:-n('f'),cell:'❌ '+n('f')+' failed',tip};
+ if(ci.g&&ci.g!=='SUCCESS'){
+  if(/maintainer must approve/.test(gd))return {rank:1,cell:'🔒 needs approval',tip};
+  if(/ci must complete/.test(gd))return n('p')?{rank:3,cell:'⏳ CI running',tip}:{rank:2,cell:'🔒 CI not green',tip};
+  if(ci.g==='PENDING')return {rank:3,cell:'⏳ gate pending',tip};
+  return {rank:2,cell:'🔒 '+(gd.slice(0,24)||'gate '+ci.g.toLowerCase()),tip};
+ }
+ if(n('p'))return {rank:3,cell:'⏳ running',tip};
+ if(n('ok')||ci.g==='SUCCESS')return {rank:4,cell:'✅ passed',tip};
+ return {rank:5,cell:'–',tip};
+}
+function ciCell(ci){const c=ciInfo(ci);return '<span class="ci" title="'+esc(c.tip)+'">'+esc(c.cell)+'</span>'}
+// Next: who has to act. me = you (the PR author), maint = a maintainer.
+function nextOf(r){
+ if(r.state!=='OPEN')return '';
+ const s=lbl(r,'status:').join(' ').toLowerCase(), c=r.ci||{};
+ if(/waiting on author|needs proof/.test(s)||r.ms==='dirty'||r.ms==='draft'||c.f)return 'me';
+ if(/ready for maintainer|waiting on maintainer/.test(s)||/maintainer must approve/i.test(c.gd||''))return 'maint';
+ return '';
+}
+const NEXT_WORD={me:'you',maint:'maintainer'}, NEXT_ORDER={me:0,maint:1,'':2};
+const FILTERS=[
+ ['me','need you',r=>nextOf(r)==='me'],
+ ['maint','waiting on maintainer',r=>nextOf(r)==='maint'],
+ ['dirty','conflicts',r=>r.ms==='dirty'],
+ ['cifail','CI failing',r=>!!(r.ci&&r.ci.f)]];
+const fmtD=iso=>new Date(iso).toLocaleDateString(undefined,{day:'2-digit',month:'short'});
+const fmtT=iso=>new Date(iso).toLocaleString(undefined,{month:'short',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+const MERGE_ORDER={dirty:0,blocked:1,behind:2,unstable:3,unknown:4,draft:5,has_hooks:6,clean:7};
+let sortK='next', sortDir=1;
+try{const s=JSON.parse(localStorage.getItem('occ-prs:sort')||'null');if(s&&s.k){sortK=s.k;sortDir=s.d===-1?-1:1}}catch(e){}
+function sortVal(r,k){
+ switch(k){
+  case 'next':{const p=pval(r),g=rating(r);return NEXT_ORDER[nextOf(r)]*10000+(p?+p.slice(1):9)*100+(g?g.rank:99)}
+  case 'score':{const g=rating(r);return g?g.rank:99}
+  case 'pr':return r.n;
+  case 'prio':{const p=pval(r);return p?+p.slice(1):99}
+  case 'title':return String(r.title).toLowerCase();
+  case 'merge':return r.state==='OPEN'?(MERGE_ORDER[r.ms]??4):(r.merged?8:9);
+  case 'ci':return r.state==='OPEN'?ciInfo(r.ci).rank:10;
+  case 'status':return status(r).toLowerCase();
+  default:return r.updated;
+ }
+}
+function sorted(list){
+ return list.slice().sort((a,b)=>{const x=sortVal(a,sortK),y=sortVal(b,sortK);
+  if(x<y)return -sortDir;if(x>y)return sortDir;return b.updated<a.updated?-1:1});
+}
+function paintHeads(){
+ document.querySelectorAll('#hd th[data-k]').forEach(th=>{
+  const old=th.querySelector('.ar');if(old)old.remove();
+  if(th.dataset.k===sortK){const s=document.createElement('span');s.className='ar';s.textContent=sortDir>0?'▲':'▼';th.appendChild(s)}
+ });
+}
+document.querySelectorAll('#hd th[data-k]').forEach(th=>th.onclick=()=>{
+ const k=th.dataset.k;
+ if(k===sortK)sortDir=-sortDir;else{sortK=k;sortDir=(k==='updated'||k==='pr')?-1:1}
+ try{localStorage.setItem('occ-prs:sort',JSON.stringify({k:sortK,d:sortDir}))}catch(e){}
+ render();
+});
+function paintCounts(openRows){
+ $('cnts').innerHTML=FILTERS.map(([k,w,f])=>{const n=openRows.filter(f).length;
+  return '<button class="f'+(flt===k?' on':'')+'" data-f="'+k+'" title="Show only these open PRs (click again for all)">'+n+' '+w+'</button>'}).join('');
+ $('cnts').querySelectorAll('button[data-f]').forEach(b=>b.onclick=()=>{flt=flt===b.dataset.f?null:b.dataset.f;render()});
+}
+function render(){
+ const tb=$('tb');let h='';
+ if(dataErr)$('err').textContent=dataErr;
+ if(!DATA){tb.innerHTML='<tr><td colspan="10" class="muted">No data yet. The agent builds it on its next refresh.</td></tr>';$('ck').textContent='';return}
+ const allOpen=DATA.rows.filter(r=>r.state==='OPEN');paintCounts(allOpen);
+ const f=flt&&FILTERS.find(x=>x[0]===flt);
+ const open=sorted(f?allOpen.filter(f[2]):allOpen), done=f?[]:sorted(DATA.rows.filter(r=>r.state!=='OPEN'));paintHeads();
+ const row=(r,isOpen)=>{
+  let m,ci;
+  if(isOpen){const mi=mergeIcon(r.ms);m='<span title="'+esc(mi[1])+'">'+mi[0]+'</span>';ci=ciCell(r.ci)}
+  else{m=r.merged?'<span title="merged">🟣</span>':'<span title="closed unmerged">⛔</span>';ci=''}
+  const nx=nextOf(r);
+  return '<tr class="'+(isOpen?'':'closed')+'"><td><input type="checkbox" data-u="'+esc(r.url)+'"'+(sel.has(r.url)?' checked':'')+'></td>'+
+   '<td class="nx">'+(nx?esc(NEXT_WORD[nx]):'')+'</td>'+
+   '<td>'+scores(r)+'</td><td class="mono"><a href="'+esc(r.url)+'" target="_blank" rel="noopener noreferrer">'+(r.repo&&r.repo!==ORG?esc(r.repo):'')+'#'+r.n+'</a></td>'+
+   '<td class="c">'+prio(r)+'</td><td class="t" title="'+esc(r.title)+'">'+esc(r.title)+'</td><td class="c">'+m+'</td><td>'+ci+'</td>'+
+   '<td>'+(isOpen?status(r):'')+'</td><td class="up">'+fmtD(r.updated)+'</td></tr>';
+ };
+ h+='<tr class="sec"><td colspan="10">OPEN ('+open.length+(f?' of '+allOpen.length+', '+esc(f[1]):'')+')</td></tr>';open.forEach(r=>h+=row(r,true));
+ if(!f){h+='<tr class="sec"><td colspan="10">MERGED / CLOSED, LAST '+DATA.days+' DAYS ('+done.length+')</td></tr>';done.forEach(r=>h+=row(r,false))}
+ tb.innerHTML=h;
+ tb.querySelectorAll('input[type=checkbox]').forEach(cb=>cb.onchange=()=>{cb.checked?sel.add(cb.dataset.u):sel.delete(cb.dataset.u);syncBtns()});
+ syncBtns();
+ $('ck').textContent='table from '+fmtT(DATA.fetchedAt)+' · checked every 15 min in watch hours';
+}
+const RANK={diamond:0,platinum:1,gold:2,silver:3,bronze:4};
+function rating(r){
+ const g=lbl(r,'rating:')[0];if(!g)return null;
+ const s=g.replace(/^rating:\s*/i,'').trim(), e=firstEmoji(s), name=s.replace(e,'').trim();
+ return {text:(e?e+' ':'')+name.charAt(0).toUpperCase()+name.slice(1), rank:RANK[name.split(/\s+/)[0].toLowerCase()]??9};
+}
+function pval(r){const p=(r.labels||[]).find(n=>/^P\d$/.test(n));return p||null}
+function listText(){
+ const pick=DATA.rows.filter(r=>sel.size?sel.has(r.url):r.state==='OPEN');
+ pick.sort((a,b)=>{const pa=pval(a)||'P9',pb=pval(b)||'P9';if(pa!==pb)return pa<pb?-1:1;
+  const ra=(rating(a)||{rank:9}).rank,rb=(rating(b)||{rank:9}).rank;if(ra!==rb)return ra-rb;return b.n-a.n});
+ return pick.map(r=>['• <'+r.url+'>',r.short,(rating(r)||{}).text,pval(r)].filter(Boolean).join(' - ')).join('\n');
+}
+async function copyText(txt,btn,label){
+ try{await navigator.clipboard.writeText(txt);btn.textContent='Copied ✓';setTimeout(()=>{btn.textContent=label;syncBtns()},1200)}
+ catch(e){const ta=$('ta');ta.value=txt;ta.style.display='block';ta.select();try{document.execCommand('copy')}catch(_){}}
+}
+$('list').onclick=()=>{if(DATA)copyText(listText(),$('list'),'Copy list')};
+function syncBtns(){$('list').textContent=sel.size?'Copy list ('+sel.size+')':'Copy list';$('copy').textContent='Copy selected ('+sel.size+')';$('copy').disabled=!sel.size;$('clear').disabled=!sel.size}
+$('refresh').onclick=async()=>{
+ $('err').textContent='';
+ try{
+  if(!window.openclaw||!openclaw.cron||!openclaw.cron.trigger)throw new Error('refresh needs the pinned dashboard widget');
+  if(!JOB)throw new Error('Refresh is off. It refreshes every 15 min in watch hours; see dashboard_refresh_button in settings.md.');
+  $('refresh').disabled=true;await openclaw.cron.trigger(JOB);
+  $('ck').textContent='refresh requested · widget reloads if anything changed';
+ }catch(e){$('err').textContent=e.message||String(e)}
+ setTimeout(()=>{$('refresh').disabled=false},30000);
+};
+if(!JOB)$('refresh').style.display='none';
+$('clear').onclick=()=>{sel.clear();$('ta').style.display='none';render()};
+$('copy').onclick=()=>copyText([...sel].join('\n'),$('copy'),'Copy selected');
+render();
+})();
+</script>

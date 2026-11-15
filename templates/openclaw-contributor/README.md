@@ -8,12 +8,13 @@ Pick an OpenClaw issue. The agent proves the bug, fixes it, proves the fix, revi
 
 - **Checks first.** Searches open and closed issues and PRs, and stops on a duplicate, an open PR or an earlier maintainer decision.
 - **Proves the bug and the fix.** A test fails on current main, passes with the fix, and fails again with the fix reverted.
-- **Shows the proof, not a description of it.** The PR body carries the real run's command, base and head SHAs, and the raw redacted output that shows cause and effect, under `Runtime output`. Long logs go on a branch of your fork and are linked. The proof shape is planned at scope time, so a proof that needs an account you do not have comes up before any code, with a stub and a request you can post instead.
+- **Shows the proof, not a description of it.** The PR body carries the real run's command, base and head SHAs, and the raw redacted output that shows cause and effect, under `Runtime output`. Long logs go on a branch of your fork and are linked. Before it proposes an issue, it writes down the proof run and the accounts it needs. If the proof needs an account, subscription, device or channel login you do not have (`proof_accounts`), it skips the issue and says why, so it never takes on a PR it cannot prove.
 - **Runs the repo's own gates.** It re-reads CONTRIBUTING.md, AGENTS.md and the PR template from upstream main on every task. It never works from memory of them.
 - **Reviews before anything is public.** A local ClawSweeper, the reviewer OpenClaw runs on PRs, checks the committed change until no must-fix finding is left.
 - **Drafts the PR in the repo's template**, with the evidence and the local review result.
 - **Stays with the PR.** After the PR opens, it watches the hosted ClawSweeper review and CI, fixes findings with the same proof steps, and stops when the PR is labeled `status: 👀 ready for maintainer look` with required CI green. One automation on its own session checks the PR every 15 minutes and wakes it only on a change, or once a day while nothing changes.
 - **Commits cleanly.** Your GitHub noreply address as author, and signed (ssh or gpg), set for the checkout only. It checks every commit before a push.
+- **Shows your PRs on its dashboard.** A read-only table of your OpenClaw PRs, with merge state, CI, ratings and priority, refreshed every 15 minutes within your watch hours. See "PR dashboard" below.
 - **Keeps a record.** A small SQLite database holds every candidate, proof, approval, standing grant and status change.
 
 ## You stay in control
@@ -41,12 +42,30 @@ The agent reads the issue and the repo rules at current main, finds no duplicate
 - **Model.** Templates cannot pick a model. Use a strong one: the loop is long and strict, and a small model is likely to skip proof steps.
 - **Local ClawSweeper (recommended).** Setup clones the public ClawSweeper source into the agent's workspace (about 1 GB with dependencies). It runs on your own Codex CLI login (you run `codex login --device-auth` yourself), or on ClawSweeper's OpenClaw runner with an API-provider model you name. Each review round uses your model quota and takes several minutes; the loop runs at most `review_max_rounds` (default 3) per change. You can opt out at setup; the PR evidence then names the gap.
 - **Commit signing.** An ssh or gpg key that signs without a prompt, added to your GitHub account as a signing key. Setup gives the git commands for the checkout and checks a test commit. For extra worktrees, the packaged `references/setup-worktree.sh` creates the worktree, sets your noreply author and signing for that worktree only, and checks a signed test commit, in one command. Some runtimes do not let the agent run `git config`, even through the script; then the agent sends you the exact command, and you or your main agent run it in a terminal on the Gateway host.
-- **Automations.** The Template grants the `automations` tool, for one PR watcher at a time on the agent's own session. In ask mode the watcher's read-only `gh pr view` asks you on its first check; choose "Always allow" there, which covers that one command for that one watcher (otherwise it asks every 15 minutes). Each turn the watcher starts still asks before every other command, so in ask mode be at the Control UI or an approval app during your watch hours. If the check is denied, the automation's run list shows the error. When the watcher fires, or you force a run, while the agent's session is busy, the wake waits until that turn ends; a forced run's run list stays empty until then.
+- **Automations.** The Template grants the `automations` tool, for one PR watcher at a time on the agent's own session, and for the one PR dashboard refresh automation ("PR dashboard" below). In ask mode the watcher's read-only `gh pr view` asks you on its first check; choose "Always allow" there, which covers that one command for that one watcher (otherwise it asks every 15 minutes). Each turn the watcher starts still asks before every other command, so in ask mode be at the Control UI or an approval app during your watch hours. If the check is denied, the automation's run list shows the error. When the watcher fires, or you force a run, while the agent's session is busy, the wake waits until that turn ends; a forced run's run list stays empty until then.
 - **Only for openclaw/openclaw.** The loop reads OpenClaw's own rule files, PR template and bots.
 
 ### ClawSweeper's OpenClaw runner
 
 `clawsweeper_runner` is `codex` (default) or `openclaw`. The OpenClaw runner is ClawSweeper's own second route (`CLAWSWEEPER_RUNNER=openclaw`): it runs your installed OpenClaw with a model you name in `clawsweeper_model` as `provider/model`, and a provider key you put in the Gateway host environment yourself (the agent never sees it). It needs an API-provider model. A claude-cli model fails ClawSweeper's checkout inspection ("did not read the exact challenged path"), because claude-cli turns do not save tool calls in the session transcript. ClawSweeper has no check for this route that avoids a model call, so the first review round is the smoke test. The review turn runs with full exec in the checkout and open network.
+
+## PR dashboard
+
+Setup pins a table of your PRs on this agent's dashboard in the Control UI: your open PRs in `dashboard_org` (default openclaw), and the ones merged or closed in the last 14 days (up to 60 of each; more are not shown). Each row shows who acts next (you or a maintainer), the ClawSweeper rating and proof labels, the priority label, merge state, CI (including OpenClaw's CI gate), status and merge-risk labels, and the last update. Click a column to sort; the counters above the table filter the open PRs (need you, waiting on maintainer, conflicts, CI failing). **Copy list** copies a bulleted list (link, summary, rating, priority) of the selected PRs, or of all open PRs. With the Refresh button on (below), **Refresh** fetches now.
+
+How it works:
+
+- `references/pr-dashboard/build.mjs` (plain Node, no packages) runs on the Gateway host. It makes two read-only GitHub GraphQL calls with your gh login, about 2 points of the 5,000 per hour, and writes `dashboard/data.json` and `dashboard/widget.html` in the agent's workspace. The browser never calls GitHub.
+- One automation, `PR dashboard refresh`, runs that builder every 15 minutes within `watch_hours`. When the table would look the same as the one last pinned, it stops there and no model runs. When it would change, it wakes the agent, which pins the new table with `show_widget` and records the pin (`dashboard/pinned.txt`). A failed pin is tried again: up to 3 times for the same table, then once an hour, and each try is a model turn. A GitHub error wakes it on a new error and once a day while it lasts.
+- The table is read only. It has no button or link that writes to GitHub, and no network access: links open in a new tab through the Control UI. By default it makes no host call at all.
+- **Refresh button** (`dashboard_refresh_button`, off by default): on, the button runs the refresh automation now, through a `cron.trigger` grant for that one automation. OpenClaw ties a widget's grant to its exact content, so each new table needs a new grant: in ask mode the dashboard asks you to allow it again after every change. In full access mode it is granted without asking.
+- Summaries: when the agent opens a PR, it writes a short plain summary for it in `dashboard/short.json`. Other rows show the PR title without its `fix(...):` prefix until a refresh adds one.
+- Settings (settings.md, "PR dashboard"): `dashboard` on or off, `dashboard_author` (blank: the login gh is signed in with), `dashboard_org` (default `openclaw`), `dashboard_refresh_button` (default off).
+- Setup does it in a Control UI turn, where `show_widget` is available. From a chat channel, the agent asks you to repeat "Set up the PR dashboard" in the Control UI.
+- The refresh check needs a workspace path with no spaces or shell characters (the default `~/.openclaw/workspace-<agent-id>` is fine).
+- In ask mode, the refresh check's `node` command asks you on its first run; "Always allow" covers that one command for that automation. Each refresh turn asks before its own commands too, and its `--mark-pinned <digest>` command asks every time the table changes, because the digest differs. If a turn fails, the next check tries again.
+- Running setup again in the same session updates the same widget and automation; it never adds a second one. A widget belongs to the session that pinned it: run from another session, setup moves the automation there and asks you to remove the old widget. To turn it off, set `dashboard: off` and ask the agent; it removes the automation, and you remove the widget from the dashboard.
+- Optional owner config: dashboard widgets load from OpenClaw's widget sandbox origin. On a Gateway you reach remotely, if the widget frame does not load, see `mcp.apps.sandboxOrigin` in OpenClaw's docs (docs/cli/mcp/apps.md). Setup never sets it. Links do not need it.
 
 ## Skills and plugins
 
@@ -122,6 +141,7 @@ Not yet tested live:
 - A must-fix finding, more than two review rounds, and the round cap.
 - The 0.4.2 phase after the PR opens with a model: the standing grant, the watcher, hosted rounds and the stop conditions. The SQL rules and the watcher check are tested; the loop text is not yet run live.
 - The watcher's first check in ask mode, and "Always allow" for it (written from OpenClaw's docs).
+- The 0.4.4 PR dashboard in a real Gateway: the pin, the refresh automation's check and turn, and the Refresh button. The builder, its retries and the check are tested with fixture GitHub answers and the trigger runtime's shape, and one real build ran against GitHub.
 - The 0.4.3 proof packaging with a model: the scope-time proof plan, the `Runtime output` section, the proof branch for long logs and the self-check. Written from three hosted reviews; not yet run through a hosted round.
 - The watcher's `addedAt` baseline in a real Gateway (tested with the trigger runtime's shape, not live).
 - Commit signing with gpg. The ssh block and the signed test commit are tested on a test host.
@@ -152,7 +172,7 @@ Templates have no update command. Publishing a new version does not change agent
   cd "<workspace>" && sqlite3 -bail "<db_path>" ".read references/sql/setup-check.sql"
   ```
 
-  From 0.4.2: the database is already version 3. Leave out the `migrate-v2-to-v3.sql` line (it refuses a version 3 database and changes nothing); the check prints `setup-check ok, schema version 3`. From 0.4.0 or 0.4.1: the migration prints `migrate ok, schema version 3, ...` and the check prints `setup-check ok, schema version 3`. From 0.3.x, run `migrate-v1-to-v2.sql` the same way right before the `migrate-v2-to-v3.sql` line; it prints `migrate ok, schema version 2`.
+  From 0.4.2 or 0.4.3: the database is already version 3. Leave out the `migrate-v2-to-v3.sql` line (it refuses a version 3 database and changes nothing); the check prints `setup-check ok, schema version 3`. From 0.4.0 or 0.4.1: the migration prints `migrate ok, schema version 3, ...` and the check prints `setup-check ok, schema version 3`. From 0.3.x, run `migrate-v1-to-v2.sql` the same way right before the `migrate-v2-to-v3.sql` line; it prints `migrate ok, schema version 2`.
 
   Then, for 0.4.2:
   - Add the new lines from `templates/settings.md` to settings.md: `commit_email`, `signing`, `signing_note`, `runner_prefix`, `watch_hours` (and `approval_relay` from 0.3.x).
@@ -162,6 +182,12 @@ Templates have no update command. Publishing a new version does not change agent
   Then, for 0.4.3:
   - Add `commit_name` and `signing_key` from `templates/settings.md` to settings.md (the name on commits, and the ssh public key path or gpg key id).
   - Nothing else changes in config. Exec mode and host, `runner_prefix`, `approval_relay` and the `automations` tool stay as they are. Open standing grants and PR watchers keep working: a watcher keeps the check text it was created with, and only watchers added after the upgrade get the `addedAt` baseline.
+
+  Then, for 0.4.4:
+  - Add `proof_accounts` from `templates/settings.md` to settings.md, blank (the agent then asks you once) or with your list, for example `GitHub only`.
+  - Add the "PR dashboard" lines from `templates/settings.md` to settings.md: `dashboard`, `dashboard_note`, `dashboard_author`, `dashboard_org`, `dashboard_refresh_button`.
+  - Give the agent the `show_widget` tool, the same way as `automations` above: print `tools.allow`, then set the same list with `"show_widget"` added. Keep every tool it already has, and keep `deny` as it is.
+  - To use the dashboard, ask the agent, in the Control UI: "Set up the PR dashboard (AGENTS.md, PR dashboard)." It builds the table, pins it and adds the one refresh automation. To skip it, set `dashboard: off` and a reason in `dashboard_note`, and leave out the `show_widget` step above: the agent then never builds, pins or offers it, also on later setup runs and upgrades. No database step. Open grants and PR watchers are not touched.
 
   settings.md is kept. Your own files, such as USER.md, are not touched. The packaged database commands keep the same command line, so earlier "Always allow here" choices still apply, and the last `chmod` makes the SQL files read-only again. To roll back, restore both backups.
 
@@ -181,14 +207,16 @@ Templates have no update command. Publishing a new version does not change agent
 - `references/schema.sql` and `references/sql/` define and use the local SQLite tracker at `db_path`.
 - `references/pr-watch.js` is the read-only check the PR watcher runs.
 - `references/proof.md` says what real behavior proof is, how to plan it at scope time and how to package it in the PR body. `templates/runtime-output.md` is the layout.
+- `references/pr-dashboard/` holds the PR dashboard: `build.mjs` (the read-only builder), `template.html` (the widget), `prs.graphql` and `ci.graphql` (the two GitHub reads) and `refresh-trigger.js` (the refresh automation's check).
 - `references/setup-worktree.sh` creates a worktree with a worktree-only noreply author and signing, and checks a signed test commit.
 - `templates/` holds settings, the tracker view, the scope proposal, the approval request, the standing grant request and the handoff.
 - `avatars/openclaw-contributor.svg` is the agent's avatar. `assets/icon.png` is the same artwork as the catalog icon; Add also copies it to `avatars/catalog.png`.
 - `BOOTSTRAP.md` guides first-run setup and creates local preferences without packaging answers.
-- Declared capability: OpenClaw tool profile `minimal` plus `read`, `write`, `edit`, `apply_patch`, `exec`, `process`, `web_fetch`, `session_status`, `automations` with workspace-only file access. The `gateway` tool that `minimal` includes is denied.
+- Declared capability: OpenClaw tool profile `minimal` plus `read`, `write`, `edit`, `apply_patch`, `exec`, `process`, `web_fetch`, `session_status`, `automations`, `show_widget` with workspace-only file access. The `gateway` tool that `minimal` includes is denied.
 - Capability boundary: exec is not limited by workspaceOnly. Public steps happen through `git` and `gh` under exec, and the Template allows them only after a recorded owner approval. The required exec host and approvals step keeps exec on the Gateway host and makes OpenClaw ask you before each command too, unless you chose "Always allow here" for it.
 - Capability boundary: local ClawSweeper runs under exec from the agent's `clawsweeper/` folder, on your Codex login or, for the OpenClaw runner, your OpenClaw with a provider key from your environment, only in its review modes (`--local-range`, `--local-only`) and its diagnostics check. It never gets a GitHub token in `--local-range` mode and posts nothing.
 - Capability boundary: `automations` is granted for one purpose: one watcher per open PR, on the agent's own session, running the packaged read-only check (`references/pr-watch.js`, one `gh pr view`) every 15 minutes within `watch_hours`. The agent removes it at the end. Like every automation check, it runs with the agent's own exec policy.
+- Capability boundary: `show_widget` is granted for one widget, the read-only PR dashboard (`openclaw-prs`), pinned on the agent's own dashboard from the file the packaged builder wrote. It declares no capability, unless the owner turns on `dashboard_refresh_button`; then only `cron.trigger` for the one refresh automation. `automations` also covers that one automation, which runs the packaged builder (two read-only gh GraphQL calls) every 15 minutes within `watch_hours`.
 - Capability boundary: `references/setup-worktree.sh` runs `git worktree add` and `git config --worktree` for one new worktree, with the author and key from settings.md. It is the only git config the agent may change, and some runtimes refuse it; then the owner runs it.
 - Capability boundary: no MCP servers, plugins, skills, messaging or publishing tools.
 

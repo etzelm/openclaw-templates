@@ -1,0 +1,7 @@
+query($open:String!){
+  rateLimit{cost remaining}
+  open: search(query:$open,type:ISSUE,first:60){nodes{... on PullRequest{number url
+    commits(last:1){nodes{commit{
+      status{contexts{context state description}}
+      statusCheckRollup{state contexts(first:1){checkRunCountsByState{state count}}}}}}}}}
+}

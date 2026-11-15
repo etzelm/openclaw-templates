@@ -66,6 +66,10 @@ Edit the values after the colons. The agent reads this file at the start of ever
   - Blank (default): installs, builds and tests run in the checkout on the Gateway host.
   - Or a command prefix you trust that sends heavy work to another machine, for example a remote runner. The agent puts it in front of installs, builds and test suites, exactly as written. Exec stays pinned to the Gateway host.
 
+- proof_accounts: <blank>
+  - The accounts, subscriptions, devices and channel logins you have for proof runs, as a list, for example `GitHub only` or `GitHub; Telegram bot; OpenAI API key`. Blank: the agent asks you once and writes your answer here.
+  - An issue whose proof needs anything not on this list is skipped at pick time, with the reason recorded.
+
 ## Pull requests
 
 - open_pr_as: ready
@@ -77,6 +81,18 @@ Edit the values after the colons. The agent reads this file at the start of ever
 - approval_relay: <blank>
   - Blank (default): the agent takes your answer to an approval request only in its own conversation.
   - Or the session key or agent id of another session that passes your answers on, if you answer there (for example `main` for any session of your main agent). A passed-on yes counts only when it names the approval id, the exact command, the head SHA and the body hash, and says where and when you said it. In ask mode, OpenClaw's exec prompt still asks you before the command runs.
+
+## PR dashboard
+
+- dashboard: on
+  - on (default) or off. On: setup builds a read-only table of your PRs, pins it on this agent's dashboard, and adds one automation that refreshes it every 15 minutes within watch_hours. Off: none of that, and the agent never builds, pins or offers it, and does not ask again on later setup runs or upgrades; setup records why in dashboard_note. Only you turn it back on, by changing this line.
+- dashboard_note: <blank>
+- dashboard_author: <blank>
+  - The GitHub login whose PRs the table shows. Blank: the login gh is signed in with (`gh api user`).
+- dashboard_org: openclaw
+  - The GitHub org to search. The table shows that author's open PRs and the ones closed in the last 14 days, in every repo of the org.
+- dashboard_refresh_button: off
+  - off (default) or on. On: the widget's Refresh button runs the refresh automation now. It needs a grant, and a grant covers only the exact widget it approved, so in ask mode the dashboard asks you to allow it again after every change to the table. Off: no button and no grant; the table still refreshes every 15 minutes. After changing it, ask the agent to set up the PR dashboard again.
 
 ## Database
 

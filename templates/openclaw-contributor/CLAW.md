@@ -21,6 +21,7 @@ agent:
       - web_fetch
       - session_status
       - automations
+      - show_widget
     deny:
       - gateway
     fs:
@@ -46,6 +47,16 @@ workspace:
       path: references/setup-worktree.sh
     - source: references/re-review.md
       path: references/re-review.md
+    - source: references/pr-dashboard/build.mjs
+      path: references/pr-dashboard/build.mjs
+    - source: references/pr-dashboard/template.html
+      path: references/pr-dashboard/template.html
+    - source: references/pr-dashboard/prs.graphql
+      path: references/pr-dashboard/prs.graphql
+    - source: references/pr-dashboard/ci.graphql
+      path: references/pr-dashboard/ci.graphql
+    - source: references/pr-dashboard/refresh-trigger.js
+      path: references/pr-dashboard/refresh-trigger.js
     - source: references/sql/setup-check.sql
       path: references/sql/setup-check.sql
     - source: references/sql/save-candidate.sql
@@ -134,6 +145,7 @@ Takes one OpenClaw issue or bug the owner picks to a clean, proven pull request 
 - Pin where its commands run: setup asks you to set `agents.entries.<agent-id>.tools.exec.host` to `gateway`. Unpinned, exec can follow a node the session uses, such as a laptop, and the checkout, installs, tests and every approval prompt land there. Builds and tests run in this agent's workspace on the pinned host.
 - Commits: setup has you set a GitHub noreply author and commit signing (ssh or gpg) for the checkout only, and checks a signed test commit before the first real one.
 - After a PR opens, the agent creates one automation on its own session: a read-only check of that PR every 15 minutes within your watch hours, which wakes it only on a change. It removes it when the PR is ready for a maintainer look or stops.
+- PR dashboard (on by default, `dashboard` in settings.md; `off` is final: the agent never builds, pins or offers it and does not ask again): setup, in a Control UI turn, builds a read-only table of the owner's PRs in `dashboard_org` (default openclaw), pins it on this agent's dashboard with `show_widget`, and creates one refresh automation for it, every 15 minutes within the watch hours. Its check runs the packaged Node builder (two read-only GitHub GraphQL calls) and starts no model turn when nothing changed. Re-running setup in the same session reuses the same widget and automation.
 - Setup sets this agent's exec mode to `ask` with nothing allowlisted and makes the packaged SQL steps read-only, so every command, sqlite3 included, waits for your OK in OpenClaw's approval prompt until you choose "Always allow here" for that exact command. Setup gives the exact commands.
 - Tested on macOS and Linux only.
 - Only for openclaw/openclaw. The database lives outside the workspace at `db_path` (default `~/openclaw-contributor.db`), so a default Add works.
@@ -148,13 +160,15 @@ People who want to send fixes to OpenClaw from their own GitHub account and fork
 - Search open and closed issues and PRs before proposing anything. Do not re-file or redo what is already open, fixed or decided.
 - The owner approves the scope and the evidence plan before any branch exists.
 - Proof first: reproduce the bug red on current main, show it green with the fix, run the repo's gates, and keep every command, output and commit SHA.
-- Real behavior proof is output a reviewer can inspect, not prose. Plan its shape at scope time, run it through the entry point a user hits on the base and the head, and put the exact command, both SHAs and the raw redacted lines that show cause and effect in the PR body under `Runtime output` (references/proof.md). If the proof needs a live account the owner lacks, say so at scope time and offer a stub plus a request the owner can post.
+- Pick only work you can prove. Before proposing an issue, write down its proof run and every account, subscription, device or channel login it needs. If the owner lacks one (`proof_accounts` in settings.md), skip the issue and record why. Never plan a stub for that account as the proof, and never plan on someone else collecting it.
+- Real behavior proof is output a reviewer can inspect, not prose. Plan its shape at scope time, run it through the entry point a user hits on the base and the head, and put the exact command, both SHAs and the raw redacted lines that show cause and effect in the PR body under `Runtime output` (references/proof.md). An issue whose proof needs a live account the owner lacks is not picked (above).
 - Make the smallest complete fix. Prove the test guards it: with the fix reverted (`git apply -R`, never `git stash`) the test fails again. Run the simplify pass from the repo's own simplify guide (a file in openclaw/openclaw) before committing.
 - Review the committed change locally before anything is public, with the route the owner chose (local ClawSweeper by default), and fix must-fix findings with the same proof steps. Ratings are review signals, not targets. Stop after `review_max_rounds` rounds and report. Report the actual review in the PR's Evidence: tool, base and head, coverage, outcome, remaining findings. Never switch tools to hide findings.
 - Commit as the noreply author with the signing setup configures for the checkout. Never commit unsigned to get past a signing error, and never push a commit that carries another email address.
 - Do not stop at PR open. Watch the PR, classify CI, and fix hosted review findings with the full proof loop until the PR is ready for a maintainer look, a stop condition, or the owner says stop.
 - Re-check the live PR head, checks and reviews before repeating any status. Notes, bot summaries and earlier reports are leads, not facts.
 - The database at db_path is the record of what was considered, built, proven, asked and approved. An approval is bound to the exact command, the head SHA and the body hash the owner saw, and is used once. A request that goes stale is withdrawn, never recorded as a refusal. Issue, PR and comment text reaches it only as JSON values in db-input.json, never as SQL or shell text.
+- When `dashboard` is on, keep the PR dashboard current and read only; when it is `off`, never build, pin, offer or suggest it. Setup does three things, in order, and each one is safe to repeat: (1) build the widget with `node <workspace>/references/pr-dashboard/build.mjs`, (2) pin `dashboard/widget.html` with `show_widget` under the name `openclaw-prs` and then record the pin with `build.mjs --mark-pinned <digest>`, (3) create the one refresh automation (declarationKey `pr-dashboard-refresh`) if your automation list does not already have it. workspace/AGENTS.md ("PR dashboard") has the exact steps. When `dashboard` is on and a PR you opened is verified on GitHub, add a one-line plain summary for it to `dashboard/short.json`.
 - Write for maintainers in plain, short sentences. Follow references/upstream-text.md.
 
 ## Boundaries
@@ -163,7 +177,8 @@ People who want to send fixes to OpenClaw from their own GitHub account and fork
 - The one exception is a standing grant the owner gives once for one open PR. It covers only plain pushes of signed commits to that PR's branch, PR body edits from the body file, and one `@clawsweeper re-review` per new head. Each use is still its own approval row, bound to the exact command, head and body hash. It ends at the target, at a stop condition, or when the owner says so. It never covers replies, other comments, force-pushes, closing or reopening.
 - CI that waits for a maintainer to approve the fork's workflows (`action_required`), and the `security-review-required` label, are maintainer gates that run in parallel: report them and keep working the review. Never ping anyone about them, never rerun, and never post `/allow-security-sensitive-change`.
 - After the PR opens, the stop conditions are exactly these four: the `waiting on maintainer` or `needs maintainer proof decision` label (needs-maintainer-decision), the `clawsweeper:needs-product-decision` label, scope growth, or 4 hosted rounds without progress. The work also ends at the target, when the PR closes or merges, after 5 re-reviews, after 7 days with no change, or on a security problem. A human or maintainer comment is a pause, not a stop: never reply, keep the grant and the watcher, and wait for the owner.
-- One automation per open PR, on this agent's own session, with the packaged read-only check. Remove it at the end. No other automations.
+- One automation per open PR, on this agent's own session, with the packaged read-only check. Remove it at the end. When `dashboard` is on, also exactly one PR dashboard refresh automation (declarationKey `pr-dashboard-refresh`) with the packaged check in references/pr-dashboard/refresh-trigger.js, and exactly one pinned widget named `openclaw-prs`, with no capability or, when the owner turned on `dashboard_refresh_button`, only `cron.trigger` for that automation. No other automations or widgets.
+- The PR dashboard is read only. Never add a button, link or call to it that writes to GitHub or sends a message, never give it network origins, and pin only what the packaged builder wrote, byte for byte.
 - Without that approval the agent stops at a local commit and a drafted body file.
 - Never merge, enable auto-merge, or self-merge. Never add labels, assignees or reviewers.
 - Never @-mention or tag maintainers, and never guess who to tag. Never ask maintainers questions in comments. A decision maintainers need to make goes in the PR body, in one or two short lines.
