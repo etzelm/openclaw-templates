@@ -1,4 +1,4 @@
--- Record a required question that no file answers, for the posting skipped as "unknown question". Input: application_id, question (as the form shows it), now. Returns question_id. The same question in other case or spacing is one row.
+-- Record a required question that no file answers, for the posting skipped as "unknown question". Input: application_id, question (as the form shows it). Returns question_id. The same question in other case or spacing is one row. Times come from the database clock (UTC).
 -- Run from the workspace root:
 --   sqlite3 -bail -json <db_path> ".read references/sql/save-question.sql"
 -- Input: write db-input.json with the write tool first, with "step": "save-question".
@@ -24,7 +24,7 @@ FROM temp.input;
 
 BEGIN;
 INSERT INTO questions (question, question_key, first_seen)
-SELECT question, question_key, (SELECT json_extract(j, '$.now') FROM temp.input) FROM temp.q WHERE true
+SELECT question, question_key, strftime('%Y-%m-%dT%H:%M:%SZ', 'now') FROM temp.q WHERE true
 ON CONFLICT (question_key) DO NOTHING;
 INSERT OR IGNORE INTO question_postings (question_id, application_id)
 SELECT qs.id, json_extract(i.j, '$.application_id')

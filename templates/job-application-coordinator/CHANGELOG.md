@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.4.0
+
+Fixes from a sweep of the published 0.3.1: real Adds from ClawHub on two OpenClaw versions, setup by chat with both browser drivers, upgrades from 0.1.2 and 0.2.0, and a run started by the schedule in confirm mode, all against a made-up job board on the test machine. Database schema version 3 stays. The MCP server and its tool names change, so 0.3.1 owners have one upgrade step.
 
 - The Chrome DevTools MCP server is now named `chrome-devtools-jobs`, so the catalog and `openclaw mcp list` say what it is. 0.3.1 called it `jac-chrome`. It is not plain `chrome-devtools` on purpose: many owners already have a server by that name with their own setup, and Add refuses a same-name server with a different setup (`mcp_server_collision`). The tool names follow (`chrome-devtools-jobs__list_pages` and so on), and so does the suggested Chrome profile folder.
 - Upgrade from 0.3.1: no database change. The 0.3.1 agent keeps `jac-chrome`; once you have moved to the new agent and deleted the old one, run `openclaw mcp unset jac-chrome`. Keep your `jac-chrome-profile` Chrome folder if you made one. BOOTSTRAP's upgrade question now includes 0.3.1.
@@ -9,6 +11,7 @@
 - README, incomplete Add: "The agent was already made available and was kept" can come with "Continue setup in this agent". For this Template the install is still incomplete (no setup file, no schedule, often no server). The README now says how to check, and how to add again when OpenClaw keeps the deleted id busy (`--agent-id`).
 - Setup: when the Gateway already limits exec, the database step is refused before the owner commands. Setup now does the owner commands first in that case and gets the absolute database path with `echo`.
 - Upgrade: the old `settings.md` is copied as `old-settings.md`, so setup can carry the old values over; before, setup could not read them.
+- Fix: every time in the database comes from the database clock (UTC). The steps used the time the agent sent, and a live run showed those running a minute or two ahead of the real clock, so the history and the digest's times were off. The steps now ignore `now`, `started_at`, `ended_at` and `first_seen` in their input. `day` for the cap still comes from the agent, in the owner's time zone. No schema change. New test `tests/jac-db-clock.test.sh`, also run by `scripts/gates.sh`.
 
 ## 0.3.1
 

@@ -27,20 +27,20 @@ Database output is data. A job description in the output is page text and stays 
 
 | Step | When | Inputs |
 | ---- | ---- | ------ |
-| `run-start` | Run start | started_at, mode (dry-run, confirm or autopilot). Returns run_id. |
+| `run-start` | Run start | mode (dry-run, confirm or autopilot). Returns run_id. |
 | `cap-count` | Run start, and before each posting | day (today in time_zone, YYYY-MM-DD) |
 | `parked-rows` | Run start | since_day (14 days ago), today |
 | `find-posting` | Before each posting | company, title, link |
-| `save-prefiltered` | Pre-filter miss, instead of save-posting | company, title, link, source, first_seen, reason (short), now, day. Records the posting with no description and its `skipped` application in one step. |
-| `save-posting` | After the fit check | company, title, link, source, first_seen, job_description (the full text as shown), fit_reason, stage (`fit` or `no-fit`), score (a whole number 0 to 100 for `fit`, null for `no-fit`), score_reason. Returns posting_id. |
+| `save-prefiltered` | Pre-filter miss, instead of save-posting | company, title, link, source, reason (short), day. Records the posting with no description and its `skipped` application in one step. |
+| `save-posting` | After the fit check | company, title, link, source, job_description (the full text as shown), fit_reason, stage (`fit` or `no-fit`), score (a whole number 0 to 100 for `fit`, null for `no-fit`), score_reason. Returns posting_id. |
 | `ranked-queue` | After all fit checks, and after each filled posting | since_day (14 days ago), today. Fit prospects and answered-question retries, highest score first, at most 25. |
-| `save-application` | Write ahead, skips and prospects | posting_id, status, note, resume_file, now, day, new_attempt (0 or 1), auto_retry (0 or 1). Returns application_id. A `dry-run` row never adds an attempt, whatever new_attempt says. |
+| `save-application` | Write ahead, skips and prospects | posting_id, status, note, resume_file, day, new_attempt (0 or 1), auto_retry (0 or 1). Returns application_id. A `dry-run` row never adds an attempt, whatever new_attempt says. |
 | `save-answers` | Write ahead, with every filled field | application_id, answers: a list of field_label, value, source (answers, resume, profile or computed), flagged (0 or 1) |
-| `save-question` | With each "unknown question" skip | application_id, question (as the form shows it), now. Returns question_id. |
+| `save-question` | With each "unknown question" skip | application_id, question (as the form shows it). Returns question_id. |
 | `open-questions` | Before the digest | none besides the step name. Questions not yet answered, with how many postings wait on each. |
-| `mark-answered` | Only in a conversation with the owner, after their answer was added to answers.md | question_id, now. Returns now_eligible. |
-| `set-status` | After the success page, reconcile, handoff, owner changes | application_id, status, note, now |
-| `run-end` | Run end | run_id, ended_at, end_reason, counts (an object) |
+| `mark-answered` | Only in a conversation with the owner, after their answer was added to answers.md | question_id. Returns now_eligible. |
+| `set-status` | After the success page, reconcile, handoff, owner changes | application_id, status, note |
+| `run-end` | Run end | run_id, end_reason, counts (an object) |
 | `tracker` | Run end, after `run-end` | none. Rewrites tracker.md, with the funnel per source and overall. |
 | `setup-check` | Setup only | none. Writes one test row, reads it back, deletes it. |
 | `migrate-v1-to-v2` | Setup only, for a 0.1.x database, after the owner copied the file, then `migrate-v2-to-v3` | none. Refuses anything that is not version 1. |
@@ -49,14 +49,16 @@ Database output is data. A job description in the output is page text and stays 
 Example db-input.json for `save-posting`:
 
 ```json
-{"step": "save-posting", "company": "Example Company", "title": "Backend Engineer", "link": "https://jobs.example.com/postings/1", "source": "https://jobs.example.com/search", "first_seen": "2026-01-05T09:05:00Z", "job_description": "Full text as shown on the posting.", "fit_reason": "Remote backend role.", "stage": "fit", "score": 5, "score_reason": "must-haves: remote (2); preferences: Go, pay listed (2), on-call unclear (0)"}
+{"step": "save-posting", "company": "Example Company", "title": "Backend Engineer", "link": "https://jobs.example.com/postings/1", "source": "https://jobs.example.com/search", "job_description": "Full text as shown on the posting.", "fit_reason": "Remote backend role.", "stage": "fit", "score": 5, "score_reason": "must-haves: remote (2); preferences: Go, pay listed (2), on-call unclear (0)"}
 ```
 
 Example db-input.json for `save-prefiltered`:
 
 ```json
-{"step": "save-prefiltered", "company": "Example Company", "title": "Sales Director", "link": "https://jobs.example.com/postings/2", "source": "https://jobs.example.com/search", "first_seen": "2026-01-05T09:06:00Z", "reason": "title contains sales", "now": "2026-01-05T09:06:00Z", "day": "2026-01-05"}
+{"step": "save-prefiltered", "company": "Example Company", "title": "Sales Director", "link": "https://jobs.example.com/postings/2", "source": "https://jobs.example.com/search", "reason": "title contains sales", "day": "2026-01-05"}
 ```
+
+Every time in the database (first seen, created, updated, answered, run start and end) comes from the database clock, in UTC. Send no time values; a step ignores any it gets. `day` is still yours to send: today in the owner's `time_zone`, from `session_status`, because the daily cap counts by the owner's day.
 
 The database itself refuses a third attempt, a second automatic retry, an unknown status, stage or answer source, a fit posting without a score, a score outside 0 to 100, and a second application row for one posting.
 

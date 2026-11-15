@@ -1,4 +1,4 @@
--- Save a posting after its fit check, with its full job description. Input: company, title, link, source, first_seen, job_description, fit_reason, stage (fit or no-fit), score (0 to 100 for fit, null for no-fit), score_reason. Returns posting_id.
+-- Save a posting after its fit check, with its full job description. Input: company, title, link, source, job_description, fit_reason, stage (fit or no-fit), score (0 to 100 for fit, null for no-fit), score_reason. Returns posting_id. Times come from the database clock (UTC).
 -- A pre-filter miss uses save-prefiltered instead.
 -- Run from the workspace root:
 --   sqlite3 -bail -json <db_path> ".read references/sql/save-posting.sql"
@@ -29,7 +29,7 @@ SELECT
   json_extract(j, '$.title'),
   json_extract(j, '$.link'),
   coalesce(json_extract(j, '$.source'), ''),
-  json_extract(j, '$.first_seen'),
+  strftime('%Y-%m-%dT%H:%M:%SZ', 'now'),
   coalesce(json_extract(j, '$.job_description'), ''),
   coalesce(json_extract(j, '$.fit_reason'), ''),
   json_extract(j, '$.stage'),

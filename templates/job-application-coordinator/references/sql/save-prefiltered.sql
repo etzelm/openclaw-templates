@@ -1,4 +1,4 @@
--- Pre-filter miss: record a posting and its skipped application in one step, without its description. Input: company, title, link, source, first_seen, reason, now, day. Use it only for a clear miss on title, location or work setup against the pre-filter rules in profile.md.
+-- Pre-filter miss: record a posting and its skipped application in one step, without its description. Input: company, title, link, source, reason, day. Use it only for a clear miss on title, location or work setup against the pre-filter rules in profile.md. Times come from the database clock (UTC).
 -- Run from the workspace root:
 --   sqlite3 -bail -json <db_path> ".read references/sql/save-prefiltered.sql"
 -- Input: write db-input.json with the write tool first, with "step": "save-prefiltered".
@@ -26,14 +26,14 @@ SELECT
   json_extract(j, '$.title'),
   json_extract(j, '$.link'),
   coalesce(json_extract(j, '$.source'), ''),
-  json_extract(j, '$.first_seen'),
+  strftime('%Y-%m-%dT%H:%M:%SZ', 'now'),
   '',
   trim(json_extract(j, '$.reason')),
   'prefiltered'
 FROM temp.input WHERE true
 ON CONFLICT (link) DO NOTHING;
 INSERT INTO applications (posting_id, status, day, created_at, updated_at, note)
-SELECT p.id, 'skipped', json_extract(i.j, '$.day'), json_extract(i.j, '$.now'), json_extract(i.j, '$.now'),
+SELECT p.id, 'skipped', json_extract(i.j, '$.day'), strftime('%Y-%m-%dT%H:%M:%SZ', 'now'), strftime('%Y-%m-%dT%H:%M:%SZ', 'now'),
        'pre-filter: ' || trim(json_extract(i.j, '$.reason'))
 FROM temp.input AS i
 JOIN postings AS p ON p.link = json_extract(i.j, '$.link') AND p.stage = 'prefiltered'
