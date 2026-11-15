@@ -68,6 +68,7 @@ zsh templates/job-application-coordinator/tests/jac-migrate-v3.test.sh templates
 ```sh
 zsh templates/job-application-coordinator/tests/jac-package.test.sh templates/job-application-coordinator
 zsh templates/job-application-coordinator/tests/jac-dry-run-attempts.test.sh templates/job-application-coordinator
+zsh templates/job-application-coordinator/tests/jac-parked-retry.test.sh templates/job-application-coordinator
 ```
 
 The gate scripts in `scripts/` say at their top which OpenClaw build and ClawHub CLI they need. Read a script before you run it.

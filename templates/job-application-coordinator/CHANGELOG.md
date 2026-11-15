@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fix: `parked-rows` no longer offers the automatic retry (`can_retry` 1) for a row that has used both of its 2 attempts. Before, a posting skipped once and then parked on its second fill showed `can_retry` 1 every day. The agent refilled the form, and `save-application` then refused the third attempt, which ended the run. The row is still listed for reconcile. New test `tests/jac-parked-retry.test.sh`.
 - README: requirements name the OpenClaw builds that can add this Template from ClawHub.
 
 ## 0.4.0
