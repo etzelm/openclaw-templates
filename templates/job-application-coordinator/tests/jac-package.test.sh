@@ -81,6 +81,14 @@ ALLOWED=(${(f)"$(print -r -- "$FM" | awk '/^    alsoAllow:/ {f=1; next} f && /^ 
 for t in $ALLOWED; do
   check "allowed ${SRV}__$t is in the server include" '(( ${INCLUDE[(Ie)$t]} > 0 ))'
 done
+# OpenClaw stops an MCP call after 60 seconds and recycles the server after repeated timeouts,
+# so every devtools wait must end well before that and chain for longer waits.
+WAITLINE="$(grep -F "${SRV}__wait_for" "$PKG/references/apply-mechanics.md" | head -1)"
+WAITMS="$(print -r -- "$WAITLINE" | grep -oE '[0-9]{4,6} milliseconds' | grep -oE '[0-9]+' | sort -n | tail -1)"
+check "devtools wait_for has a per-call limit" '[[ -n "$WAITMS" ]]' "$WAITLINE"
+check "devtools wait_for limit stays under the 60 second MCP request timeout" '(( ${WAITMS:-999999} <= 45000 ))' "$WAITMS"
+check "devtools wait text says to chain calls for longer waits" '[[ "$WAITLINE" == *chain* ]]' "$WAITLINE"
+check "apply-mechanics explains the MCP timeout" 'grep -q "60 seconds" "$PKG/references/apply-mechanics.md"'
 check "browser tool stays allowed (fallback driver)" '[[ "$FM" == *"      - browser"* ]]'
 check "settings.md has browser_driver" 'grep -q "^- browser_driver: browser$" "$PKG/templates/settings.md"'
 
