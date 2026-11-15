@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- README: requirements name the OpenClaw builds that can add this Template from ClawHub.
+
 ## 0.4.0
 
 Fixes from a sweep of the published 0.3.1: real Adds from ClawHub on two OpenClaw versions, setup by chat with both browser drivers, upgrades from 0.1.2 and 0.2.0, and a run started by the schedule in confirm mode, all against a made-up job board on the test machine. Database schema version 3 stays. The MCP server and its tool names change, so 0.3.1 owners have one upgrade step.
