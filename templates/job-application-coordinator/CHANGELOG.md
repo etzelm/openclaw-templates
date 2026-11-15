@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- README: the busy-id workaround now says to use an unused id such as `job-application-coordinator-setup`, never a `-2` suffix. The second-Add workaround names `openclaw gateway stop` and `openclaw gateway start` and notes service managers. The text no longer says a fix is under review.
+- BOOTSTRAP: the database step says "If sqlite3 is missing or older", so the sentence is no longer ambiguous.
+- Database docs and the setup self-test write times as `strftime('%Y-%m-%dT%H:%M:%SZ','now')`, like every step.
+
 ## 0.4.0
 
 Fixes from a sweep of the published 0.3.1: real Adds from ClawHub on two OpenClaw versions, setup by chat with both browser drivers, upgrades from 0.1.2 and 0.2.0, and a run started by the schedule in confirm mode, all against a made-up job board on the test machine. Database schema version 3 stays. The MCP server and its tool names change, so 0.3.1 owners have one upgrade step.

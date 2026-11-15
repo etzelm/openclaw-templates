@@ -13,9 +13,9 @@ CREATE TEMP TABLE expect (what TEXT, n INTEGER, CHECK (
 ));
 BEGIN;
 INSERT INTO postings (company, title, link, first_seen, job_description)
-VALUES ('setup check', 'setup check', 'setup-check://row', datetime('now'), 'it''s a "test"; DROP TABLE postings; --');
+VALUES ('setup check', 'setup check', 'setup-check://row', strftime('%Y-%m-%dT%H:%M:%SZ','now'), 'it''s a "test"; DROP TABLE postings; --');
 INSERT INTO applications (posting_id, status, day, created_at, updated_at, note)
-SELECT id, 'skipped', date('now'), datetime('now'), datetime('now'), 'setup check'
+SELECT id, 'skipped', date('now'), strftime('%Y-%m-%dT%H:%M:%SZ','now'), strftime('%Y-%m-%dT%H:%M:%SZ','now'), 'setup check'
 FROM postings WHERE link = 'setup-check://row';
 INSERT INTO temp.expect SELECT 'written', count(*) FROM postings
 WHERE link = 'setup-check://row' AND job_description = 'it''s a "test"; DROP TABLE postings; --';
