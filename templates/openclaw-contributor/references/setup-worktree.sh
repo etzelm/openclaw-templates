@@ -12,7 +12,9 @@
 # rerun with --existing on the same path.
 # Only the new worktree gets the identity: git config --worktree, with extensions.worktreeConfig on in
 # the repository. The repository's own config and every other worktree keep theirs.
-# The test commit is made with git write-tree and git commit-tree: it is on no branch and changes nothing.
+# The test commit is made with git commit-tree from HEAD's tree: it is on no branch and changes nothing.
+# It refuses a bare repository (shared core.bare=true): with extensions.worktreeConfig on, git would read
+# that setting in every linked worktree and they would stop working.
 # Prints "setup-worktree ok: ..." and exits 0, or prints the failing line and exits 1.
 
 set -u
@@ -39,7 +41,7 @@ while [ $# -gt 0 ]; do
     --email) need $# "$1" "${2:-}"; email="$2"; shift 2 ;;
     --signing) need $# "$1" "${2:-}"; signing="$2"; shift 2 ;;
     --key) need $# "$1" "${2:-}"; key="$2"; shift 2 ;;
-    -h|--help) sed -n '2,18p' "$0"; exit 0 ;;
+    -h|--help) awk 'NR > 1 && /^#/ { print; next } NR > 1 { exit }' "$0"; exit 0 ;;
     *) fail "unknown argument: $1" ;;
   esac
 done
@@ -71,6 +73,9 @@ else
   [ -n "$repo" ] || fail "--repo is required"
   [ -n "$start" ] || fail "--start is required"
   [ -e "$wt" ] && fail "path already exists: $wt (use --existing to adopt it)"
+  if [ "$(git -C "$repo" config --type=bool --get core.bare 2>/dev/null)" = "true" ]; then
+    fail "the repository config sets core.bare=true; move it to the main worktree's config.worktree first (see git help worktree), or use a non-bare clone"
+  fi
   if [ -n "$branch" ] && [ "$detach" -eq 1 ]; then fail "use --branch or --detach, not both"; fi
   if [ -z "$branch" ] && [ "$detach" -eq 0 ]; then fail "--branch <name> or --detach is required"; fi
   if [ -n "$branch" ]; then
@@ -81,6 +86,10 @@ else
   created=1
 fi
 
+# A shared core.bare=true would be read by every linked worktree once extensions.worktreeConfig is on.
+if [ "$(git -C "$wt" config --type=bool --get core.bare 2>/dev/null)" = "true" ]; then
+  fail "the repository config sets core.bare=true; move it to the main worktree's config.worktree first (see git help worktree), or use a non-bare clone"
+fi
 # git refuses worktree config when the shared config sets core.worktree.
 if git -C "$wt" config --get core.worktree >/dev/null 2>&1; then
   fail "the repository config sets core.worktree; move it to config.worktree first (see git help worktree)"
@@ -127,4 +136,6 @@ fi
 line="$(git -C "$wt" log -1 --format='%G? %ae %ce' "$commit")"
 [ "$line" = "$want" ] || fail "test commit $commit prints '$line', want '$want'"
 
+[ "$(git -C "$wt" rev-parse --is-inside-work-tree 2>/dev/null)" = "true" ] || fail "$wt is not a usable work tree after setup (git rev-parse --is-inside-work-tree)"
+git -C "$wt" status --short >/dev/null 2>&1 || fail "git status fails in $wt after setup"
 echo "setup-worktree ok: $wt; test commit $commit on no branch; $line"

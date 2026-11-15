@@ -29,6 +29,7 @@ has "base run happens at the base" references/contribution-loop.md 'Base runtime
 has "head run happens after the last commit, any review route" references/contribution-loop.md '### Head runtime run'
 has "proof run isolates the config too" references/proof.md 'OPENCLAW_CONFIG_PATH'
 has "every proof command pins the proof port" references/proof.md 'OPENCLAW_GATEWAY_PORT=<port>'
+has "prefix unsets the Gateway URL and credentials" references/proof.md '-u OPENCLAW_GATEWAY_URL -u OPENCLAW_GATEWAY_TOKEN -u OPENCLAW_GATEWAY_PASSWORD'
 has "scope slots carry the prefix" templates/scope-proposal.md 'OPENCLAW_GATEWAY_PORT=N'
 has "leftover check uses the port" references/proof.md 'lsof -nP -iTCP:<port> -sTCP:LISTEN'
 has "self-check is bound to head and body hash" references/proof.md 'A check for another head or body hash does not count.'
@@ -44,12 +45,15 @@ has "forced run list stays empty until then" references/contribution-loop.md 'ru
 # 3. Stop conditions
 has "stop: needs-maintainer-decision" references/contribution-loop.md '**needs-maintainer-decision**'
 has "stop: needs-product-decision" references/contribution-loop.md '**needs-product-decision**'
-has "stop: human or maintainer reply" references/contribution-loop.md '**A human or maintainer reply**'
+has "a human reply is a pause, not a stop" references/contribution-loop.md 'A human or maintainer reply is not a stop: it is a pause'
+has "pause keeps the grant and the watcher" references/contribution-loop.md 'keep the grant and the watcher'
+lacks "maintainer-decision stop is only the labels" references/contribution-loop.md 'any other label that says a maintainer decision is needed'
 has "stop: scope growth" references/contribution-loop.md '**Scope growth**'
 has "stop: 4 rounds without progress" references/contribution-loop.md '**4 hosted rounds without progress**'
 has "security-review-required is not a stop" references/contribution-loop.md 'Never post that command'
 has "allow command named" references/contribution-loop.md '/allow-security-sensitive-change'
-has "grant request lists the same stops" templates/standing-grant.md 'A human or maintainer reply on the PR'
+has "grant request: a human comment is a pause" templates/standing-grant.md 'A person or maintainer comments or reviews on the PR. I never reply'
+lacks "grant request: no human-reply stop" templates/standing-grant.md 'A human or maintainer reply on the PR'
 # 4. Merged fix without a closing keyword
 has "duplicate: merged fix without closing keyword" references/contribution-loop.md 'already fixed by a merged PR that never linked it with a closing keyword'
 # 5. Worktree setup script

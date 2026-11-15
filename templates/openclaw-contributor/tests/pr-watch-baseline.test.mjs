@@ -91,6 +91,11 @@ v = clone(base); v.comments.push({ author: { login: "github-actions-fan" }, crea
 r = await run(S, undefined, v);
 ok("a look-alike bot login is counted as a person, not a bot", r.state.observed.bots[0] === 0 && r.state.observed.people[0] === 1);
 
+const throwsWith = async (res, re) => { try { await new AsyncFunction("exec", "trigger", S)(async () => res, { state: undefined }); return false; } catch (e) { return re.test(String(e)) && !(e instanceof SyntaxError); } };
+ok("a missing aggregated field throws a clear error, not a SyntaxError", await throwsWith({ status: "completed", exitCode: 0 }, /returned no output/));
+ok("empty aggregated text throws a clear error", await throwsWith({ status: "completed", exitCode: 0, aggregated: "  " }, /returned no output/));
+ok("non-JSON output throws a clear error naming the start of it", await throwsWith({ status: "completed", exitCode: 0, aggregated: "warning: x\n{}" }, /is not JSON.*warning: x/));
+
 const legacy = src.replace("const pr = 0;", "const pr = 199343;");
 v = clone(base); v.comments.push({ author: { login: "clawsweeper" }, createdAt: after, body: "review" });
 ok("with addedAt left empty the first check only saves (0.4.2 behavior)", (await run(legacy, undefined, v)).fire === false);

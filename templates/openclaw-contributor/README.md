@@ -21,9 +21,9 @@ Pick an OpenClaw issue. The agent proves the bug, fixes it, proves the fix, revi
 - The agent stops at a local commit and a PR body file.
 - Push, PR, issue, comment, edit, review request, CI rerun and fork are separate requests. Each one needs your yes in chat, and in ask mode your OK in OpenClaw's exec prompt.
 - An approval is bound to the exact command, commit and PR body you saw, and is used once.
-- After the PR opens, you can give one standing grant for that PR: signed pushes, body edits, and one `@clawsweeper re-review` per new commit. Each use is still recorded as its own approval. It never covers replies, other comments, force-pushes, closing or reopening. On any human comment it stops, ends the grant and tells you.
+- After the PR opens, you can give one standing grant for that PR: signed pushes, body edits, and one `@clawsweeper re-review` per new commit. Each use is still recorded as its own approval. It never covers replies, other comments, force-pushes, closing or reopening. On any human comment it pauses, keeps the grant and the watcher, never replies, and waits for your word.
 - It never merges, never tags people and never asks maintainers questions in comments. When a fork's CI waits for a maintainer to approve workflows, or the PR carries `security-review-required`, it reports that and keeps working the review. It never pings anyone and never posts `/allow-security-sensitive-change`.
-- After the PR opens it has five named stop conditions: a maintainer decision needed, a product decision needed, a human or maintainer reply, scope growth, or 4 hosted rounds without progress. The work also ends at the target, when the PR closes or merges, after 5 re-reviews, after 7 quiet days, or on a security problem.
+- After the PR opens it has four named stop conditions: the `waiting on maintainer` or `needs maintainer proof decision` label, the `clawsweeper:needs-product-decision` label, scope growth, or 4 hosted rounds without progress. The work also ends at the target, when the PR closes or merges, after 5 re-reviews, after 7 quiet days, or on a security problem.
 - It uses your own git and gh login and never handles a token.
 
 ## Example

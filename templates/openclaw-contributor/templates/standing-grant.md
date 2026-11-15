@@ -15,16 +15,16 @@ Every fix still goes through the full proof loop: red, green, mutation check, ga
 
 ## Stop conditions: the grant ends and I report to you
 
-- needs-maintainer-decision: a `waiting on maintainer` or `needs maintainer proof decision` label, or a finding or review that needs a maintainer decision.
-- needs-product-decision: the `clawsweeper:needs-product-decision` label, or a review that needs a product, feature or config decision.
-- A human or maintainer reply on the PR. I never reply.
+- needs-maintainer-decision: the `waiting on maintainer` or `needs maintainer proof decision` label.
+- needs-product-decision: the `clawsweeper:needs-product-decision` label.
 - Scope growth: anything beyond issue <issue number>, or a PR that grows beyond the fix.
 - 4 hosted rounds without progress.
 
 The grant also ends at the target, when the PR is closed or merged, after 5 re-reviews, or after 7 days with no change.
 
-## Not covered: I pause and ask you
+## Not covered: I pause and ask you (the grant and the watcher stay)
 
+- A person or maintainer comments or reviews on the PR. I never reply, and I wait for your word.
 - Someone else pushes to the branch.
 - Any reply to a person, and any other comment.
 - Closing or reopening, a title edit, a force-push or rebase, a CI rerun.

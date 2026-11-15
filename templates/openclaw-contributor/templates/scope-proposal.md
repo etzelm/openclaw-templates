@@ -21,7 +21,7 @@
 - Green: <the same proof passing with the fix, plus the consumer tests>
 - Runtime output: <the entry point a user hits, and the log or terminal lines that will show cause and effect (references/proof.md). Inline in the body, or long logs on `proof-assets/<slug>`.>
   - State folder, port and config: <`<workspace>/evidence/<slug>/state`, loopback port N, test config at `evidence/<slug>/proof-config.json`>
-  - Prefix on every OpenClaw command: <`env -u OPENCLAW_PROFILE -u OPENCLAW_SUPERVISOR_MODE OPENCLAW_STATE_DIR=... OPENCLAW_CONFIG_PATH=... OPENCLAW_GATEWAY_PORT=N`>
+  - Prefix on every OpenClaw command: <`env -u OPENCLAW_PROFILE -u OPENCLAW_SUPERVISOR_MODE -u OPENCLAW_GATEWAY_URL -u OPENCLAW_GATEWAY_TOKEN -u OPENCLAW_GATEWAY_PASSWORD OPENCLAW_STATE_DIR=... OPENCLAW_CONFIG_PATH=... OPENCLAW_GATEWAY_PORT=N`>
   - Start: <copy the config in, then the exact start command with the prefix>
   - Stub: <exact command, or "none">
   - Trigger: <exact command that causes the behavior, with the prefix>

@@ -85,7 +85,18 @@ printf 'not a key\n' > "$HOME/.ssh/bad.pub"
 refuses "a key file with no public key line" --repo "$R" --worktree "$T/x10" --start main --branch x10 --name N --email "$E" --signing ssh --key "$HOME/.ssh/bad.pub"
 [[ ! -e "$T/x1" && ! -e "$T/x4" && ! -e "$R/wt-rel" && ! -e "$T/x10" ]] && ok "a refusal creates no worktree" || bad "a refusal creates no worktree" "x1, x4, x10 or wt-rel exists"
 
-# 6. Text rules: one plain command, no stash.
+# 6. A bare repository: refuse before creating anything, and leave the bare repo's config alone.
+BARE="$T/bare.git"; git clone -q --bare "$R" "$BARE"
+refuses "a bare repository" --repo "$BARE" --worktree "$T/wt-bare" --start main --branch fix/bare --name N --email "$E" --signing none
+[[ ! -e "$T/wt-bare" ]] && ok "bare: no worktree created" || bad "bare: no worktree created" "$T/wt-bare exists"
+check "bare: extensions.worktreeConfig not turned on" "$(git -C "$BARE" config --get extensions.worktreeConfig)" ""
+# A linked worktree a person made by hand from the bare repo, then adopted: still refused.
+git -C "$BARE" worktree add -q -b fix/hand "$T/wt-hand" main 2>/dev/null
+refuses "--existing on a worktree of a bare repository" --existing --worktree "$T/wt-hand" --name N --email "$E" --signing none
+check "bare: the hand-made worktree still works" "$(git -C "$T/wt-hand" rev-parse --is-inside-work-tree 2>&1)" "true"
+grep -q 'rev-parse --is-inside-work-tree' "$S" && ok "script checks the worktree works before ok" || bad "script checks the worktree works before ok" "missing"
+
+# 7. Text rules: one plain command, no stash.
 grep -q 'git stash' "$S" && bad "script never uses git stash" "found" || ok "script never uses git stash"
 
 echo "passed=$PASSES failed=$FAILS"

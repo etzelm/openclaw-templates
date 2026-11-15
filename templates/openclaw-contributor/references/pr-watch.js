@@ -21,7 +21,15 @@ const r = await exec({
 if (!r || r.status !== "completed" || r.exitCode !== 0) {
   throw new Error("PR " + pr + " watcher: gh pr view failed. See this automation's run diagnostics.");
 }
-const v = JSON.parse(r.aggregated);
+if (typeof r.aggregated !== "string" || !r.aggregated.trim()) {
+  throw new Error("PR " + pr + " watcher: gh pr view returned no output (no aggregated text). See this automation's run diagnostics.");
+}
+let v;
+try {
+  v = JSON.parse(r.aggregated);
+} catch {
+  throw new Error("PR " + pr + " watcher: gh pr view output is not JSON (first 200 chars: " + JSON.stringify(r.aggregated.slice(0, 200)) + ").");
+}
 const login = (c) => (c.author && c.author.login) || "";
 const isClawSweeper = (c) => /^clawsweeper(\[bot\])?$/i.test(login(c));
 const isBot = (c) => /\[bot\]$|^app\/|^(github-actions|barnacle)$/i.test(login(c));

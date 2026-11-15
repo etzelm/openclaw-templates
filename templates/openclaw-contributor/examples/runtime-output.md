@@ -13,9 +13,9 @@ Setup: isolated Gateway from this checkout, own state folder, loopback port 3897
 Commands, in the order they ran (the last one is the trigger):
 
 ```sh
-env -u OPENCLAW_PROFILE -u OPENCLAW_SUPERVISOR_MODE OPENCLAW_STATE_DIR=<workspace>/evidence/demo/state OPENCLAW_CONFIG_PATH=<workspace>/evidence/demo/state/openclaw.json OPENCLAW_GATEWAY_PORT=38973 node <checkout>/openclaw.mjs gateway run --port 38973 --bind loopback
+env -u OPENCLAW_PROFILE -u OPENCLAW_SUPERVISOR_MODE -u OPENCLAW_GATEWAY_URL -u OPENCLAW_GATEWAY_TOKEN -u OPENCLAW_GATEWAY_PASSWORD OPENCLAW_STATE_DIR=<workspace>/evidence/demo/state OPENCLAW_CONFIG_PATH=<workspace>/evidence/demo/state/openclaw.json OPENCLAW_GATEWAY_PORT=38973 node <checkout>/openclaw.mjs gateway run --port 38973 --bind loopback
 node <workspace>/evidence/demo/stub-cli.mjs --delay 20
-env -u OPENCLAW_PROFILE -u OPENCLAW_SUPERVISOR_MODE OPENCLAW_STATE_DIR=<workspace>/evidence/demo/state OPENCLAW_CONFIG_PATH=<workspace>/evidence/demo/state/openclaw.json OPENCLAW_GATEWAY_PORT=38973 node <checkout>/openclaw.mjs automations run handoff-demo
+env -u OPENCLAW_PROFILE -u OPENCLAW_SUPERVISOR_MODE -u OPENCLAW_GATEWAY_URL -u OPENCLAW_GATEWAY_TOKEN -u OPENCLAW_GATEWAY_PASSWORD OPENCLAW_STATE_DIR=<workspace>/evidence/demo/state OPENCLAW_CONFIG_PATH=<workspace>/evidence/demo/state/openclaw.json OPENCLAW_GATEWAY_PORT=38973 node <checkout>/openclaw.mjs automations run handoff-demo
 ```
 
 Output (redacted, 6 of 412 lines; the cut marker stands for the lines between them; full log: inline excerpt only):
@@ -37,9 +37,9 @@ At 18:02:11.389 the send is queued as item itm_41, at 18:02:11.402 the sender's 
 Commands, in the order they ran (the last one is the trigger):
 
 ```sh
-env -u OPENCLAW_PROFILE -u OPENCLAW_SUPERVISOR_MODE OPENCLAW_STATE_DIR=<workspace>/evidence/demo/state OPENCLAW_CONFIG_PATH=<workspace>/evidence/demo/state/openclaw.json OPENCLAW_GATEWAY_PORT=38973 node <checkout>/openclaw.mjs gateway run --port 38973 --bind loopback
+env -u OPENCLAW_PROFILE -u OPENCLAW_SUPERVISOR_MODE -u OPENCLAW_GATEWAY_URL -u OPENCLAW_GATEWAY_TOKEN -u OPENCLAW_GATEWAY_PASSWORD OPENCLAW_STATE_DIR=<workspace>/evidence/demo/state OPENCLAW_CONFIG_PATH=<workspace>/evidence/demo/state/openclaw.json OPENCLAW_GATEWAY_PORT=38973 node <checkout>/openclaw.mjs gateway run --port 38973 --bind loopback
 node <workspace>/evidence/demo/stub-cli.mjs --delay 20
-env -u OPENCLAW_PROFILE -u OPENCLAW_SUPERVISOR_MODE OPENCLAW_STATE_DIR=<workspace>/evidence/demo/state OPENCLAW_CONFIG_PATH=<workspace>/evidence/demo/state/openclaw.json OPENCLAW_GATEWAY_PORT=38973 node <checkout>/openclaw.mjs automations run handoff-demo
+env -u OPENCLAW_PROFILE -u OPENCLAW_SUPERVISOR_MODE -u OPENCLAW_GATEWAY_URL -u OPENCLAW_GATEWAY_TOKEN -u OPENCLAW_GATEWAY_PASSWORD OPENCLAW_STATE_DIR=<workspace>/evidence/demo/state OPENCLAW_CONFIG_PATH=<workspace>/evidence/demo/state/openclaw.json OPENCLAW_GATEWAY_PORT=38973 node <checkout>/openclaw.mjs automations run handoff-demo
 ```
 
 Output (redacted, 6 of 405 lines):
