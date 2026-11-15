@@ -1,4 +1,4 @@
--- End of run: close the runs row. Input: run_id, ended_at, end_reason, counts (an object).
+-- End of run: close the runs row. Input: run_id, end_reason, counts (an object). Times come from the database clock (UTC).
 -- Run from the workspace root:
 --   sqlite3 -bail -json <db_path> ".read references/sql/run-end.sql"
 -- Input: write db-input.json with the write tool first, with "step": "run-end".
@@ -13,7 +13,7 @@ CREATE TEMP TABLE step_guard (s TEXT CHECK (s = 'run-end'));
 INSERT INTO temp.step_guard SELECT json_extract(j, '$.step') FROM temp.input;
 
 UPDATE runs SET
-  ended_at = (SELECT json_extract(j, '$.ended_at') FROM temp.input),
+  ended_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now'),
   end_reason = (SELECT json_extract(j, '$.end_reason') FROM temp.input),
   counts = (SELECT coalesce(json(json_extract(j, '$.counts')), '{}') FROM temp.input)
 WHERE id = (SELECT json_extract(j, '$.run_id') FROM temp.input)

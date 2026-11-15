@@ -20,7 +20,7 @@ VER=$(node -p "require('$P/package.json').version")
 BASE="etzelm-$NAME-$VER"
 echo "=== $BASE"
 echo "openclaw $("${OC[@]}" --version 2>/dev/null | tail -1), clawhub $("${CH[@]}" --cli-version 2>/dev/null | tail -1)"
-for t in jac-v3-steps jac-cap-count jac-dry-run-attempts jac-package; do
+for t in jac-v3-steps jac-cap-count jac-dry-run-attempts jac-db-clock jac-package; do
   zsh "$T/$t.test.sh" "$P" > "$OUT/test-$t.log" 2>&1; gate "test $t ($(tail -1 "$OUT/test-$t.log"))" $?
 done
 if [[ -n "$REF2" ]]; then

@@ -1,4 +1,4 @@
--- Write ahead: insert or update the application row. Run it before any owner message and before any Submit click. Input: posting_id, status, note, resume_file, now, day, new_attempt (0 or 1), auto_retry (0 or 1). A status_events row is added by trigger.
+-- Write ahead: insert or update the application row. Run it before any owner message and before any Submit click. Input: posting_id, status, note, resume_file, day, new_attempt (0 or 1), auto_retry (0 or 1). A status_events row is added by trigger. Times come from the database clock (UTC).
 -- new_attempt is ignored for status dry-run: a dry-run fill does not count toward the 2 attempts.
 -- Run from the workspace root:
 --   sqlite3 -bail -json <db_path> ".read references/sql/save-application.sql"
@@ -22,8 +22,8 @@ SELECT
   coalesce(json_extract(j, '$.auto_retry'), 0),
   coalesce(json_extract(j, '$.resume_file'), ''),
   json_extract(j, '$.day'),
-  json_extract(j, '$.now'),
-  json_extract(j, '$.now'),
+  strftime('%Y-%m-%dT%H:%M:%SZ', 'now'),
+  strftime('%Y-%m-%dT%H:%M:%SZ', 'now'),
   coalesce(json_extract(j, '$.note'), '')
 FROM temp.input WHERE true
 ON CONFLICT (posting_id) DO UPDATE SET

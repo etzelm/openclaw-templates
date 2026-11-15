@@ -1,4 +1,4 @@
--- Mark one question answered, only after the owner's own answer in the conversation was added to answers.md. Never in a scheduled run. Input: question_id, now. Returns now_eligible: postings that every answered question now unlocks. Refuses an unknown or already answered question.
+-- Mark one question answered, only after the owner's own answer in the conversation was added to answers.md. Never in a scheduled run. Input: question_id. Returns now_eligible: postings that every answered question now unlocks. Refuses an unknown or already answered question. Times come from the database clock (UTC).
 -- Run from the workspace root:
 --   sqlite3 -bail -json <db_path> ".read references/sql/mark-answered.sql"
 -- Input: write db-input.json with the write tool first, with "step": "mark-answered".
@@ -18,7 +18,7 @@ INSERT INTO temp.open_guard
 SELECT count(*) FROM questions
 WHERE id = (SELECT json_extract(j, '$.question_id') FROM temp.input) AND answered_at IS NULL;
 
-UPDATE questions SET answered_at = (SELECT json_extract(j, '$.now') FROM temp.input)
+UPDATE questions SET answered_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now')
 WHERE id = (SELECT json_extract(j, '$.question_id') FROM temp.input) AND answered_at IS NULL;
 
 SELECT q.id AS question_id, q.question, q.answered_at,

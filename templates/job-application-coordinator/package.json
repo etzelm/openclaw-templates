@@ -1,6 +1,6 @@
 {
   "name": "@etzelm/job-application-coordinator",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "Fills job applications on the sites you choose from your own answers and resume, and tracks every one. Starts paused, in dry run.",
   "author": "Mitchell Etzel",
   "license": "MIT",
