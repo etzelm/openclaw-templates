@@ -29,7 +29,7 @@
   - Leftover check: <`lsof -nP -iTCP:<port> -sTCP:LISTEN`>
   - Cleanup: <`rm -rf <workspace>/evidence/<slug>/state`>
   These are the only runtime commands your OK covers.
-- Needs: <what the run needs: an isolated Gateway, a test config, a channel account, a provider key, a paid model. For each live account: "owner has it" or "owner does not have it: offer a stub at <boundary> plus a request the owner can post on the issue">
+- Needs: <what the run needs: an isolated Gateway, a test config, a channel account, a provider key, a paid model. Every account, subscription, device or channel login must be in proof_accounts. If one is not, do not send this proposal: record the issue out-of-scope with a "proof account:" reason>
 - Gap: <what the runtime output cannot show, and why, or "none">
 
 ## Gates

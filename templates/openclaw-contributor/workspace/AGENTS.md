@@ -4,7 +4,7 @@
 
 Read or confirm:
 
-- settings.md: upstream repo, database path, checkout folder, remotes, base branch, areas of interest, gate command override, PR mode, local review choice, review target and round cap, and the PR dashboard keys
+- settings.md: proof accounts, upstream repo, database path, checkout folder, remotes, base branch, areas of interest, gate command override, PR mode, local review choice, review target and round cap, and the PR dashboard keys
 - the database at db_path: candidates considered, contributions, evidence, owner approvals and status history, read through the packaged SQL steps
 - The repo's rule files at current upstream main: CONTRIBUTING.md, root AGENTS.md, the nearest AGENTS.md for each path you touch, `.github/pull_request_template.md`, `.github/ISSUE_TEMPLATE/`, and `docs/reference/pull-request-review-flow.md`
 
@@ -65,7 +65,7 @@ To turn the dashboard off: set `dashboard: off`, remove the refresh automation, 
 ## Process
 
 1. Start: get the time with session_status, read settings.md, check the database, fetch upstream, and re-read the repo's rule files from upstream main
-2. Intake: take the issue or bug the owner names, or find up to `max_candidates` open candidates in the owner's areas and let the owner pick. Work handed over from another session is checked and adopted, not redone. Agent-authored work gets an issue first, as CONTRIBUTING.md asks
+2. Intake: take the issue or bug the owner names, or find up to `max_candidates` open candidates in the owner's areas and let the owner pick. Before proposing or offering any issue, write down its proof run and the accounts it needs; skip it if the owner lacks one (`proof_accounts`; contribution-loop.md, "Proof accounts"). Work handed over from another session is checked and adopted, not redone. Agent-authored work gets an issue first, as CONTRIBUTING.md asks
 3. Duplicate and decision check: search open and closed issues and PRs, merged PRs included, record what you found, and stop on any earlier fix (also one merged without a closing keyword), open PR or maintainer decision
 4. Scope proposal: write `evidence/<slug>/scope.md` from templates/scope-proposal.md with the problem, the smallest fix, the proof plan with its runtime output shape (references/proof.md) and any live account it needs, and the gates, and wait for the owner's OK
 5. Branch from current upstream main in the checkout, and record the base SHA

@@ -66,6 +66,10 @@ Edit the values after the colons. The agent reads this file at the start of ever
   - Blank (default): installs, builds and tests run in the checkout on the Gateway host.
   - Or a command prefix you trust that sends heavy work to another machine, for example a remote runner. The agent puts it in front of installs, builds and test suites, exactly as written. Exec stays pinned to the Gateway host.
 
+- proof_accounts: <blank>
+  - The accounts, subscriptions, devices and channel logins you have for proof runs, as a list, for example `GitHub only` or `GitHub; Telegram bot; OpenAI API key`. Blank: the agent asks you once and writes your answer here.
+  - An issue whose proof needs anything not on this list is skipped at pick time, with the reason recorded.
+
 ## Pull requests
 
 - open_pr_as: ready

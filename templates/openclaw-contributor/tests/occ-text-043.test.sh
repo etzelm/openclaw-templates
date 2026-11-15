@@ -20,7 +20,8 @@ has "proof needs the command and both SHAs" references/proof.md 'The base SHA an
 has "proof needs raw output in fenced blocks" references/proof.md 'in a fenced code block, redacted, not paraphrased'
 has "long logs go to proof-assets" references/proof.md 'proof-assets/<slug>'
 has "proof is planned at scope time" templates/scope-proposal.md 'Runtime output:'
-has "scope names live accounts the owner lacks" templates/scope-proposal.md 'owner does not have it: offer a stub'
+# 0.4.4 replaced the 0.4.3 stub-plus-request fallback with a skip at pick time (occ-text-044.test.sh).
+has "scope names live accounts the owner lacks" templates/scope-proposal.md 'Every account, subscription, device or channel login must be in proof_accounts.'
 has "self-check question before the push gate" references/proof.md 'Does the body contain the actual output a reviewer can inspect?'
 has "push gate requires the self-check" references/contribution-loop.md 'proof-check.md` must exist for this head'
 has "runtime proof has its own exec lane" references/contribution-loop.md 'The runtime proof commands written in the approved scope.md'

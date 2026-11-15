@@ -8,7 +8,7 @@ Pick an OpenClaw issue. The agent proves the bug, fixes it, proves the fix, revi
 
 - **Checks first.** Searches open and closed issues and PRs, and stops on a duplicate, an open PR or an earlier maintainer decision.
 - **Proves the bug and the fix.** A test fails on current main, passes with the fix, and fails again with the fix reverted.
-- **Shows the proof, not a description of it.** The PR body carries the real run's command, base and head SHAs, and the raw redacted output that shows cause and effect, under `Runtime output`. Long logs go on a branch of your fork and are linked. The proof shape is planned at scope time, so a proof that needs an account you do not have comes up before any code, with a stub and a request you can post instead.
+- **Shows the proof, not a description of it.** The PR body carries the real run's command, base and head SHAs, and the raw redacted output that shows cause and effect, under `Runtime output`. Long logs go on a branch of your fork and are linked. Before it proposes an issue, it writes down the proof run and the accounts it needs. If the proof needs an account, subscription, device or channel login you do not have (`proof_accounts`), it skips the issue and says why, so it never takes on a PR it cannot prove.
 - **Runs the repo's own gates.** It re-reads CONTRIBUTING.md, AGENTS.md and the PR template from upstream main on every task. It never works from memory of them.
 - **Reviews before anything is public.** A local ClawSweeper, the reviewer OpenClaw runs on PRs, checks the committed change until no must-fix finding is left.
 - **Drafts the PR in the repo's template**, with the evidence and the local review result.
@@ -184,6 +184,7 @@ Templates have no update command. Publishing a new version does not change agent
   - Nothing else changes in config. Exec mode and host, `runner_prefix`, `approval_relay` and the `automations` tool stay as they are. Open standing grants and PR watchers keep working: a watcher keeps the check text it was created with, and only watchers added after the upgrade get the `addedAt` baseline.
 
   Then, for 0.4.4:
+  - Add `proof_accounts` from `templates/settings.md` to settings.md, blank (the agent then asks you once) or with your list, for example `GitHub only`.
   - Add the "PR dashboard" lines from `templates/settings.md` to settings.md: `dashboard`, `dashboard_note`, `dashboard_author`, `dashboard_org`, `dashboard_refresh_button`.
   - Give the agent the `show_widget` tool, the same way as `automations` above: print `tools.allow`, then set the same list with `"show_widget"` added. Keep every tool it already has, and keep `deny` as it is.
   - Then ask the agent, in the Control UI: "Set up the PR dashboard (AGENTS.md, PR dashboard)." It builds the table, pins it and adds the one refresh automation. No database step. Open grants and PR watchers are not touched.

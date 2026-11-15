@@ -38,4 +38,4 @@ Output (redacted, <N> of <M> lines; full log: <link>):
 
 <One sentence: which lines show the cause and which show the fixed effect.>
 
-Not shown: <what this output cannot prove, and why (for example "needs a live account the owner does not have; the stub stands in at the provider boundary"), or "none">.
+Not shown: <what this output cannot prove, and why (for example "a real model reply; the fake provider stands in, and the behavior under test does not depend on it"), or "none">.

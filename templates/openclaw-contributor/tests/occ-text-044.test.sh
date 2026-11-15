@@ -88,7 +88,35 @@ lacks "no sandboxOrigin value anywhere" README.md 'sandboxOrigin[^`]*https?://'
 has "CHANGELOG has 0.4.4" CHANGELOG.md '## 0.4.4'
 ok "package.json is 0.4.4" '[[ "$(node -p "require(\"$P/package.json\").version")" == "0.4.4" ]]'
 
-# 4. Widget template and trigger: read only, generic
+# 4. Proof accounts: a missing account is a skip at pick time
+L="references/contribution-loop.md"; PF="references/proof.md"
+has "settings: proof_accounts, blank by default" templates/settings.md '- proof_accounts: <blank>'
+has "settings: blank means ask once" templates/settings.md 'Blank: the agent asks you once and writes your answer here.'
+has "loop has the Proof accounts section" "$L" '### Proof accounts'
+has "skip is a stop rule next to the PR limit" "$L" '- The proof needs an account the owner does not have (`out-of-scope`, reason starting `proof account:`).'
+has "proof run written before proposing" "$L" '1. Write down the proof run in one or two lines: the entry point a user hits, the command, and that it runs on the base SHA and on the head SHA'
+has "every account listed" "$L" '2. List every account, subscription, device or channel login that run needs'
+has "blank proof_accounts: ask once" "$L" 'If `proof_accounts` is blank, ask the owner once'
+has "missing account: not a candidate, recorded" "$L" 'If the owner lacks any item, the issue is not a candidate. Record it with `set-candidate`, decision `out-of-scope`, reason `proof account: needs <item>; owner does not have it`.'
+has "a stub does not get around it" "$L" 'A stub that stands in for the very account the behavior depends on is not proof. Never plan on someone else collecting the proof.'
+has "scope step stops on a new missing account" "$L" 'If planning shows one more that the owner does not have, stop: do not propose the issue'
+lacks "scope step no longer offers a stub plus request" "$L" 'offer a stub at the boundary plus a short request'
+has "proof.md: do not pick the issue" "$PF" 'Then do not pick the issue.'
+has "proof.md: no stub at the boundary as proof" "$PF" '- Do not plan a stub at the boundary as the proof.'
+has "proof.md: no outside proof collection" "$PF" '- Do not plan on someone else collecting the proof, and do not draft a request for it.'
+has "proof.md: stub fine for a service the agent controls" "$PF" '- A stub is still fine for a service you control in the run'
+has "proof.md: after PR open, stop spending and report" "$PF" 'If a missing account only shows up after the PR is open, stop spending on proof for that PR'
+has "proof.md: never ask outsiders after PR open" "$PF" 'Do not ask anyone outside to collect the proof.'
+lacks "proof.md: no request for someone with that account" "$PF" 'asking someone with that account'
+lacks "scope template: no stub plus request" templates/scope-proposal.md 'request the owner can post'
+has "CLAW.md: pick only work you can prove" CLAW.md '- Pick only work you can prove.'
+has "AGENTS.md intake checks proof accounts" "$A" 'skip it if the owner lacks one (`proof_accounts`'
+has "BOOTSTRAP asks for proof accounts" BOOTSTRAP.md '**Proof accounts** (`proof_accounts`): always ask'
+has "README upgrade adds proof_accounts" README.md '- Add `proof_accounts` from `templates/settings.md` to settings.md, blank'
+has "CHANGELOG has a Why line" CHANGELOG.md 'Why: a PR whose proof needs an account the owner does not have reviews clean but stays at "needs proof"'
+ok "no PR or issue numbers and no names in the 0.4.4 CHANGELOG entry" '! awk "/^## 0\\.4\\.4/{f=1;next} /^## /{f=0} f" "$P/CHANGELOG.md" | grep -qiE "#[0-9]{3,}|pull/[0-9]|issues/[0-9]|chatgpt|etzelm|mitchell"'
+
+# 5. Widget template and trigger: read only, generic
 T="references/pr-dashboard/template.html"
 count "template has the data placeholder once" "$T" '<script type="application/json" id="d">__DATA__</script>' 1
 count "template checks the data CRC" "$T" "const CRC=Number('__CRC__');" 1
