@@ -70,6 +70,8 @@ const queue = (kind, list) => writeFileSync(join(q, kind + ".json"), JSON.string
 const calls = () => (existsSync(join(q, "calls.log")) ? readFileSync(join(q, "calls.log"), "utf8").trim().split("\n").filter(Boolean).map((l) => JSON.parse(l)) : []);
 const resetCalls = () => rmSync(join(q, "calls.log"), { force: true });
 const env = { ...process.env, PATH: bin + ":" + process.env.PATH, FAKE_GH_QUEUES: q };
+const markPinned = (digest) => spawnSync(process.execPath, [join(ws, "references/pr-dashboard/build.mjs"), "--mark-pinned", ...(digest === undefined ? [JSON.parse(readFileSync(join(ws, "dashboard/data.json"), "utf8")).digest.slice(0, 12)] : digest ? [digest] : [])], { encoding: "utf8", env });
+const RL = /^(CHANGED|UNCHANGED) rows=\d+ cost=\d+ remaining=\S+ digest=[0-9a-f]{12}$/;
 const build = () => {
   const p = spawnSync(process.execPath, [join(ws, "references/pr-dashboard/build.mjs")], { encoding: "utf8", env });
   const out = (p.stdout || "") + (p.stderr || "");
@@ -87,7 +89,7 @@ queue("user", [{ stdout: "test-user\n" }]);
 queue("prs", [prsOk(OPEN, CLOSED)]);
 queue("ci", [ciOk(CI)]);
 let b = build();
-ok("first build prints CHANGED with rows, cost and remaining", b.code === 0 && b.last === "CHANGED rows=3 cost=2 remaining=4998", b.out);
+ok("first build prints CHANGED with rows, cost and remaining", b.code === 0 && b.last.startsWith("CHANGED rows=3 cost=2 remaining=4998 digest=") && RL.test(b.last), b.out);
 let c = calls();
 ok("author comes from gh api user when dashboard_author is blank", c.some((a) => a.join(" ") === "api user --jq .login"), JSON.stringify(c));
 const prsCall = c.find((a) => a.some((x) => x.includes("prs.graphql"))) || [];
@@ -115,6 +117,7 @@ ok("data.json is written in Python's default JSON layout (ASCII, ', ' and ': ')"
 let h = html();
 const payloadText = (h.match(/<script type="application\/json" id="d">([\s\S]*?)<\/script>/) || [])[1] || "";
 ok("widget.html embeds the compact data", payloadText.startsWith('{"d":14,"at":"') && !h.includes("__DATA__"), payloadText.slice(0, 80));
+ok("one row per line in the embedded data (no line over 1000 characters)", payloadText.split("\n").length === 3 + 2 && payloadText.split("\n").every((l) => l.length < 1000) && h.split("\n").every((l) => l.length < 2000), payloadText.split("\n").length);
 const crcIn = Number((h.match(/const CRC=Number\('(\d+)'\);/) || [])[1]);
 const modEarly = await import(pathToFileURL(join(ws, "references/pr-dashboard/build.mjs")).href);
 ok("the CRC in the widget matches its data", crcIn === modEarly.crc32(payloadText), crcIn + " vs " + modEarly.crc32(payloadText));
@@ -122,18 +125,23 @@ const payload = JSON.parse(payloadText);
 const p101 = payload.rows.find((x) => x.n === 101) || {};
 ok("compact rows: no h without a summary, no r or url for the main repo", !("h" in p101) && !("r" in p101) && !("url" in p101) && p101.s === "O" && p101.m === "clean", JSON.stringify(p101));
 ok("widget.html keeps emoji as real characters", h.includes("rating: 🥇 gold"));
-ok("no job id yet: JOB is empty and Refresh explains it", h.includes("const JOB='';") && h.includes("Refresh is off."));
+ok("no job id yet: JOB is empty, the Refresh button hides, damage notes say to ask the agent", h.includes("const JOB='';") && h.includes("if(!JOB)$('refresh').style.display='none';") && h.includes("'ask the agent to pin the dashboard again'"));
 
 // 2. Not pinned yet: still CHANGED. After --mark-pinned: UNCHANGED.
 b = build();
 ok("until the widget is marked pinned, the same data stays CHANGED (a failed pin is retried)", b.code === 0 && b.last.startsWith("CHANGED rows=3"), b.out);
 resetCalls();
-const mp = spawnSync(process.execPath, [join(ws, "references/pr-dashboard/build.mjs"), "--mark-pinned"], { encoding: "utf8", env });
+const bare = markPinned("");
+ok("--mark-pinned without a digest is refused", bare.status === 1 && /needs the digest/.test(bare.stdout), bare.stdout);
+const wrong = markPinned("0123456789ab");
+ok("--mark-pinned with another build's digest is refused and records nothing", wrong.status === 1 && /changed since that build/.test(wrong.stdout) && !existsSync(join(ws, "dashboard/pinned.txt")), wrong.stdout);
+ok("the result line's digest is the start of data.json's digest", data().digest.startsWith(b.last.split("digest=")[1]));
+const mp = markPinned(b.last.split("digest=")[1]);
 ok("--mark-pinned prints PINNED and calls no gh", mp.status === 0 && /^PINNED [0-9a-f]{12}$/.test(mp.stdout.trim()) && calls().length === 0, mp.stdout + mp.stderr);
 ok("pinned.txt holds the data.json digest", readFileSync(join(ws, "dashboard/pinned.txt"), "utf8").trim() === data().digest);
 resetCalls();
 b = build();
-ok("same data after the pin prints UNCHANGED", b.code === 0 && b.last === "UNCHANGED rows=3 cost=2 remaining=4998", b.out);
+ok("same data after the pin prints UNCHANGED", b.code === 0 && b.last.startsWith("UNCHANGED rows=3 cost=2 remaining=4998 digest="), b.out);
 const later = clone2(OPEN); later[0].updatedAt = "2026-11-11T23:59:00Z";
 queue("prs", [prsOk(later, CLOSED)]);
 b = build();
@@ -165,7 +173,7 @@ ok("broken short.json is an ERROR, not a silent reset", b.code === 1 && /^ERROR 
 writeFileSync(join(ws, "dashboard/short.json"), JSON.stringify({ "https://github.com/openclaw/openclaw/pull/101": "Faster thing loading" }));
 
 // 4. 502 then success: retried, builds.
-spawnSync(process.execPath, [join(ws, "references/pr-dashboard/build.mjs"), "--mark-pinned"], { encoding: "utf8", env });
+markPinned();
 const digestBefore = data().digest;
 resetCalls();
 queue("prs", [{ exit: 1, stderr: "HTTP 502: Bad Gateway (https://api.github.com/graphql)" }, prsOk(OPEN, CLOSED)]);
@@ -198,7 +206,7 @@ ok("an answer without the search is an ERROR", b.code === 1 && /^ERROR .*open\.n
 queue("prs", [{ stdout: { data: { open: { nodes: [null, {}, { number: 7, url: "https://github.com/openclaw/crabbox/pull/7", title: "feat: x", state: "OPEN" }] }, closed: { nodes: [] } } } }]);
 queue("ci", [{ stdout: { data: { open: { nodes: [{ number: 7, url: "https://github.com/openclaw/crabbox/pull/7" }] } } } }]);
 b = build();
-ok("missing fields still build (empty nodes skipped)", b.code === 0 && /^CHANGED rows=1 cost=0 remaining=null$/.test(b.last), b.out);
+ok("missing fields still build (empty nodes skipped)", b.code === 0 && /^CHANGED rows=1 cost=0 remaining=null digest=[0-9a-f]{12}$/.test(b.last), b.out);
 const r7 = data().rows[0] || {};
 ok("missing labels, merge state, commits: defaults", JSON.stringify(r7.labels) === "[]" && r7.ms === "unknown" && r7.ci === null, JSON.stringify(r7));
 ok("a PR in another repo carries r in the payload", html().includes('"r":"crabbox"'));
@@ -207,11 +215,11 @@ ok("a PR in another repo carries r in the payload", html().includes('"r":"crabbo
 queue("prs", [prsOk([], [])]);
 queue("ci", [ciOk([])]);
 b = build();
-ok("empty result prints CHANGED rows=0", b.code === 0 && b.last === "CHANGED rows=0 cost=2 remaining=4998", b.out);
-ok("empty result widget embeds no rows", /id="d">\{"d":14,"at":"[^"]+","rows":\[\]\}<\/script>/.test(html()));
-spawnSync(process.execPath, [join(ws, "references/pr-dashboard/build.mjs"), "--mark-pinned"], { encoding: "utf8", env });
+ok("empty result prints CHANGED rows=0", b.code === 0 && b.last.startsWith("CHANGED rows=0 cost=2 remaining=4998 digest="), b.out);
+ok("empty result widget embeds no rows", /id="d">\{"d":14,"at":"[^"]+","rows":\[\]\}<\/script>/.test(html()), html().slice(html().indexOf('id="d"'), html().indexOf('id="d"') + 120));
+markPinned();
 b = build();
-ok("empty result again, after the pin, prints UNCHANGED", b.last === "UNCHANGED rows=0 cost=2 remaining=4998", b.out);
+ok("empty result again, after the pin, prints UNCHANGED", b.last.startsWith("UNCHANGED rows=0 cost=2 remaining=4998 digest="), b.out);
 
 // 9. Settings: explicit author and org, and refusal of anything else.
 resetCalls();
@@ -280,8 +288,17 @@ const T = tsrc.replace('const workspace = "";', 'const workspace = "' + ws + '";
 let t = await runT(T, undefined, said("UNCHANGED rows=3 cost=2 remaining=4998"));
 ok("UNCHANGED does not wake the model", t.fire === false && t.state.last.startsWith("UNCHANGED"), JSON.stringify(t));
 ok("one plain node command per check, no shell operators", tcalls.length === 1 && tcalls[0] === "node " + ws + "/references/pr-dashboard/build.mjs" && !/[;&|<>`$'"\\]/.test(tcalls[0]), tcalls[0]);
-t = await runT(T, { last: "UNCHANGED" }, said("CHANGED rows=4 cost=2 remaining=4990"));
-ok("CHANGED wakes the model with the line", t.fire === true && t.message === "PR dashboard builder: CHANGED rows=4 cost=2 remaining=4990");
+t = await runT(T, { last: "UNCHANGED" }, said("CHANGED rows=4 cost=2 remaining=4990 digest=aaaaaaaaaaaa"));
+ok("CHANGED wakes the model with the line", t.fire === true && t.message === "PR dashboard builder: CHANGED rows=4 cost=2 remaining=4990 digest=aaaaaaaaaaaa");
+let cs = t.state;
+for (let i = 2; i <= 3; i++) { t = await runT(T, cs, said("CHANGED rows=4 cost=2 remaining=4980 digest=aaaaaaaaaaaa")); cs = t.state; }
+ok("the same unpinned table wakes it up to 3 times", t.fire === true && cs.tries === 3, JSON.stringify(cs));
+t = await runT(T, cs, said("CHANGED rows=4 cost=2 remaining=4970 digest=aaaaaaaaaaaa"));
+ok("the 4th try within the hour does not wake it", t.fire === false, JSON.stringify(t));
+t = await runT(T, { ...cs, woke: Date.now() - 61 * 60 * 1000 }, said("CHANGED rows=4 cost=2 remaining=4960 digest=aaaaaaaaaaaa"));
+ok("after an hour it tries again", t.fire === true);
+t = await runT(T, cs, said("CHANGED rows=5 cost=2 remaining=4950 digest=bbbbbbbbbbbb"));
+ok("a different table wakes it at once", t.fire === true && t.state.tries === 1);
 t = await runT(T, { last: "UNCHANGED" }, said("some log\nERROR Error: HTTP 502: Bad Gateway", "completed", 1));
 ok("a new ERROR wakes the model with its reason (exit code note ignored)", t.fire === true && t.message === "PR dashboard builder: ERROR Error: HTTP 502: Bad Gateway", JSON.stringify(t));
 const errState = t.state;
@@ -311,7 +328,7 @@ t = await runT(T, undefined, realExec);
 ok("end to end: changed data wakes the model", t.fire === true && /CHANGED rows=3/.test(t.message), JSON.stringify(t));
 t = await runT(T, t.state, realExec);
 ok("end to end: not pinned yet, the next check wakes it again", t.fire === true, JSON.stringify(t));
-spawnSync(process.execPath, [join(ws, "references/pr-dashboard/build.mjs"), "--mark-pinned"], { encoding: "utf8", env });
+markPinned();
 t = await runT(T, t.state, realExec);
 ok("end to end: after the pin, the quiet check does not", t.fire === false, JSON.stringify(t));
 queue("prs", [{ exit: 1, stderr: "HTTP 502: Bad Gateway" }]);

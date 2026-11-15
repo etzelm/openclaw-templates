@@ -2,13 +2,15 @@
 // The agent copies this text unchanged except for the `const workspace` line, which gets the
 // absolute path of its workspace (no spaces or shell characters). It runs the read-only builder once
 // and reads its result line. UNCHANGED does not wake the model. CHANGED (the widget differs from the
-// last pinned one) wakes it to pin the new widget. ERROR wakes it on a new error, and again once a day
-// while the same error lasts, so a long GitHub outage does not start a model turn every 15 minutes.
+// last pinned one) wakes it to pin the new widget: up to 3 times for the same table, then once an hour,
+// so a pin that keeps failing does not start a model turn every 15 minutes. ERROR wakes it on a new
+// error, and again once a day while the same error lasts.
 const workspace = "";
 if (!/^\/[A-Za-z0-9._\/-]+$/.test(workspace)) {
   throw new Error("PR dashboard: the workspace line must be an absolute path with no spaces or shell characters.");
 }
-const DAY = 24 * 60 * 60 * 1000;
+const HOUR = 60 * 60 * 1000;
+const DAY = 24 * HOUR;
 const command = "node " + workspace + "/references/pr-dashboard/build.mjs";
 const r = await exec({ command });
 if (!r || r.status !== "completed") {
@@ -21,7 +23,13 @@ const last = found || "ERROR no result line from the builder: " + JSON.stringify
 const now = Date.now();
 const prev = trigger.state || {};
 if (last.startsWith("UNCHANGED")) return { fire: false, state: { last } };
-if (last.startsWith("CHANGED")) return { fire: true, message: "PR dashboard builder: " + last, state: { last } };
+if (last.startsWith("CHANGED")) {
+  const table = (last.match(/digest=([0-9a-f]+)/) || [])[1] || last;
+  const same = prev.table === table && typeof prev.woke === "number";
+  const tries = same ? (prev.tries || 0) + 1 : 1;
+  if (same && tries > 3 && now - prev.woke < HOUR) return { fire: false, state: { last, table, tries: prev.tries, woke: prev.woke } };
+  return { fire: true, message: "PR dashboard builder: " + last, state: { last, table, tries, woke: now } };
+}
 if (last === prev.last && typeof prev.woke === "number" && now - prev.woke < DAY) {
   return { fire: false, state: { last, woke: prev.woke } };
 }

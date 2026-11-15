@@ -63,7 +63,7 @@ let DATA=null, dataErr='', ORG='openclaw';
 (function(){
  const raw=$('d').textContent;
  if(raw.charAt(0)!=='{')return;                       // template not built yet
- if(crc32(raw)!==CRC)dataErr='data damaged in transit (checksum mismatch), press Refresh';
+ if(crc32(raw)!==CRC)dataErr='data damaged in transit (checksum mismatch), '+(JOB?'press Refresh':'ask the agent to pin the dashboard again');
  try{
   const d=JSON.parse(raw);
   // Expand the compact keys written by build.mjs.
@@ -71,7 +71,7 @@ let DATA=null, dataErr='', ORG='openclaw';
   DATA={days:d.d, fetchedAt:d.at, rows:d.rows.map(x=>{const repo=x.r||ORG;return {
    n:x.n, title:x.t, state:STATE[x.s]||x.s, merged:x.s==='M', updated:x.u, labels:x.l||[], ms:x.m||'unknown',
    ci:x.c||null, short:x.h||plainTitle(x.t), repo, url:x.url||('https://github.com/'+ORG+'/'+repo+'/pull/'+x.n)}})};
- }catch(e){DATA=null;dataErr='data damaged in transit (unreadable), press Refresh'}
+ }catch(e){DATA=null;dataErr='data damaged in transit (unreadable), '+(JOB?'press Refresh':'ask the agent to pin the dashboard again')}
 })();
 const sel=new Set(); let flt=null;
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -187,7 +187,7 @@ function render(){
  tb.innerHTML=h;
  tb.querySelectorAll('input[type=checkbox]').forEach(cb=>cb.onchange=()=>{cb.checked?sel.add(cb.dataset.u):sel.delete(cb.dataset.u);syncBtns()});
  syncBtns();
- $('ck').textContent='data from '+fmtT(DATA.fetchedAt)+' · refreshed every 15 min in watch hours';
+ $('ck').textContent='table from '+fmtT(DATA.fetchedAt)+' · checked every 15 min in watch hours';
 }
 const RANK={diamond:0,platinum:1,gold:2,silver:3,bronze:4};
 function rating(r){
@@ -218,6 +218,7 @@ $('refresh').onclick=async()=>{
  }catch(e){$('err').textContent=e.message||String(e)}
  setTimeout(()=>{$('refresh').disabled=false},30000);
 };
+if(!JOB)$('refresh').style.display='none';
 $('clear').onclick=()=>{sel.clear();$('ta').style.display='none';render()};
 $('copy').onclick=()=>copyText([...sel].join('\n'),$('copy'),'Copy selected');
 render();

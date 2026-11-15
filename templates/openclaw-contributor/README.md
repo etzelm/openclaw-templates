@@ -51,12 +51,12 @@ The agent reads the issue and the repo rules at current main, finds no duplicate
 
 ## PR dashboard
 
-Setup pins a table of your PRs on this agent's dashboard in the Control UI: your open PRs in the openclaw org, and the ones merged or closed in the last 14 days. Each row shows who acts next (you or a maintainer), the ClawSweeper rating and proof labels, the priority label, merge state, CI (including OpenClaw's CI gate), status and merge-risk labels, and the last update. Click a column to sort; the counters above the table filter the open PRs (need you, waiting on maintainer, conflicts, CI failing). **Copy list** copies a bulleted list (link, summary, rating, priority) of the selected PRs, or of all open PRs. **Refresh** fetches now.
+Setup pins a table of your PRs on this agent's dashboard in the Control UI: your open PRs in `dashboard_org` (default openclaw), and the ones merged or closed in the last 14 days (up to 60 of each; more are not shown). Each row shows who acts next (you or a maintainer), the ClawSweeper rating and proof labels, the priority label, merge state, CI (including OpenClaw's CI gate), status and merge-risk labels, and the last update. Click a column to sort; the counters above the table filter the open PRs (need you, waiting on maintainer, conflicts, CI failing). **Copy list** copies a bulleted list (link, summary, rating, priority) of the selected PRs, or of all open PRs. With the Refresh button on (below), **Refresh** fetches now.
 
 How it works:
 
 - `references/pr-dashboard/build.mjs` (plain Node, no packages) runs on the Gateway host. It makes two read-only GitHub GraphQL calls with your gh login, about 2 points of the 5,000 per hour, and writes `dashboard/data.json` and `dashboard/widget.html` in the agent's workspace. The browser never calls GitHub.
-- One automation, `PR dashboard refresh`, runs that builder every 15 minutes within `watch_hours`. When the table would look the same as the one last pinned, it stops there and no model runs. When it would change, it wakes the agent, which pins the new table with `show_widget` and records the pin (`dashboard/pinned.txt`). A failed pin is tried again on the next check. A GitHub error wakes it once per distinct error.
+- One automation, `PR dashboard refresh`, runs that builder every 15 minutes within `watch_hours`. When the table would look the same as the one last pinned, it stops there and no model runs. When it would change, it wakes the agent, which pins the new table with `show_widget` and records the pin (`dashboard/pinned.txt`). A failed pin is tried again: up to 3 times for the same table, then once an hour, and each try is a model turn. A GitHub error wakes it on a new error and once a day while it lasts.
 - The table is read only. It has no button or link that writes to GitHub, and no network access: links open in a new tab through the Control UI. By default it makes no host call at all.
 - **Refresh button** (`dashboard_refresh_button`, off by default): on, the button runs the refresh automation now, through a `cron.trigger` grant for that one automation. OpenClaw ties a widget's grant to its exact content, so each new table needs a new grant: in ask mode the dashboard asks you to allow it again after every change. In full access mode it is granted without asking.
 - Summaries: when the agent opens a PR, it writes a short plain summary for it in `dashboard/short.json`. Other rows show the PR title without its `fix(...):` prefix until a refresh adds one.
@@ -64,7 +64,7 @@ How it works:
 - Setup does it in a Control UI turn, where `show_widget` is available. From a chat channel, the agent asks you to repeat "Set up the PR dashboard" in the Control UI.
 - The refresh check needs a workspace path with no spaces or shell characters (the default `~/.openclaw/workspace-<agent-id>` is fine).
 - In ask mode, the refresh check's `node` command asks you on its first run; "Always allow" covers that one command for that automation. Each refresh turn asks before its own commands too.
-- Running setup again updates the same widget and automation; it never adds a second one. To turn it off, set `dashboard: off` and ask the agent; it removes the automation, and you remove the widget from the dashboard.
+- Running setup again in the same session updates the same widget and automation; it never adds a second one. A widget belongs to the session that pinned it: run from another session, setup moves the automation there and asks you to remove the old widget. To turn it off, set `dashboard: off` and ask the agent; it removes the automation, and you remove the widget from the dashboard.
 - Optional owner config: dashboard widgets load from OpenClaw's widget sandbox origin. On a Gateway you reach remotely, if the widget frame does not load, see `mcp.apps.sandboxOrigin` in OpenClaw's docs (docs/cli/mcp/apps.md). Setup never sets it. Links do not need it.
 
 ## Skills and plugins
@@ -172,7 +172,7 @@ Templates have no update command. Publishing a new version does not change agent
   cd "<workspace>" && sqlite3 -bail "<db_path>" ".read references/sql/setup-check.sql"
   ```
 
-  From 0.4.2: the database is already version 3. Leave out the `migrate-v2-to-v3.sql` line (it refuses a version 3 database and changes nothing); the check prints `setup-check ok, schema version 3`. From 0.4.0 or 0.4.1: the migration prints `migrate ok, schema version 3, ...` and the check prints `setup-check ok, schema version 3`. From 0.3.x, run `migrate-v1-to-v2.sql` the same way right before the `migrate-v2-to-v3.sql` line; it prints `migrate ok, schema version 2`.
+  From 0.4.2 or 0.4.3: the database is already version 3. Leave out the `migrate-v2-to-v3.sql` line (it refuses a version 3 database and changes nothing); the check prints `setup-check ok, schema version 3`. From 0.4.0 or 0.4.1: the migration prints `migrate ok, schema version 3, ...` and the check prints `setup-check ok, schema version 3`. From 0.3.x, run `migrate-v1-to-v2.sql` the same way right before the `migrate-v2-to-v3.sql` line; it prints `migrate ok, schema version 2`.
 
   Then, for 0.4.2:
   - Add the new lines from `templates/settings.md` to settings.md: `commit_email`, `signing`, `signing_note`, `runner_prefix`, `watch_hours` (and `approval_relay` from 0.3.x).

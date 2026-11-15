@@ -1,12 +1,14 @@
 #!/usr/bin/env node
 // Builds the PR dashboard widget from GitHub data. Read only: two gh GraphQL reads, no writes to GitHub.
-//   node <workspace>/references/pr-dashboard/build.mjs                fetch, write data.json and widget.html,
-//                                                                     compare with dashboard/pinned.txt
-//   node <workspace>/references/pr-dashboard/build.mjs --mark-pinned  record the last build as pinned (no GitHub call)
+//   node <workspace>/references/pr-dashboard/build.mjs
+//     fetch, write dashboard/data.json and dashboard/widget.html, compare with dashboard/pinned.txt
+//   node <workspace>/references/pr-dashboard/build.mjs --mark-pinned <digest>
+//     record the build with that digest (from its result line) as pinned; no GitHub call
 // Optional: --workspace <dir> (default: two folders above this file). It reads settings.md (dashboard_author,
-// dashboard_org, dashboard_refresh_button), dashboard/short.json and dashboard/jobid.txt. The last output line is CHANGED (the widget
-// differs from the last pinned one), UNCHANGED, PINNED, or ERROR with a reason and exit code 1. A failed pin
-// is retried on the next run, because pinned.txt only moves on --mark-pinned. Plain Node, no packages.
+// dashboard_org, dashboard_refresh_button), dashboard/short.json and dashboard/jobid.txt. The last output line
+// is CHANGED (the widget differs from the last pinned one) or UNCHANGED, each with rows, cost, remaining and
+// digest; PINNED; or ERROR with a reason and exit code 1. A failed pin is retried on the next run, because
+// pinned.txt only moves on --mark-pinned. Plain Node, no packages.
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, realpathSync, renameSync, writeFileSync } from "node:fs";
@@ -33,8 +35,7 @@ const JOB = /^[A-Za-z0-9_-]{1,128}$/;
 const BUDGET_MS = 25000;
 const started = Date.now();
 
-// JSON text the way Python's json.dumps writes it by default (ASCII only, ", " and ": "),
-// a stable layout for the digest and data.json.
+// JSON text in json.dumps' default layout (ASCII only, ", " and ": "): a stable text for the digest and data.json.
 export function pyDumps(v, sortKeys = false) {
   if (v === null || v === undefined) return "null";
   if (typeof v === "boolean") return v ? "true" : "false";
@@ -189,15 +190,19 @@ export function render(tpl, data, job, org) {
     if (r.url !== "https://github.com/" + org + "/" + repo + "/pull/" + r.n) x.url = r.url;
     small.push(x);
   }
-  const payload = { d: data.days, at: data.fetchedAt, rows: small };
-  if (org !== "openclaw") payload.o = org;
-  const embedded = JSON.stringify(payload).split("<").join("\\u003c");
+  // One row per line, so a file read never has to continue inside a very long line.
+  let text = '{"d":' + JSON.stringify(data.days) + ',"at":' + JSON.stringify(data.fetchedAt) + ',"rows":[' +
+    (small.length ? "\n" + small.map((x) => JSON.stringify(x)).join(",\n") + "\n" : "") + "]";
+  if (org !== "openclaw") text += ',"o":' + JSON.stringify(org);
+  const embedded = (text + "}").split("<").join("\\u003c");
   return tpl.split("__JOBID__").join(job).split("__CRC__").join(String(crc32(embedded))).split("__DATA__").join(embedded);
 }
 
-function markPinned(out) {
+function markPinned(out, want) {
   const digest = readJson(join(out, "data.json"), {}).digest;
   if (!digest) throw new Error("no digest in dashboard/data.json, run the builder first");
+  if (!/^[0-9a-f]{12,64}$/.test(want || "")) throw new Error("--mark-pinned needs the digest from the result line of the build you pinned");
+  if (!digest.startsWith(want)) throw new Error("dashboard/data.json changed since that build (" + digest.slice(0, 12) + "); not marked, the next check pins again");
   writeAtomic(join(out, "pinned.txt"), digest + "\n");
   console.log("PINNED " + digest.slice(0, 12));
 }
@@ -208,7 +213,8 @@ function main() {
   const ws = resolve(wi >= 0 && argv[wi + 1] ? argv[wi + 1] : join(HERE, "..", ".."));
   const out = join(ws, "dashboard");
   mkdirSync(out, { recursive: true });
-  if (argv.includes("--mark-pinned")) return markPinned(out);
+  const mi = argv.indexOf("--mark-pinned");
+  if (mi >= 0) return markPinned(out, argv[mi + 1]);
 
   const settingsPath = join(ws, "settings.md");
   const settings = existsSync(settingsPath) ? readFileSync(settingsPath, "utf8") : "";
@@ -271,7 +277,7 @@ function main() {
   const refresh = setting(settings, "dashboard_refresh_button") === "on";
   writeAtomic(dataPath, pyDumps(data));
   writeAtomic(join(out, "widget.html"), render(tpl, data, refresh ? job : "", org));
-  console.log((pinned !== digest ? "CHANGED" : "UNCHANGED") + " rows=" + rows.length + " cost=" + data.cost + " remaining=" + data.remaining);
+  console.log((pinned !== digest ? "CHANGED" : "UNCHANGED") + " rows=" + rows.length + " cost=" + data.cost + " remaining=" + data.remaining + " digest=" + digest.slice(0, 12));
 }
 
 const isMain = () => {

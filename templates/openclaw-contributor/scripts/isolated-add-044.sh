@@ -99,11 +99,11 @@ node "$OCJS" config validate > "$A/config-validate.log" 2>&1; gate "config valid
 cp "$WSA/templates/settings.md" "$WSA/settings.md"
 dash_build "$WSA" "$A/dashboard.log"; R1=$?
 L1d="$(tail -1 "$A/dashboard.log")"
-[[ $R1 -eq 0 && "$L1d" == "CHANGED rows=1 cost=2 remaining=4998" ]]; gate "dashboard step 1 builds in the workspace with read-only references ($L1d)" $?
+[[ $R1 -eq 0 && "$L1d" == "CHANGED rows=1 cost=2 remaining=4998 digest="* ]]; gate "dashboard step 1 builds in the workspace with read-only references ($L1d)" $?
 [[ -s "$WSA/dashboard/widget.html" && -s "$WSA/dashboard/data.json" ]] && grep -q "const JOB='';" "$WSA/dashboard/widget.html"; gate "dashboard/widget.html and data.json written, no job id yet" $?
 dash_build "$WSA" "$A/dashboard.log"; L2d="$(tail -1 "$A/dashboard.log")"
 [[ "$L2d" == CHANGED* ]]; gate "not pinned yet: re-running step 1 still prints CHANGED ($L2d)" $?
-( cd "$WSA" && node "$WSA/references/pr-dashboard/build.mjs" --mark-pinned ) >> "$A/dashboard.log" 2>&1; LPd="$(tail -1 "$A/dashboard.log")"
+( cd "$WSA" && node "$WSA/references/pr-dashboard/build.mjs" --mark-pinned "${L2d##*digest=}" ) >> "$A/dashboard.log" 2>&1; LPd="$(tail -1 "$A/dashboard.log")"
 [[ "$LPd" == PINNED* && -s "$WSA/dashboard/pinned.txt" ]]; gate "step 2 records the pin with --mark-pinned ($LPd)" $?
 dash_build "$WSA" "$A/dashboard.log"; L3d="$(tail -1 "$A/dashboard.log")"
 [[ "$L3d" == UNCHANGED* ]]; gate "after the pin, re-running step 1 prints UNCHANGED ($L3d)" $?

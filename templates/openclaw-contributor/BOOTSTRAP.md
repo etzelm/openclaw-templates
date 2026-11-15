@@ -220,7 +220,7 @@ The first real review happens in the loop, on a committed change. If a step fail
 
 ## PR dashboard
 
-Do this when `dashboard` is `on`, after "Tools" showed gh logged in and after settings.md has `watch_hours` and `time_zone`, in a Control UI turn. Follow AGENTS.md, "PR dashboard", "Set it up": build, pin, then the one refresh automation. Each step is safe to repeat; it never makes a second widget or automation. If the build prints `ERROR`, tell the owner the line and go on with setup.
+Do this when `dashboard` is `on`, after "Tools" showed gh logged in and after settings.md has `watch_hours` and `time_zone`, in a Control UI turn. Follow AGENTS.md, "PR dashboard", "Set it up": build, pin, then the one refresh automation. Each step is safe to repeat in the same session; it never makes a second widget or automation. If the build prints `ERROR`, tell the owner the line, still create the automation, and go on with setup.
 
 ## Setup checks
 
@@ -228,7 +228,7 @@ Do this when `dashboard` is `on`, after "Tools" showed gh logged in and after se
 2. Confirm `approval_relay` in settings.md matches the owner's answer: blank, or the session or agent that passes their answers on.
 3. Confirm "Commit identity and signing": the test commit printed `G <commit_email> <commit_email>`, or settings.md records `signing: none` with the owner's reason.
 4. Run the `automations` tool's `list` action. It must answer (an empty list is fine). If the tool is missing, the agent was added without it, for example from an older version: give the owner the command from docs/README.md, "Upgrade in place", that adds `automations` to this agent's tools.
-5. PR dashboard: `dashboard/pinned.txt` exists, the `automations` list shows exactly one `pr-dashboard-refresh` automation and its id is in `dashboard/jobid.txt`; or settings.md records `dashboard: off` with the owner's reason; or you told the owner to run the dashboard setup from the Control UI.
+5. PR dashboard: the `automations` list shows exactly one `pr-dashboard-refresh` automation, on this session, with its id in `dashboard/jobid.txt`, and `dashboard/pinned.txt` exists or you told the owner the build `ERROR` line; or settings.md records `dashboard: off` with the owner's reason; or you told the owner to run the dashboard setup from the Control UI.
 6. Confirm local review: either "Local ClawSweeper" ended with a passing diagnostics check (codex runner) or the `openclaw --version` check with a recorded model (openclaw runner), or settings.md records the owner's opt-out in `local_review_note`.
 7. Tell the owner the gated steps in one short list: push, force-push, open a PR, open an issue, comment, edit a PR, mark ready, request review, resolve a conversation, rerun CI, create a fork, close or reopen. Each needs their yes, every time. The one exception: after a PR opens, a standing grant they give for that PR covers its signed pushes, body edits and one re-review per head, each still recorded as its own row.
 8. Then ask what to work on: an issue link, a bug, or "find candidates".
