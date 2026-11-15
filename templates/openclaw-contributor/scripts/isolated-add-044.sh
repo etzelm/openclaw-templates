@@ -102,10 +102,17 @@ L1d="$(tail -1 "$A/dashboard.log")"
 [[ $R1 -eq 0 && "$L1d" == "CHANGED rows=1 cost=2 remaining=4998" ]]; gate "dashboard step 1 builds in the workspace with read-only references ($L1d)" $?
 [[ -s "$WSA/dashboard/widget.html" && -s "$WSA/dashboard/data.json" ]] && grep -q "const JOB='';" "$WSA/dashboard/widget.html"; gate "dashboard/widget.html and data.json written, no job id yet" $?
 dash_build "$WSA" "$A/dashboard.log"; L2d="$(tail -1 "$A/dashboard.log")"
-[[ "$L2d" == UNCHANGED* ]]; gate "re-running step 1 prints UNCHANGED ($L2d)" $?
+[[ "$L2d" == CHANGED* ]]; gate "not pinned yet: re-running step 1 still prints CHANGED ($L2d)" $?
+( cd "$WSA" && node "$WSA/references/pr-dashboard/build.mjs" --mark-pinned ) >> "$A/dashboard.log" 2>&1; LPd="$(tail -1 "$A/dashboard.log")"
+[[ "$LPd" == PINNED* && -s "$WSA/dashboard/pinned.txt" ]]; gate "step 2 records the pin with --mark-pinned ($LPd)" $?
+dash_build "$WSA" "$A/dashboard.log"; L3d="$(tail -1 "$A/dashboard.log")"
+[[ "$L3d" == UNCHANGED* ]]; gate "after the pin, re-running step 1 prints UNCHANGED ($L3d)" $?
 printf '%s\n' "0f8a3c2e-1111-4222-8333-944455556666" > "$WSA/dashboard/jobid.txt"
 dash_build "$WSA" "$A/dashboard.log"
-grep -q "const JOB='0f8a3c2e-1111-4222-8333-944455556666';" "$WSA/dashboard/widget.html"; gate "after step 3 the job id is in the widget" $?
+grep -q "const JOB='';" "$WSA/dashboard/widget.html"; gate "Refresh button off by default: the job id stays out of the widget" $?
+sed -i.bak 's/^- dashboard_refresh_button: off$/- dashboard_refresh_button: on/' "$WSA/settings.md" && rm -f "$WSA/settings.md.bak"
+dash_build "$WSA" "$A/dashboard.log"
+grep -q "const JOB='0f8a3c2e-1111-4222-8333-944455556666';" "$WSA/dashboard/widget.html" && [[ "$(tail -1 "$A/dashboard.log")" == UNCHANGED* ]]; gate "Refresh button on: the job id is in the widget, digest unchanged" $?
 ! grep -qE "$WSA|/Users/|/home/[a-z]|fetch\(|XMLHttpRequest|WebSocket|api\.github\.com|data\.read|workboard" "$WSA/dashboard/widget.html"; gate "built widget names no path and makes no network or data call" $?
 # The refresh check, with the workspace line filled in, run the way the trigger runtime does.
 node --input-type=module -e '
@@ -241,7 +248,7 @@ P="$B/xnew/package"
 gate "0.4.3 to 0.4.4 upgrade-in-place commands ran (README, migration line left out)" $?
 # README "Then, for 0.4.4": settings lines and show_widget in tools.allow.
 ( set -e
-  printf -- '\n## PR dashboard\n\n- dashboard: on\n- dashboard_note: <blank>\n- dashboard_author: <blank>\n- dashboard_org: openclaw\n' >> "$W/settings.md"
+  printf -- '\n## PR dashboard\n\n- dashboard: on\n- dashboard_note: <blank>\n- dashboard_author: <blank>\n- dashboard_org: openclaw\n- dashboard_refresh_button: off\n' >> "$W/settings.md"
   CUR="$(node "$OCJS" config get 'agents.entries.openclaw-contributor.tools.allow' --json)"
   NEW="$(node -e 'const l=JSON.parse(process.argv[1]); if(!l.includes("show_widget")) l.push("show_widget"); console.log(JSON.stringify(l))' "$CUR")"
   echo "tools.allow before: $CUR"; echo "tools.allow after: $NEW"
@@ -267,7 +274,7 @@ DUMPA="$(sqlite3 "$DB" .dump | shasum -a 256 | cut -d' ' -f1)"
 ( cd "$W" && printf '%s' '{"step":"decide-approval","approval_id":9,"decision":"granted","grant_id":3,"owner_words":"standing grant 3","now":"2026-11-14T14:02:00Z"}' > db-input.json && sqlite3 -bail -json "$DB" ".read references/sql/decide-approval.sql" ) > "$B/grant-ended.log" 2>&1
 [[ $? -ne 0 ]]; gate "an ended grant still refuses a use after the upgrade" $?
 SA="$(head -n "$SLINES" "$W/settings.md" | shasum -a 256 | cut -d' ' -f1; shasum -a 256 "$W/USER.md" "$W/evidence/c2/red.log" | cut -d' ' -f1)"
-[[ "$SB" == "$SA" ]]; gate "settings.md (approval_relay, runner_prefix; only the 4 dashboard lines appended), USER.md and evidence untouched" $?
+[[ "$SB" == "$SA" ]]; gate "settings.md (approval_relay, runner_prefix; only the dashboard lines appended), USER.md and evidence untouched" $?
 grep -q '^- runner_prefix: runner run --$' "$W/settings.md" && grep -q '^- approval_relay: main$' "$W/settings.md"; gate "runner_prefix and approval_relay kept" $?
 node "$OCJS" config get 'agents.entries.openclaw-contributor' --json > "$B/agent-config-after.json" 2>&1
 node -e 'const a=require(process.argv[1]), b=require(process.argv[2]); const al=(a.tools&&a.tools.allow)||[], bl=(b.tools&&b.tools.allow)||[]; const ok=JSON.stringify([...al,"show_widget"])===JSON.stringify(bl); a.tools.allow=bl; process.exit(ok && JSON.stringify(a)===JSON.stringify(b) ? 0 : 1)' "$B/agent-config-before.json" "$B/agent-config-after.json"; gate "agent config unchanged by the upgrade except show_widget added (exec full, host gateway, automations kept)" $?

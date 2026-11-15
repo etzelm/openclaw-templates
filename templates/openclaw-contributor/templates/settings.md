@@ -87,6 +87,8 @@ Edit the values after the colons. The agent reads this file at the start of ever
   - The GitHub login whose PRs the table shows. Blank: the login gh is signed in with (`gh api user`).
 - dashboard_org: openclaw
   - The GitHub org to search. The table shows that author's open PRs and the ones closed in the last 14 days, in every repo of the org.
+- dashboard_refresh_button: off
+  - off (default) or on. On: the widget's Refresh button runs the refresh automation now. It needs a grant, and a grant covers only the exact widget it approved, so in ask mode the dashboard asks you to allow it again after every change to the table. Off: no button action and no grant; the table still refreshes every 15 minutes.
 
 ## Database
 
