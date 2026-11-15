@@ -1,4 +1,4 @@
--- Parked rows to reconcile at run start. Input: since_day (14 days ago), today. At most 10 rows. can_retry is 1 when the one automatic retry is still open.
+-- Parked rows to reconcile at run start. Input: since_day (14 days ago), today. At most 10 rows. can_retry is 1 when the one automatic retry is still open and the row has an attempt left.
 -- Run from the workspace root:
 --   sqlite3 -bail -json <db_path> ".read references/sql/parked-rows.sql"
 -- Input: write db-input.json with the write tool first, with "step": "parked-rows".
@@ -26,7 +26,7 @@ SELECT
   a.day,
   a.auto_retries,
   a.note,
-  CASE WHEN a.auto_retries = 0 AND a.status <> 'applied'
+  CASE WHEN a.auto_retries = 0 AND a.attempts < 2 AND a.status <> 'applied'
             AND a.day < (SELECT json_extract(j, '$.today') FROM temp.input)
        THEN 1 ELSE 0 END AS can_retry
 FROM applications AS a
