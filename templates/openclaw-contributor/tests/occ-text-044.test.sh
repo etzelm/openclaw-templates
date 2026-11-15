@@ -76,7 +76,7 @@ has "boundary: the dashboard is read only" CLAW.md 'The PR dashboard is read onl
 has "loop allows the builder without an approval row" references/contribution-loop.md '(and the same with `--mark-pinned`), the read-only PR dashboard builder'
 has "BOOTSTRAP runs the dashboard setup" BOOTSTRAP.md 'Follow AGENTS.md, "PR dashboard", "Set it up": build, pin, then the one refresh automation.'
 has "BOOTSTRAP check: exactly one automation" BOOTSTRAP.md 'shows exactly one `pr-dashboard-refresh` automation'
-has "BOOTSTRAP asks on or off" BOOTSTRAP.md '**PR dashboard** (`dashboard`): optional, choose on or off, default on.'
+has "BOOTSTRAP asks on or off" BOOTSTRAP.md 'Otherwise optional, choose on or off, default on.'
 has "BOOTSTRAP upgrade from 0.4.3" BOOTSTRAP.md '- From 0.4.3 (version 3): no database step.'
 
 # 3. Owner docs
@@ -87,6 +87,12 @@ has "README: sandboxOrigin is optional owner config" README.md 'Setup never sets
 lacks "no sandboxOrigin value anywhere" README.md 'sandboxOrigin[^`]*https?://'
 has "CHANGELOG has 0.4.4" CHANGELOG.md '## 0.4.4'
 ok "package.json is 0.4.4" '[[ "$(node -p "require(\"$P/package.json\").version")" == "0.4.4" ]]'
+
+has "dashboard off: never build, pin or offer, never ask again" "$A" 'then never build, pin, offer or suggest the dashboard, never create its automation, and do not ask about it again, also on later setup runs and upgrades.'
+has "settings: dashboard off is final until the owner changes it" templates/settings.md 'the agent never builds, pins or offers it, and does not ask again on later setup runs or upgrades'
+has "BOOTSTRAP: no question when dashboard is already off" BOOTSTRAP.md 'If it says `off`, do not ask, offer or set up the dashboard.'
+has "BOOTSTRAP upgrade: dashboard setup only when on" BOOTSTRAP.md 'and "PR dashboard" only when `dashboard` is `on`.'
+has "README upgrade: skipping the dashboard" README.md 'To skip it, set `dashboard: off` and a reason in `dashboard_note`'
 
 # 4. Proof accounts: a missing account is a skip at pick time
 L="references/contribution-loop.md"; PF="references/proof.md"

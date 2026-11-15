@@ -85,7 +85,7 @@ Edit the values after the colons. The agent reads this file at the start of ever
 ## PR dashboard
 
 - dashboard: on
-  - on (default) or off. On: setup builds a read-only table of your PRs, pins it on this agent's dashboard, and adds one automation that refreshes it every 15 minutes within watch_hours. Off: none of that; setup records why in dashboard_note.
+  - on (default) or off. On: setup builds a read-only table of your PRs, pins it on this agent's dashboard, and adds one automation that refreshes it every 15 minutes within watch_hours. Off: none of that, and the agent never builds, pins or offers it, and does not ask again on later setup runs or upgrades; setup records why in dashboard_note. Only you turn it back on, by changing this line.
 - dashboard_note: <blank>
 - dashboard_author: <blank>
   - The GitHub login whose PRs the table shows. Blank: the login gh is signed in with (`gh api user`).

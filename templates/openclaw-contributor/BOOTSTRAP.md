@@ -48,7 +48,7 @@ The database is one file at `db_path` (default `~/openclaw-contributor.db`), out
 - **Runner prefix** (`runner_prefix`): optional, default blank. Ask only if the owner says heavy work should run on another machine. Record the prefix exactly as they give it; never invent one.
 - **Time zone** (`time_zone`): optional, IANA time zone. Used for the watcher's hours.
 - **Proof accounts** (`proof_accounts`): always ask, as its own question: "Which accounts, subscriptions, devices or channel logins do you have for proof runs (for example a provider plan, a chat channel account, a phone)?" Record the answer as a list. Issues whose proof needs anything else are skipped at pick time.
-- **PR dashboard** (`dashboard`): optional, choose on or off, default on. If off, ask why in one line and record it in `dashboard_note`. With on, offer the defaults: `dashboard_author` blank (the login gh is signed in with), `dashboard_org` `openclaw` and `dashboard_refresh_button` `off` (on asks them to allow the widget again after every change, in ask mode).
+- **PR dashboard** (`dashboard`): ask only when settings.md has no `dashboard` line. If it says `off`, do not ask, offer or set up the dashboard. Otherwise optional, choose on or off, default on. If off, ask why in one line and record it in `dashboard_note`. With on, offer the defaults: `dashboard_author` blank (the login gh is signed in with), `dashboard_org` `openclaw` and `dashboard_refresh_button` `off` (on asks them to allow the widget again after every change, in ask mode).
 
 ## Local preference files
 
@@ -238,9 +238,9 @@ Do this when `dashboard` is `on`, after "Tools" showed gh logged in and after se
 
 Templates have no update command. 0.4.0 changed the database to schema version 2 (approval body hash, `withdrawn` and `recorded-outside`). 0.4.2 changes it to version 3 (standing grants, the `hosted-review` evidence kind). Every row is kept, and pending requests stay pending. 0.4.3 and 0.4.4 keep version 3.
 
-- From 0.4.3 (version 3): no database step. Ask the owner to copy their old `settings.md` into this workspace and add `proof_accounts` and the "PR dashboard" lines from `templates/settings.md` (`dashboard`, `dashboard_note`, `dashboard_author`, `dashboard_org`, `dashboard_refresh_button`). Then do "Exec host and approvals" for this agent id, and "PR dashboard".
+- From 0.4.3 (version 3): no database step. Ask the owner to copy their old `settings.md` into this workspace and add `proof_accounts` and the "PR dashboard" lines from `templates/settings.md` (`dashboard`, `dashboard_note`, `dashboard_author`, `dashboard_org`, `dashboard_refresh_button`). If the owner does not want the dashboard, set `dashboard: off` with their reason in `dashboard_note`. Then do "Exec host and approvals" for this agent id, and "PR dashboard" only when `dashboard` is `on`.
 
-- From 0.4.2 (version 3): no database step. Ask the owner to copy their old `settings.md` into this workspace and add `commit_name`, `signing_key`, `proof_accounts` and the "PR dashboard" lines from `templates/settings.md`. Then do "Exec host and approvals" for this agent id, and "PR dashboard". Open grants and PR watchers of the old agent belong to its session: the owner ends them there, or keeps the old agent for those PRs.
+- From 0.4.2 (version 3): no database step. Ask the owner to copy their old `settings.md` into this workspace and add `commit_name`, `signing_key`, `proof_accounts` and the "PR dashboard" lines from `templates/settings.md`. Then do "Exec host and approvals" for this agent id, and "PR dashboard" only when `dashboard` is `on`. Open grants and PR watchers of the old agent belong to its session: the owner ends them there, or keeps the old agent for those PRs.
 
 - From 0.4.0 or 0.4.1 (version 2): the owner backs up and upgrades the database in a terminal, with the real paths, and pastes the output:
 
@@ -249,7 +249,7 @@ Templates have no update command. 0.4.0 changed the database to schema version 2
    sqlite3 -bail "<db_path>" ".read '<workspace>/references/sql/migrate-v2-to-v3.sql'"
    ```
 
-   It must print `migrate ok, schema version 3, ...`. It refuses a database that is not version 2 and changes nothing on any error. Then ask the owner to copy their old `settings.md` into this workspace and add the lines new in 0.4.2, 0.4.3 and 0.4.4 from `templates/settings.md`: `commit_email`, `signing`, `signing_note`, `commit_name`, `signing_key`, `runner_prefix`, `watch_hours`, `proof_accounts`, `dashboard`, `dashboard_note`, `dashboard_author`, `dashboard_org`, `dashboard_refresh_button`. Ask the "Approval relay" question if `approval_relay` is blank. Then do "Exec host and approvals" for this agent id, and "Commit identity and signing" for the existing checkout, and "PR dashboard".
+   It must print `migrate ok, schema version 3, ...`. It refuses a database that is not version 2 and changes nothing on any error. Then ask the owner to copy their old `settings.md` into this workspace and add the lines new in 0.4.2, 0.4.3 and 0.4.4 from `templates/settings.md`: `commit_email`, `signing`, `signing_note`, `commit_name`, `signing_key`, `runner_prefix`, `watch_hours`, `proof_accounts`, `dashboard`, `dashboard_note`, `dashboard_author`, `dashboard_org`, `dashboard_refresh_button`. Ask the "Approval relay" question if `approval_relay` is blank. Then do "Exec host and approvals" for this agent id, and "Commit identity and signing" for the existing checkout, and "PR dashboard" only when `dashboard` is `on`.
 
 1. Database (0.3.x and older, version 1). The owner runs these in a terminal, with the real paths, and pastes the output. The first line is their backup:
 

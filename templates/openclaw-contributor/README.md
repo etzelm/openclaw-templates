@@ -187,7 +187,7 @@ Templates have no update command. Publishing a new version does not change agent
   - Add `proof_accounts` from `templates/settings.md` to settings.md, blank (the agent then asks you once) or with your list, for example `GitHub only`.
   - Add the "PR dashboard" lines from `templates/settings.md` to settings.md: `dashboard`, `dashboard_note`, `dashboard_author`, `dashboard_org`, `dashboard_refresh_button`.
   - Give the agent the `show_widget` tool, the same way as `automations` above: print `tools.allow`, then set the same list with `"show_widget"` added. Keep every tool it already has, and keep `deny` as it is.
-  - Then ask the agent, in the Control UI: "Set up the PR dashboard (AGENTS.md, PR dashboard)." It builds the table, pins it and adds the one refresh automation. No database step. Open grants and PR watchers are not touched.
+  - To use the dashboard, ask the agent, in the Control UI: "Set up the PR dashboard (AGENTS.md, PR dashboard)." It builds the table, pins it and adds the one refresh automation. To skip it, set `dashboard: off` and a reason in `dashboard_note`, and leave out the `show_widget` step above: the agent then never builds, pins or offers it, also on later setup runs and upgrades. No database step. Open grants and PR watchers are not touched.
 
   settings.md is kept. Your own files, such as USER.md, are not touched. The packaged database commands keep the same command line, so earlier "Always allow here" choices still apply, and the last `chmod` makes the SQL files read-only again. To roll back, restore both backups.
 
