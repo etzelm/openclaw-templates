@@ -76,7 +76,7 @@ has "boundary: the dashboard is read only" CLAW.md 'The PR dashboard is read onl
 has "loop allows the builder without an approval row" references/contribution-loop.md '(and the same with `--mark-pinned`), the read-only PR dashboard builder'
 has "BOOTSTRAP runs the dashboard setup" BOOTSTRAP.md 'Follow AGENTS.md, "PR dashboard", "Set it up": build, pin, then the one refresh automation.'
 has "BOOTSTRAP check: exactly one automation" BOOTSTRAP.md 'shows exactly one `pr-dashboard-refresh` automation'
-has "BOOTSTRAP asks on or off" BOOTSTRAP.md 'Otherwise optional, choose on or off, default on.'
+has "BOOTSTRAP asks on or off" BOOTSTRAP.md 'With no line: optional, choose on or off, default on.'
 has "BOOTSTRAP upgrade from 0.4.3" BOOTSTRAP.md '- From 0.4.3 (version 3): no database step.'
 
 # 3. Owner docs
@@ -88,6 +88,10 @@ lacks "no sandboxOrigin value anywhere" README.md 'sandboxOrigin[^`]*https?://'
 has "CHANGELOG has 0.4.4" CHANGELOG.md '## 0.4.4'
 ok "package.json is 0.4.4" '[[ "$(node -p "require(\"$P/package.json\").version")" == "0.4.4" ]]'
 
+has "CLAW.md: off is final" CLAW.md '`off` is final: the agent never builds, pins or offers it and does not ask again'
+has "CLAW.md: keep it current only when on" CLAW.md '- When `dashboard` is on, keep the PR dashboard current and read only; when it is `off`, never build, pin, offer or suggest it.'
+has "summary only when the dashboard is on" "$A" 'When `dashboard` is on and a PR you opened is verified on GitHub'
+has "step 12 Pause meets the missing-account rule" references/contribution-loop.md '- The proof needs an account the owner does not have: stop proof work for this PR and report'
 has "dashboard off: never build, pin or offer, never ask again" "$A" 'then never build, pin, offer or suggest the dashboard, never create its automation, and do not ask about it again, also on later setup runs and upgrades.'
 has "settings: dashboard off is final until the owner changes it" templates/settings.md 'the agent never builds, pins or offers it, and does not ask again on later setup runs or upgrades'
 has "BOOTSTRAP: no question when dashboard is already off" BOOTSTRAP.md 'If it says `off`, do not ask, offer or set up the dashboard.'
@@ -117,7 +121,7 @@ lacks "proof.md: no request for someone with that account" "$PF" 'asking someone
 lacks "scope template: no stub plus request" templates/scope-proposal.md 'request the owner can post'
 has "CLAW.md: pick only work you can prove" CLAW.md '- Pick only work you can prove.'
 has "AGENTS.md intake checks proof accounts" "$A" 'skip it if the owner lacks one (`proof_accounts`'
-has "BOOTSTRAP asks for proof accounts" BOOTSTRAP.md '**Proof accounts** (`proof_accounts`): always ask'
+has "BOOTSTRAP asks for proof accounts when blank" BOOTSTRAP.md '**Proof accounts** (`proof_accounts`): ask only when it is blank or missing'
 has "README upgrade adds proof_accounts" README.md '- Add `proof_accounts` from `templates/settings.md` to settings.md, blank'
 has "CHANGELOG has a Why line" CHANGELOG.md 'Why: a PR whose proof needs an account the owner does not have reviews clean but stays at "needs proof"'
 ok "no PR or issue numbers and no names in the 0.4.4 CHANGELOG entry" '! awk "/^## 0\\.4\\.4/{f=1;next} /^## /{f=0} f" "$P/CHANGELOG.md" | grep -qiE "#[0-9]{3,}|pull/[0-9]|issues/[0-9]|chatgpt|etzelm|mitchell"'

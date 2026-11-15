@@ -56,4 +56,4 @@ Output (redacted, 6 of 405 lines):
 
 Same sequence: queued as itm_9 at 18:41:07.190, sender done at 18:41:07.204, and the receiver now runs itm_9 (18:41:27.664) and replies (18:41:29.102).
 
-Not shown: a real CLI backend login; the stub stands in at the CLI process boundary.
+Not shown: a real CLI backend login; the stub stands in at the CLI process boundary, and the queueing under test does not depend on it.

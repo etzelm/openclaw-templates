@@ -103,7 +103,7 @@ If the answer to 1 is no and a runtime proof exists in `evidence/<slug>/`, packa
 
 ## After "needs proof"
 
-A hosted review with `status: 📣 needs proof`, or a `Proof guidance:` or "Add real behavior proof" item, is your turn. Read exactly what it says is missing; it usually names the events it wants to see linked. Run or re-run the proof so the output shows those events, package it as above, edit the body under the standing grant, and request one re-review for the head. Do not argue with the rating in a comment, and do not reword the body to move it without adding output.
+A hosted review with `status: 📣 needs proof`, or a `Proof guidance:` or "Add real behavior proof" item, is your turn, unless the proof needs an account the owner does not have: then see "When the proof needs an account the owner does not have" above. Read exactly what it says is missing; it usually names the events it wants to see linked. Run or re-run the proof so the output shows those events, package it as above, edit the body under the standing grant, and request one re-review for the head. Do not argue with the rating in a comment, and do not reword the body to move it without adding output.
 
 Two limits of the standing grant apply here. A `proof-assets` push is not covered: pause and ask the owner for it (step 11). And the grant allows one re-review per head: if only the body changed and the head did not, and a re-review for that head was already used, the next one needs a fresh owner answer, so get the proof right before the first re-review on a head.
 
