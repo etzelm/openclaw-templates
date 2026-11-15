@@ -111,6 +111,12 @@ check "SOUL forbids writing site-notes.md" 'grep -q "site-notes.md" "$CLAW" && g
 # Feeds: sources.md accepts them, examples use example hosts only.
 check "sources template accepts feeds" 'grep -qi "feed" "$PKG/templates/sources.md"'
 check "sources template uses only example hosts" '! grep -oE "https?://[^ )>]+" "$PKG/templates/sources.md" | grep -vE "^https?://([a-z0-9-]+\.)*example\.(com|org|net)(/|$)" | grep -q .'
+# Setup and Add docs that match what OpenClaw does today.
+check "README: second Add workaround (stop, mcp unset, start, add again)" 'grep -qF "openclaw mcp unset $SRV" "$PKG/README.md" && grep -q "mcp_server_collision" "$PKG/README.md" && grep -qi "stop the Gateway" "$PKG/README.md"'
+check "README: no claim that a kept agent has no setup file" '! grep -q "the new agent has no setup file, no schedule" "$PKG/README.md"'
+check "README: partial Add says how to check the agent" 'grep -qF "openclaw automations list --agent" "$PKG/README.md" && grep -qF "openclaw mcp list" "$PKG/README.md"'
+check "BOOTSTRAP: upgrade copies the old settings.md as old-settings.md" 'grep -qF "old-settings.md" "$PKG/BOOTSTRAP.md"'
+check "BOOTSTRAP: exec refused before the owner commands" 'grep -qi "exec is refused" "$PKG/BOOTSTRAP.md" && grep -qF "echo \"\$HOME/job-application-coordinator.db\"" "$PKG/BOOTSTRAP.md"'
 # Liability: no job site, ATS or vendor names anywhere in the package.
 HITS="$(grep -rniIE -f "$REGEX" "$PKG" | head -5)"
 check "no job-site or vendor names" '[[ -z "$HITS" ]]' "$HITS"
