@@ -1,5 +1,7 @@
 # Example: PR body draft
 
+Note for 0.4.3: this body predates the `Runtime output` rule. It describes its proof and names the end-to-end gap, which is the shape hosted ClawSweeper holds at "needs proof". A body today adds a `### Runtime output` section like [runtime-output.md](runtime-output.md), from templates/runtime-output.md.
+
 From the same 0.3.0 test run. This is the body file the loop drafts before any approval; it was never posted. The local review in this test used ClawSweeper's local source build with a different model runner than the public Codex route, and the Evidence line says so.
 
 <!-- PR template from openclaw/openclaw origin/main df0d49f58d1 -->

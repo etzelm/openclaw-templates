@@ -26,6 +26,10 @@ Edit the values after the colons. The agent reads this file at the start of ever
   - ssh (default) or gpg: how commits in the checkout are signed. Setup gives you the commands and checks a test commit shows `G`.
   - none only on purpose; setup records why in signing_note, and the agent notes unsigned commits in the evidence.
 - signing_note: <blank>
+- commit_name: <blank>
+  - The name on commits. Used with commit_email when the agent makes a new worktree (references/setup-worktree.sh).
+- signing_key: <blank>
+  - For ssh, the absolute path of the public signing key; for gpg, the key id. Not a secret: never a private key. Used by references/setup-worktree.sh. Blank with signing none.
 
 ## Work
 

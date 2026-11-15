@@ -13,15 +13,25 @@ PR <number> is open. I keep working on it until hosted ClawSweeper labels it `st
 
 Every fix still goes through the full proof loop: red, green, mutation check, gates, simplify, a signed commit and a local review round. Each use gets its own approval row under this grant, with the exact command, full head SHA and body hash; the database refuses anything else. I report after each hosted round. <In ask mode: OpenClaw's exec prompt still asks you before each push and comment. Do not choose "Always allow" for them.>
 
-## Not covered: I stop or pause and ask you
+## Stop conditions: the grant ends and I report to you
 
-- A person comments or reviews, or someone else pushes to the branch: I pause and tell you. I never reply.
+- needs-maintainer-decision: the `waiting on maintainer` or `needs maintainer proof decision` label.
+- needs-product-decision: the `clawsweeper:needs-product-decision` label.
+- Scope growth: anything beyond issue <issue number>, or a PR that grows beyond the fix.
+- 4 hosted rounds without progress.
+
+The grant also ends at the target, when the PR is closed or merged, after 5 re-reviews, or after 7 days with no change.
+
+## Not covered: I pause and ask you (the grant and the watcher stay)
+
+- A person or maintainer comments or reviews on the PR. I never reply, and I wait for your word.
+- Someone else pushes to the branch.
 - Any reply to a person, and any other comment.
 - Closing or reopening, a title edit, a force-push or rebase, a CI rerun.
-- Anything beyond issue <issue number>, or a PR that grows beyond the fix.
-- A `waiting on maintainer`, `needs maintainer proof decision` or `clawsweeper:needs-product-decision` label, or a finding that needs a maintainer decision.
-- The PR is closed or merged.
-- 4 hosted rounds without progress, 5 re-reviews used, or 7 days with no change.
-- CI that waits on maintainer workflow approval: I report it and wait. I never ping anyone.
+
+## Not stop conditions: I keep working and never ping anyone
+
+- `security-review-required`: a maintainer clears it. I never post `/allow-security-sensitive-change` and never ask for it.
+- CI that waits on maintainer workflow approval (`action_required`): I report it once per head and wait for the results.
 
 My reports land in this session. Reply yes to grant this for PR <number>. You can end it any time by saying so.
