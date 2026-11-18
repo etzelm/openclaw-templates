@@ -1,14 +1,14 @@
 -- Write ahead before asking the owner for one outward step. Input: candidate_id, contribution_id (or null), action, exact_step, head_sha, body_sha256, now. head_sha (the commit SHA, 7 to 64 lowercase hex characters, never a branch name or HEAD) is required for push, force-push, open-pr, edit-pr and ready-for-review, and for any other action with a contribution_id except open-issue and create-fork. body_sha256 (64 lowercase hex, from shasum -a 256 of the body file) is required when exact_step has --body-file or -F. Inline --body or -b is refused. Returns the approval id to name in the request.
 -- Run from the workspace root:
---   sqlite3 -bail -json <db_path> ".read references/sql/ask-approval.sql"
--- Input: write db-input.json with the write tool first, with "step": "ask-approval".
--- Issue, PR and page text goes only into db-input.json, never into the command line.
+--   sqlite3 -bail -json "<db_path>" ".parameter set @db_input db-input/<slug>.json" ".read references/sql/ask-approval.sql"
+-- Input: write db-input/<slug>.json (the task's own file) with the write tool first, with "step": "ask-approval".
+-- Issue, PR and page text goes only into that file, never into the command line.
 .bail on
 PRAGMA foreign_keys = ON;
 CREATE TEMP TABLE schema_guard (v INTEGER CHECK (v = 3));
 INSERT INTO temp.schema_guard SELECT user_version FROM pragma_user_version;
 CREATE TEMP TABLE input (j TEXT NOT NULL CHECK (json_valid(j)));
-INSERT INTO temp.input VALUES (CAST(readfile('db-input.json') AS TEXT));
+INSERT INTO temp.input VALUES (CAST(readfile(coalesce(@db_input, 'db-input.json')) AS TEXT));
 CREATE TEMP TABLE step_guard (s TEXT CHECK (s = 'ask-approval'));
 INSERT INTO temp.step_guard SELECT json_extract(j, '$.step') FROM temp.input;
 

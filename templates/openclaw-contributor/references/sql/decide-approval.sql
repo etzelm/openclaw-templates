@@ -5,15 +5,15 @@
 -- grant_id: granted under that standing grant, not a fresh answer. The grant must be open, for this contribution,
 -- and list the action; a request-review is granted at most once per head under one grant. owner_words then names the grant.
 -- Run from the workspace root:
---   sqlite3 -bail -json <db_path> ".read references/sql/decide-approval.sql"
--- Input: write db-input.json with the write tool first, with "step": "decide-approval".
--- Issue, PR and page text goes only into db-input.json, never into the command line.
+--   sqlite3 -bail -json "<db_path>" ".parameter set @db_input db-input/<slug>.json" ".read references/sql/decide-approval.sql"
+-- Input: write db-input/<slug>.json (the task's own file) with the write tool first, with "step": "decide-approval".
+-- Issue, PR and page text goes only into that file, never into the command line.
 .bail on
 PRAGMA foreign_keys = ON;
 CREATE TEMP TABLE schema_guard (v INTEGER CHECK (v = 3));
 INSERT INTO temp.schema_guard SELECT user_version FROM pragma_user_version;
 CREATE TEMP TABLE input (j TEXT NOT NULL CHECK (json_valid(j)));
-INSERT INTO temp.input VALUES (CAST(readfile('db-input.json') AS TEXT));
+INSERT INTO temp.input VALUES (CAST(readfile(coalesce(@db_input, 'db-input.json')) AS TEXT));
 CREATE TEMP TABLE step_guard (s TEXT CHECK (s = 'decide-approval'));
 INSERT INTO temp.step_guard SELECT json_extract(j, '$.step') FROM temp.input;
 

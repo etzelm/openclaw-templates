@@ -86,7 +86,7 @@ has "README: upgrade adds show_widget" README.md 'Give the agent the `show_widge
 has "README: sandboxOrigin is optional owner config" README.md 'Setup never sets it.'
 lacks "no sandboxOrigin value anywhere" README.md 'sandboxOrigin[^`]*https?://'
 has "CHANGELOG has 0.4.4" CHANGELOG.md '## 0.4.4'
-ok "package.json is 0.4.4" '[[ "$(node -p "require(\"$P/package.json\").version")" == "0.4.4" ]]'
+ok "package is 0.4.4 or a later 0.4.x" '[[ "$(node -p "require(\"$P/package.json\").version")" == 0.4.<4-> ]]'
 
 has "CLAW.md: off is final" CLAW.md '`off` is final: the agent never builds, pins or offers it and does not ask again'
 has "CLAW.md: keep it current only when on" CLAW.md '- When `dashboard` is on, keep the PR dashboard current and read only; when it is `off`, never build, pin, offer or suggest it.'

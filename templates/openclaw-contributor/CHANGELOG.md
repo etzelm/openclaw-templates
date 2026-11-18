@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.4.5
+
+Two fixes from parallel live sessions on 0.4.4. No database change (still schema version 3).
+
+- Per-task DB input files. Every packaged step used to read one shared `db-input.json`, so parallel sessions overwrote each other's input (seen with up to 5 sessions; the step checks refused the mismatch, but steps had to be retried). Each task now writes `db-input/<slug>.json` (`db-input/pick-<session>.json` before it has a slug) and runs `sqlite3 -bail -json "<db_path>" ".parameter set @db_input db-input/<slug>.json" ".read references/sql/<step>.sql"`. The steps read `readfile(coalesce(@db_input, 'db-input.json'))`, so the old command still works, and a missing per-task file fails instead of falling back to the shared file.
+- PR watcher works again. OpenClaw's bundled tokenjuice plugin rewrites gh JSON in exec results, trigger-script exec included, into a text summary ("status checks: 26 ok, 3 attention"), so every check threw "gh pr view output is not JSON". `references/pr-watch.js` now pipes its one read through `base64` and decodes it in the check; base64 output passes through tokenjuice unchanged. Output that is not base64 gets its own clear error.
+
+Upgrade from 0.4.4: replace the packaged files (README, "Upgrade in place") and skip the database migration. The packaged sqlite3 commands change, so "Always allow here" asks once more for each new form. Existing PR watchers keep the old script: remove each one and add it again from the new `references/pr-watch.js`, with the same `const pr` and a fresh `const addedAt`.
+
 ## 0.4.4
 
 PR tracking dashboard, and proof accounts checked at pick time. No database change (still schema version 3).

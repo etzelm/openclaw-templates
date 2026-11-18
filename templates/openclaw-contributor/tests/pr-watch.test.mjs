@@ -36,15 +36,15 @@ const base = {
   ],
 };
 const calls = [];
-const execFor = (view) => async (args) => { calls.push(args.command); return { status: "completed", exitCode: 0, aggregated: JSON.stringify(view) }; };
+const execFor = (view) => async (args) => { calls.push(args.command); return { status: "completed", exitCode: 0, aggregated: Buffer.from(JSON.stringify(view)).toString("base64") }; };
 const clone = (o) => JSON.parse(JSON.stringify(o));
 const fires = async (state, view) => (await run(state, execFor(view))).fire === true;
 
 const r1 = await run(undefined, execFor(base));
 ok("first check saves state and does not fire", r1.fire === false && r1.state && r1.state.observed && r1.state.observed.head === base.headRefOid, JSON.stringify(r1));
 const cmd = calls[0];
-ok("one plain read-only gh pr view command", /^gh pr view 199042 --repo openclaw\/openclaw --json [a-zA-Z,]+$/.test(cmd), cmd);
-ok("command has no shell operators", !/[;&|<>`$'"\\]/.test(cmd), cmd);
+ok("one plain read-only gh pr view command piped to base64", /^gh pr view 199042 --repo openclaw\/openclaw --json [a-zA-Z,]+ \| base64$/.test(cmd), cmd);
+ok("command has no shell operator but the one base64 pipe", !/[;&|<>`$'"\\]/.test(cmd.replace(/ \| base64$/, "")), cmd);
 ok("exactly one exec call per check", calls.length === 1);
 const S = r1.state;
 

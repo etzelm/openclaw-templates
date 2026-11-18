@@ -1,14 +1,14 @@
 -- Change a contribution's status and, when given, its head SHA, base SHA or PR url. Input: contribution_id, status, note, now, and optional head_sha, base_sha, pr_url.
 -- Run from the workspace root:
---   sqlite3 -bail -json <db_path> ".read references/sql/set-status.sql"
--- Input: write db-input.json with the write tool first, with "step": "set-status".
--- Issue, PR and page text goes only into db-input.json, never into the command line.
+--   sqlite3 -bail -json "<db_path>" ".parameter set @db_input db-input/<slug>.json" ".read references/sql/set-status.sql"
+-- Input: write db-input/<slug>.json (the task's own file) with the write tool first, with "step": "set-status".
+-- Issue, PR and page text goes only into that file, never into the command line.
 .bail on
 PRAGMA foreign_keys = ON;
 CREATE TEMP TABLE schema_guard (v INTEGER CHECK (v = 3));
 INSERT INTO temp.schema_guard SELECT user_version FROM pragma_user_version;
 CREATE TEMP TABLE input (j TEXT NOT NULL CHECK (json_valid(j)));
-INSERT INTO temp.input VALUES (CAST(readfile('db-input.json') AS TEXT));
+INSERT INTO temp.input VALUES (CAST(readfile(coalesce(@db_input, 'db-input.json')) AS TEXT));
 CREATE TEMP TABLE step_guard (s TEXT CHECK (s = 'set-status'));
 INSERT INTO temp.step_guard SELECT json_extract(j, '$.step') FROM temp.input;
 
