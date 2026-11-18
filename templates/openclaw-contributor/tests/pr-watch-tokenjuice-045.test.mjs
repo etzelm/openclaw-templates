@@ -7,8 +7,11 @@ import { readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 
 const pkg = process.argv[2];
-const tjPath = process.argv[3] ||
-  "/Volumes/openclaw/openclaw-b/extensions/tokenjuice/node_modules/tokenjuice/dist/hosts/openclaw/extension.js";
+const tjPath = process.argv[3] || process.env.TOKENJUICE_EXTENSION;
+if (!tjPath) {
+  console.log("SKIP tokenjuice extension path not given (argv[3] or TOKENJUICE_EXTENSION)");
+  process.exit(0);
+}
 let passes = 0;
 let fails = 0;
 const ok = (name, cond, extra = "") => {
