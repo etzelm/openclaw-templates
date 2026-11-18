@@ -1,14 +1,14 @@
 -- Run right before the outward step. Fails unless the approval is granted (under a standing grant: one that has not ended), unused, for the same action and the same exact command, bound to the current head, and, when a body hash was approved, bound to the same body. Input: approval_id, action, exact_step (the command you are about to run), head_sha (current), body_sha256 (current hash of the body file, when there is one), now.
 -- Run from the workspace root:
---   sqlite3 -bail -json <db_path> ".read references/sql/use-approval.sql"
--- Input: write db-input.json with the write tool first, with "step": "use-approval".
--- Issue, PR and page text goes only into db-input.json, never into the command line.
+--   sqlite3 -bail -json "<db_path>" ".parameter set @db_input db-input/<slug>.json" ".read references/sql/use-approval.sql"
+-- Input: write db-input/<slug>.json (the task's own file) with the write tool first, with "step": "use-approval".
+-- Issue, PR and page text goes only into that file, never into the command line.
 .bail on
 PRAGMA foreign_keys = ON;
 CREATE TEMP TABLE schema_guard (v INTEGER CHECK (v = 3));
 INSERT INTO temp.schema_guard SELECT user_version FROM pragma_user_version;
 CREATE TEMP TABLE input (j TEXT NOT NULL CHECK (json_valid(j)));
-INSERT INTO temp.input VALUES (CAST(readfile('db-input.json') AS TEXT));
+INSERT INTO temp.input VALUES (CAST(readfile(coalesce(@db_input, 'db-input.json')) AS TEXT));
 CREATE TEMP TABLE step_guard (s TEXT CHECK (s = 'use-approval'));
 INSERT INTO temp.step_guard SELECT json_extract(j, '$.step') FROM temp.input;
 

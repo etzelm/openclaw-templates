@@ -1,7 +1,9 @@
 // Read-only watcher check for one open PR, used as an automation's trigger.script.
 // The agent copies this text unchanged except for two lines: the PR number on the `const pr`
 // line and the time it adds the watcher, in ISO 8601 UTC, on the `const addedAt` line.
-// It runs one plain gh read and never writes. It wakes the agent when the PR changed:
+// It runs one gh read piped through base64 and never writes. The pipe is there because
+// OpenClaw's tokenjuice plugin rewrites gh JSON in exec results into a text summary;
+// base64 output passes through unchanged, and the check decodes it here. It wakes the agent when the PR changed:
 // state, head, labels, ClawSweeper comments and people's comments (also when edited in
 // place), comments or reviews by other bots, reviews, or a finished check result. It also wakes the agent
 // once a day while nothing changes, so the 7-day stop can run.
@@ -16,7 +18,7 @@ const DAY = 24 * 60 * 60 * 1000;
 const r = await exec({
   command:
     "gh pr view " + pr + " --repo " + repo +
-    " --json state,isDraft,headRefOid,labels,comments,reviews,statusCheckRollup",
+    " --json state,isDraft,headRefOid,labels,comments,reviews,statusCheckRollup | base64",
 });
 if (!r || r.status !== "completed" || r.exitCode !== 0) {
   throw new Error("PR " + pr + " watcher: gh pr view failed. See this automation's run diagnostics.");
@@ -24,11 +26,32 @@ if (!r || r.status !== "completed" || r.exitCode !== 0) {
 if (typeof r.aggregated !== "string" || !r.aggregated.trim()) {
   throw new Error("PR " + pr + " watcher: gh pr view returned no output (no aggregated text). See this automation's run diagnostics.");
 }
+const B64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+const decodeBase64 = (text) => {
+  const s = text.replace(/\s+/g, "");
+  if (!s || s.length % 4 !== 0 || !/^[A-Za-z0-9+/]*={0,2}$/.test(s)) return null;
+  const bytes = [];
+  for (let i = 0; i < s.length; i += 4) {
+    const n = [0, 1, 2, 3].map((k) => (s[i + k] === "=" ? 0 : B64.indexOf(s[i + k])));
+    const x = (n[0] << 18) | (n[1] << 12) | (n[2] << 6) | n[3];
+    bytes.push((x >> 16) & 255);
+    if (s[i + 2] !== "=") bytes.push((x >> 8) & 255);
+    if (s[i + 3] !== "=") bytes.push(x & 255);
+  }
+  if (typeof TextDecoder === "function") return new TextDecoder().decode(new Uint8Array(bytes));
+  let bin = "";
+  for (let i = 0; i < bytes.length; i += 8192) bin += String.fromCharCode.apply(null, bytes.slice(i, i + 8192));
+  return decodeURIComponent(escape(bin));
+};
+const text = decodeBase64(r.aggregated);
+if (text === null) {
+  throw new Error("PR " + pr + " watcher: gh pr view output is not base64 (first 200 chars: " + JSON.stringify(r.aggregated.slice(0, 200)) + ").");
+}
 let v;
 try {
-  v = JSON.parse(r.aggregated);
+  v = JSON.parse(text);
 } catch {
-  throw new Error("PR " + pr + " watcher: gh pr view output is not JSON (first 200 chars: " + JSON.stringify(r.aggregated.slice(0, 200)) + ").");
+  throw new Error("PR " + pr + " watcher: gh pr view output is not JSON (first 200 chars: " + JSON.stringify(text.slice(0, 200)) + ").");
 }
 const login = (c) => (c.author && c.author.login) || "";
 const isClawSweeper = (c) => /^clawsweeper(\[bot\])?$/i.test(login(c));

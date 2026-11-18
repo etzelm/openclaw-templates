@@ -20,7 +20,7 @@ const fill = (added) => src.replace("const pr = 0;", "const pr = 199343;").repla
 const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
 const deepFreeze = (o) => { if (o && typeof o === "object") { Object.values(o).forEach(deepFreeze); Object.freeze(o); } return o; };
 const run = (script, state, view) => new AsyncFunction("exec", "trigger", script)(
-  async () => ({ status: "completed", exitCode: 0, aggregated: JSON.stringify(view) }),
+  async () => ({ status: "completed", exitCode: 0, aggregated: Buffer.from(JSON.stringify(view)).toString("base64") }),
   { state: state === undefined ? undefined : deepFreeze(JSON.parse(JSON.stringify(state))) },
 );
 const clone = (o) => JSON.parse(JSON.stringify(o));
@@ -94,15 +94,15 @@ ok("a look-alike bot login is counted as a person, not a bot", r.state.observed.
 const throwsWith = async (res, re) => { try { await new AsyncFunction("exec", "trigger", S)(async () => res, { state: undefined }); return false; } catch (e) { return re.test(String(e)) && !(e instanceof SyntaxError); } };
 ok("a missing aggregated field throws a clear error, not a SyntaxError", await throwsWith({ status: "completed", exitCode: 0 }, /returned no output/));
 ok("empty aggregated text throws a clear error", await throwsWith({ status: "completed", exitCode: 0, aggregated: "  " }, /returned no output/));
-ok("non-JSON output throws a clear error naming the start of it", await throwsWith({ status: "completed", exitCode: 0, aggregated: "warning: x\n{}" }, /is not JSON.*warning: x/));
+ok("non-JSON output throws a clear error naming the start of it", await throwsWith({ status: "completed", exitCode: 0, aggregated: Buffer.from("warning: x\n{}").toString("base64") }, /is not JSON.*warning: x/));
 
 const legacy = src.replace("const pr = 0;", "const pr = 199343;");
 v = clone(base); v.comments.push({ author: { login: "clawsweeper" }, createdAt: after, body: "review" });
 ok("with addedAt left empty the first check only saves (0.4.2 behavior)", (await run(legacy, undefined, v)).fire === false);
 
 const cmds = [];
-await new AsyncFunction("exec", "trigger", S)(async (a) => { cmds.push(a.command); return { status: "completed", exitCode: 0, aggregated: JSON.stringify(base) }; }, { state: undefined });
-ok("still one plain read-only gh pr view per check", cmds.length === 1 && /^gh pr view 199343 --repo openclaw\/openclaw --json [a-zA-Z,]+$/.test(cmds[0]), cmds.join(" | "));
+await new AsyncFunction("exec", "trigger", S)(async (a) => { cmds.push(a.command); return { status: "completed", exitCode: 0, aggregated: Buffer.from(JSON.stringify(base)).toString("base64") }; }, { state: undefined });
+ok("still one plain read-only gh pr view per check, piped to base64", cmds.length === 1 && /^gh pr view 199343 --repo openclaw\/openclaw --json [a-zA-Z,]+ \| base64$/.test(cmds[0]), cmds.join(" | "));
 
 console.log("passed=" + passes + " failed=" + fails);
 process.exit(fails === 0 ? 0 : 1);

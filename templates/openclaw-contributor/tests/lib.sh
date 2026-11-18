@@ -25,3 +25,10 @@ expect_rc0() { [[ $RC -eq 0 ]] && ok "$1" || bad "$1"; }
 expect_fail() { [[ $RC -ne 0 ]] && ok "$1" || bad "$1"; }
 expect_has() { [[ $RC -eq 0 && "$OUT" == *"$2"* ]] && ok "$1" || bad "$1 (want $2)"; }
 finish() { echo "passed=$PASSES failed=$FAILS"; [[ $FAILS -eq 0 ]]; }
+# step_in <db> <sql-step> <file> <json>  -> writes <json> to <file> (made under ws), runs the step with @db_input set to <file>
+step_in() {
+  mkdir -p "${3:h}"
+  printf '%s' "$4" > "$3"
+  OUT="$(sqlite3 -bail -json "$1" ".parameter set @db_input $3" ".read references/sql/$2.sql" 2>&1)"
+  RC=$?
+}
