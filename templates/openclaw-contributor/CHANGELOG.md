@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.4.6
+
+Decide with evidence. No database change (still schema version 3).
+
+- When the owner explicitly asks for an implementation (an RFC, a design, a stalled stack), the agent builds a working prototype on top of the existing work, answers each open design question with its best recommended answer, and proves it. Each answer gets one line: the choice, the evidence, and how to reverse it.
+- PR bodies get a `Decisions` table (choice | evidence | how to reverse) for every design choice the evidence settled. A short `Needs a maintainer` list holds only what the agent cannot do or decide: CI or SecOps approval, dependency sign-off, an SDK or surface budget raise, credit, or anything that needs an outward post. This replaces the "decision maintainers need to make" lines.
+- A local review finding that asks for a design or product choice is no longer a stop. The agent decides it, builds it, proves it and adds a `Decisions` row. The loop stops early only for a gate it cannot clear.
+- The `clawsweeper:needs-product-decision` label gets one decide-and-re-review pass before it is a stop. The agent turns each choice the evidence can settle into a built and proven `Decisions` row and requests one re-review. It stops only if the label stays on that new head. The standing grant request says so.
+- Why: live use showed PR bodies listing maintainer questions the evidence could settle.
+
+Upgrade from 0.4.5: replace the packaged files (README, "Upgrade in place") and skip the database migration. Settings, open grants and PR watchers stay as they are.
+
 ## 0.4.5
 
 Two fixes from parallel live sessions on 0.4.4. No database change (still schema version 3).

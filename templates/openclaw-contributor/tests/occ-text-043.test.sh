@@ -46,6 +46,9 @@ has "forced run list stays empty until then" references/contribution-loop.md 'ru
 # 3. Stop conditions
 has "stop: needs-maintainer-decision" references/contribution-loop.md '**needs-maintainer-decision**'
 has "stop: needs-product-decision" references/contribution-loop.md '**needs-product-decision**'
+# 0.4.6: the label gets one decide-and-re-review pass before it is a stop (occ-text-046.test.sh).
+has "needs-product-decision: decide and re-review first" references/contribution-loop.md 'It gets one decide-and-re-review pass before it is a stop'
+lacks "needs-product-decision is not an immediate stop" references/contribution-loop.md 'the `clawsweeper:needs-product-decision` label\. `set-status` to `blocked-maintainer-decision`\.'
 has "a human reply is a pause, not a stop" references/contribution-loop.md 'A human or maintainer reply is not a stop: it is a pause'
 has "pause keeps the grant and the watcher" references/contribution-loop.md 'keep the grant and the watcher'
 lacks "maintainer-decision stop is only the labels" references/contribution-loop.md 'any other label that says a maintainer decision is needed'
