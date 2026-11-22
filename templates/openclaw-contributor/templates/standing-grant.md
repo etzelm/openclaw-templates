@@ -16,7 +16,7 @@ Every fix still goes through the full proof loop: red, green, mutation check, ga
 ## Stop conditions: the grant ends and I report to you
 
 - needs-maintainer-decision: the `waiting on maintainer` or `needs maintainer proof decision` label.
-- needs-product-decision: the `clawsweeper:needs-product-decision` label.
+- needs-product-decision: the `clawsweeper:needs-product-decision` label, if it stays after one pass where I decide each choice the evidence can settle, build and prove it, add it to the body's `Decisions` table, and request one re-review.
 - Scope growth: anything beyond issue <issue number>, or a PR that grows beyond the fix.
 - 4 hosted rounds without progress.
 
